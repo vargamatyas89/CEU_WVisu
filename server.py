@@ -23,6 +23,7 @@ import socketserver
 import time
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 
 from countries import CATCHMENTS, COUNTRIES_META, STATIONS_CATALOG
 
@@ -253,6 +254,41 @@ def fetch_rhmz_serbia_observations():
     return rhmz_by_id
 
 
+def fetch_arso_slovenia_observations():
+    """Fetches live telemetry for 190+ Slovenian stations from ARSO (arso.gov.si/xml/vode/hidro_podatki_zadnji.xml)."""
+    arso_by_id = {}
+    try:
+        req = urllib.request.Request(
+            "https://www.arso.gov.si/xml/vode/hidro_podatki_zadnji.xml",
+            headers={"User-Agent": "Mozilla/5.0 (WVis HydroMap)"},
+        )
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            root = ET.fromstring(resp.read())
+            for st in root.findall("postaja"):
+                aid = (st.attrib.get("sifra") or "").strip()
+                vod_raw = (st.findtext("vodostaj") or "").strip()
+                lvl = _parse_int(vod_raw)
+                if not aid or lvl is None:
+                    continue
+                q_val = _parse_float(st.findtext("pretok") or "")
+                t_val = _parse_float(st.findtext("temp_vode") or "")
+                measured_at = (st.findtext("datum_cet") or st.findtext("datum") or "").strip()
+                arso_by_id[aid] = {
+                    "arso_id": aid,
+                    "name": (st.findtext("merilno_mesto") or "").strip(),
+                    "river": (st.findtext("reka") or "").strip(),
+                    "current_level_cm": lvl,
+                    "discharge_m3s": q_val,
+                    "water_temp_c": t_val,
+                    "measured_at": measured_at,
+                    "origin": "arso.gov.si (ARSO)",
+                }
+    except Exception as exc:
+        print(f"[WARN] Failed to fetch ARSO Slovenia telemetry: {exc}")
+
+    return arso_by_id
+
+
 def fetch_hydroinfo_official_forecasts():
     """Fetches official 6-day water level predictions from hydroinfo.hu (dunelotH.html, tiselotH.html)."""
     forecasts_by_key = {}
@@ -412,6 +448,7 @@ def build_hydro_payload(force_refresh=False):
     vizugy_map = fetch_vizugy_operative_observations()
     dhmz_map = fetch_dhmz_croatia_observations()
     rhmz_map = fetch_rhmz_serbia_observations()
+    arso_map = fetch_arso_slovenia_observations()
     ovf_forecasts = fetch_hydroinfo_official_forecasts()
     catchment_weather = fetch_all_catchments_weather()
 
@@ -425,10 +462,12 @@ def build_hydro_payload(force_refresh=False):
         vizugy_id = st.get("vizugy_id") or (code.replace("VIZUGY_", "") if code.startswith("VIZUGY_") else None)
         dhmz_id = st.get("dhmz_id") or (code.replace("DHMZ_", "") if code.startswith("DHMZ_") else None)
         rhmz_id = st.get("rhmz_id") or (code.replace("RHMZ_", "") if code.startswith("RHMZ_") else None)
+        arso_id = st.get("arso_id") or (code.replace("ARSO_", "") if code.startswith("ARSO_") else None)
         obs = obs_map.get(code)
         v_obs = vizugy_map.get(vizugy_id) if vizugy_id else None
         d_obs = dhmz_map.get(dhmz_id) if dhmz_id else None
         r_obs = rhmz_map.get(rhmz_id) if rhmz_id else None
+        a_obs = arso_map.get(arso_id) if arso_id else None
 
         if obs:
             live_obs_count += 1
@@ -440,12 +479,20 @@ def build_hydro_payload(force_refresh=False):
                 else (
                     v_obs["discharge_m3s"]
                     if v_obs and v_obs["discharge_m3s"]
-                    else (r_obs["discharge_m3s"] if r_obs and r_obs["discharge_m3s"] else st["default_discharge"])
+                    else (
+                        r_obs["discharge_m3s"]
+                        if r_obs and r_obs["discharge_m3s"]
+                        else (a_obs["discharge_m3s"] if a_obs and a_obs["discharge_m3s"] else st["default_discharge"])
+                    )
                 )
             )
-            water_temp = obs["water_temp_c"] if obs["water_temp_c"] is not None else st["default_temp"]
+            water_temp = (
+                obs["water_temp_c"]
+                if obs["water_temp_c"] is not None
+                else (a_obs["water_temp_c"] if a_obs and a_obs["water_temp_c"] is not None else st["default_temp"])
+            )
             ice_status = obs["ice_status"]
-            day0_source = "OVF / INHGA / SHMÚ / eHYD Hivatalos élő mérés (hydroinfo.hu)"
+            day0_source = "OVF / INHGA / SHMÚ / eHYD / ARSO Hivatalos élő mérés (hydroinfo.hu)"
         elif v_obs:
             live_obs_count += 1
             live_vizugy_count += 1
@@ -471,6 +518,14 @@ def build_hydro_payload(force_refresh=False):
             water_temp = r_obs["water_temp_c"] if r_obs["water_temp_c"] is not None else st["default_temp"]
             ice_status = "jégmentes"
             day0_source = "RHMZ Szerbia Hivatalos élő mérés (hidmet.gov.rs)"
+        elif a_obs:
+            live_obs_count += 1
+            curr_level = a_obs["current_level_cm"]
+            diff_24h = st["default_diff24h"]
+            discharge_0 = a_obs["discharge_m3s"] if a_obs["discharge_m3s"] is not None else st["default_discharge"]
+            water_temp = a_obs["water_temp_c"] if a_obs["water_temp_c"] is not None else st["default_temp"]
+            ice_status = "jégmentes"
+            day0_source = f"ARSO Szlovénia élő mérés (arso.gov.si • {a_obs['measured_at']})"
         else:
             curr_level = st["default_level"]
             diff_24h = st["default_diff24h"]
@@ -617,6 +672,7 @@ def build_hydro_payload(force_refresh=False):
             "at_stations": sum(1 for s in stations_out if s["country"] == "AT"),
             "hr_stations": sum(1 for s in stations_out if s["country"] == "HR"),
             "rs_stations": sum(1 for s in stations_out if s["country"] == "RS"),
+            "si_stations": sum(1 for s in stations_out if s["country"] == "SI"),
             "major_stations": sum(1 for s in stations_out if s["water_category"] == "major"),
             "minor_stations": sum(1 for s in stations_out if s["water_category"] == "minor"),
             "countries": COUNTRIES_META,
@@ -626,7 +682,7 @@ def build_hydro_payload(force_refresh=False):
             "sources": [
                 "Országos Vízjelző Szolgálat (OVF / hydroinfo.hu & vizugy.hu)",
                 "INHGA Románia (74xxxx), SHMÚ Szlovákia (14xxxx) & eHYD Ausztria (24xxxx)",
-                "DHMZ Horvátország (hidro.dhz.hr) & RHMZ Szerbia (hidmet.gov.rs)",
+                "DHMZ Horvátország (hidro.dhz.hr), RHMZ Szerbia (hidmet.gov.rs) & ARSO Szlovénia (arso.gov.si)",
                 "Copernicus GloFAS v4 (5 km-es felbontású vízhozam modell) & Open-Meteo IFS",
             ],
         },
