@@ -29,7 +29,7 @@
   // Geographic Bounds for Quick Zoom
   const REGION_BOUNDS = {
     all: [
-      [43.58, 9.53],
+      [42.20, 9.53],
       [49.62, 29.75],
     ],
     HU: [
@@ -47,6 +47,14 @@
     AT: [
       [46.37, 9.53],
       [49.02, 17.16],
+    ],
+    HR: [
+      [42.38, 13.48],
+      [46.56, 19.45],
+    ],
+    RS: [
+      [42.23, 18.81],
+      [46.19, 23.01],
     ],
   };
 
@@ -1018,7 +1026,7 @@
         state.stationsByCode.set(st.code, st);
       }
 
-      metaSourceLabel.textContent = `OVF hydroinfo.hu, vizugy.hu, INHGA, SHMÚ & eHYD (HU: ${data.meta.hu_stations}, RO: ${data.meta.ro_stations}, SK: ${data.meta.sk_stations}, AT: ${data.meta.at_stations} • ${data.meta.minor_stations} kisvízfolyás/csatorna, észlelés: ${data.meta.observation_date}) & GloFAS v4`;
+      metaSourceLabel.textContent = `OVF, INHGA, SHMÚ, eHYD, DHMZ & RHMZ (HU: ${data.meta.hu_stations}, RO: ${data.meta.ro_stations}, SK: ${data.meta.sk_stations}, AT: ${data.meta.at_stations}, HR: ${data.meta.hr_stations}, RS: ${data.meta.rs_stations} • ${data.meta.minor_stations} kisvízfolyás/csatorna, észlelés: ${data.meta.observation_date}) & GloFAS v4`;
 
       renderSliderTicks();
       setActiveDay(state.activeDay);

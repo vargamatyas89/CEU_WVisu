@@ -1,4 +1,4 @@
-# Master Prompt: Interactive Central Europe & Danube Basin (Hungary, Romania, Slovakia, Austria) Hydrological Map & 7-Day Weather-Coupled Water Level Forecast Application
+# Master Prompt: Interactive Central Europe & Danube Basin (Hungary, Romania, Slovakia, Austria, Croatia, Serbia) Hydrological Map & 7-Day Weather-Coupled Water Level Forecast Application
 
 You can copy and use the prompt below with any coding LLM or AI agent to generate or extend this full-stack application.
 
@@ -6,7 +6,7 @@ You can copy and use the prompt below with any coding LLM or AI agent to generat
 
 ```markdown
 Role & Objective:
-You are a Senior Full-Stack Geospatial & Hydrological Web Engineer. Build a complete, production-ready web application (lightweight Python or Node.js backend + modern HTML5/CSS3/JavaScript interactive frontend) that displays the national borders and interactive hydrographic map (major rivers, minor creeks/streams/canals, and lakes) of Hungary (Magyarország), Romania (Románia), Slovakia (Szlovákia), and Austria (Ausztria), shows official water level measurements on hover, and provides a real-time 1–7 day forecast slider driven by official hydrological forecasts and live meteorological data.
+You are a Senior Full-Stack Geospatial & Hydrological Web Engineer. Build a complete, production-ready web application (lightweight Python or Node.js backend + modern HTML5/CSS3/JavaScript interactive frontend) that displays the national borders and interactive hydrographic map (major rivers, minor creeks/streams/canals, and lakes) of Hungary (Magyarország), Romania (Románia), Slovakia (Szlovákia), Austria (Ausztria), Croatia (Horvátország), and Serbia (Szerbia), shows official water level measurements on hover, and provides a real-time 1–7 day forecast slider driven by official hydrological forecasts and live meteorological data.
 
 All user-facing UI text, labels, tooltips, alerts, and legends MUST be in Hungarian.
 
@@ -14,7 +14,7 @@ All user-facing UI text, labels, tooltips, alerts, and legends MUST be in Hungar
 
 ### 1. System Architecture & Live Data Sources
 
-Because official Danube Basin hydrological endpoints (`hydroinfo.hu` / `vizugy.hu` / INHGA / SHMÚ / eHYD) do not send permissive CORS headers for direct browser `fetch()` requests and serve ISO-8859-2 encoded HTML tables, implement a two-tier architecture:
+Because official Danube Basin hydrological endpoints (`hydroinfo.hu` / `vizugy.hu` / INHGA / SHMÚ / eHYD / DHMZ `hidro.dhz.hr` / RHMZ `hidmet.gov.rs`) do not send permissive CORS headers for direct browser `fetch()` requests and serve ISO-8859-2 / UTF-8 HTML tables, implement a two-tier architecture:
 
 1. **Lightweight Backend Server (`server.py`) & Modular Country Definitions (`countries/`)**:
    - Store each country's hydrological stations, catchments, and metadata in its own dedicated source file:
@@ -23,12 +23,16 @@ Because official Danube Basin hydrological endpoints (`hydroinfo.hu` / `vizugy.h
        - `countries/romania.py` (78 stations: 56 major river/lake gauges + 22 smaller mountain rivers and tributaries)
        - `countries/slovakia.py` (45 stations: 27 major river/reservoir gauges + 18 smaller Carpathian streams and tributaries, linked to SHMÚ `14xxxx` codes)
        - `countries/austria.py` (41 stations: 26 major Alpine river/lake gauges + 15 smaller Alpine streams and tributaries, linked to eHYD `24xxxx` codes)
-       - Aggregated by `countries/__init__.py` (272 stations total across 25 catchments).
+       - `countries/croatia.py` (45 stations: 27 major river/lake gauges + 18 smaller Slavonian/karst streams and tributaries, linked to live DHMZ `hidro.dhz.hr` `dhmz_id` and `54xxxx` codes)
+       - `countries/serbia.py` (46 stations: 31 major river/lake gauges + 15 smaller Vojvodina/Central Serbian rivers and DTD canals, linked to live RHMZ `hidmet.gov.rs` `rhmz_id` and `54xxxx` codes)
+       - Aggregated by `countries/__init__.py` (363 stations total across 33 catchments).
      - Frontend vector geometry modules:
        - `static/countries/hungary_geo.js` (`window.COUNTRY_GEO_MODULES["HU"]`)
        - `static/countries/romania_geo.js` (`window.COUNTRY_GEO_MODULES["RO"]`)
        - `static/countries/slovakia_geo.js` (`window.COUNTRY_GEO_MODULES["SK"]`)
        - `static/countries/austria_geo.js` (`window.COUNTRY_GEO_MODULES["AT"]`)
+       - `static/countries/croatia_geo.js` (`window.COUNTRY_GEO_MODULES["HR"]`)
+       - `static/countries/serbia_geo.js` (`window.COUNTRY_GEO_MODULES["RS"]`)
    - Serves the frontend static assets (`index.html`, `styles.css`, `app.js`, `countries/*_geo.js`) and exposes a JSON REST API (`/api/hydro-data` and `/api/refresh`).
    - Scrapes and parses live official hydrological observations from TWO official Hungarian portals plus Copernicus GloFAS v4:
      - **OVF `hydroinfo.hu`** (`dunhif_a.html`, `tishif_a.html`, `tohid.html`, `dunelotH.html`, `tiselotH.html`) for primary Hungarian (`44xxxx`) and Romanian (`74xxxx`) river gauges and 6-day official forecasts.
