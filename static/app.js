@@ -7,12 +7,22 @@
   "use strict";
 
   // Application State
+  const savedLang = (() => {
+    try {
+      const stored = localStorage.getItem("wvis_lang");
+      return stored && window.WVIS_I18N && window.WVIS_I18N[stored] ? stored : "hu";
+    } catch {
+      return "hu";
+    }
+  })();
+
   const state = {
+    lang: savedLang,
     payload: null,
     stationsByCode: new Map(),
     activeDay: 0,
     scenario: "live", // 'live' | 'rain50' | 'rain120' | 'drought'
-    countryFilter: "all", // 'all' | 'HU' | 'RO'
+    countryFilter: "all", // 'all' | 'HU' | 'RO' | 'SK' | 'AT' | 'HR' | 'RS'
     basinFilter: "all",
     searchQuery: "",
     hoveredCode: null,
@@ -25,6 +35,10 @@
     basemapSource: "opentopomap", // 'opentopomap' | 'cyclosm' | 'osm_hot' | 'osm_standard' | 'none'
     darkMode: window.matchMedia("(prefers-color-scheme: dark)").matches,
   };
+
+  function t() {
+    return (window.WVIS_I18N && window.WVIS_I18N[state.lang]) || (window.WVIS_I18N && window.WVIS_I18N.hu) || {};
+  }
 
   // Geographic Bounds for Quick Zoom
   const REGION_BOUNDS = {
@@ -78,9 +92,11 @@
   const stationListEl = document.getElementById("station-list");
   const stationCountBadge = document.getElementById("station-count-badge");
   const playBtn = document.getElementById("btn-play-timeline");
+  const languageSelect = document.getElementById("language-select");
   const countrySelect = document.getElementById("country-filter");
   const basinSelect = document.getElementById("basin-filter");
   const scenarioSelect = document.getElementById("weather-scenario");
+  const basemapSelect = document.getElementById("basemap-source");
   const searchInput = document.getElementById("station-search");
   const refreshBtn = document.getElementById("btn-refresh");
   const themeBtn = document.getElementById("btn-theme-toggle");
@@ -110,13 +126,13 @@
     sliderEl.style.setProperty("--control-value", sliderEl.value);
   }
 
-  // Format Hungarian Date String
+  // Format Localized Date String
   function formatHuDate(isoDateStr) {
     if (!isoDateStr) return "";
     try {
       const [y, m, d] = isoDateStr.split("-").map(Number);
       const dt = new Date(y, m - 1, d);
-      return new Intl.DateTimeFormat("hu-HU", {
+      return new Intl.DateTimeFormat(t().locale || "hu-HU", {
         month: "short",
         day: "numeric",
         weekday: "short",
@@ -128,31 +144,38 @@
 
   // Classify Alert Status dynamically when scenario modifiers apply
   function classifyAlert(levelCm, thresholds) {
+    const labels = t().alertLabels || {};
     if (levelCm >= thresholds.deg3) {
-      return { code: "deg3", label: "III. fokú árvízi készültség" };
+      return { code: "deg3", label: labels.deg3 || "III. fokú árvízi készültség" };
     }
     if (levelCm >= thresholds.deg2) {
-      return { code: "deg2", label: "II. fokú árvízi készültség" };
+      return { code: "deg2", label: labels.deg2 || "II. fokú árvízi készültség" };
     }
     if (levelCm >= thresholds.deg1) {
-      return { code: "deg1", label: "I. fokú árvízi készültség" };
+      return { code: "deg1", label: labels.deg1 || "I. fokú árvízi készültség" };
     }
     const elevatedCutoff =
       thresholds.deg1 - Math.max(60, Math.round((thresholds.deg1 - thresholds.low) * 0.25));
     if (levelCm >= elevatedCutoff) {
-      return { code: "elevated", label: "Emelkedett vízszint" };
+      return { code: "elevated", label: labels.elevated || "Emelkedett vízszint" };
     }
     if (levelCm <= thresholds.low) {
-      return { code: "low", label: "Kisvíz / Alacsony vízállás" };
+      return { code: "low", label: labels.low || "Kisvíz / Alacsony vízállás" };
     }
-    return { code: "normal", label: "Normál vízjárás" };
+    return { code: "normal", label: labels.normal || "Normál vízjárás" };
   }
 
   // Get Scenario-Adjusted Timeline Entry for a Station and Day Index (0..7)
   function getStationDayData(station, dayIdx) {
     const base = station.timeline[dayIdx] || station.timeline[0];
+    const dict = t();
+    const localizedDayLabel = dayIdx === 0 ? dict.kpiToday : dict.chipDay(dayIdx);
     if (dayIdx === 0 || state.scenario === "live") {
-      return base;
+      return {
+        ...base,
+        label: localizedDayLabel,
+        alert_label: (dict.alertLabels && dict.alertLabels[base.alert_level]) || base.alert_label,
+      };
     }
 
     let extraRainPerDay = 0;
@@ -198,6 +221,7 @@
 
     return {
       ...base,
+      label: localizedDayLabel,
       level_cm: adjLevel,
       daily_change_cm: dailyChange,
       delta_from_today_cm: deltaToday,
@@ -595,6 +619,7 @@
 
   // Generate SVG 7-Day Hydrograph Sparkline for Hover Card & Sidebar Inspector
   function buildSparklineSVG(station, activeDayIdx, width = 310, height = 84) {
+    const dict = t();
     const days = [0, 1, 2, 3, 4, 5, 6, 7].map((d) => getStationDayData(station, d));
     const levels = days.map((d) => d.level_cm);
     const uncs = days.map((d) => d.uncertainty_cm);
@@ -631,9 +656,9 @@
 
     let threshLines = "";
     const checkThresholds = [
-      { val: station.thresholds.deg1, color: "#f59e0b", label: "I. fok" },
-      { val: station.thresholds.deg2, color: "#f97316", label: "II. fok" },
-      { val: station.thresholds.low, color: "#06b6d4", label: "Kisvíz" },
+      { val: station.thresholds.deg1, color: "#f59e0b", label: dict.threshDeg1 || "I. fok" },
+      { val: station.thresholds.deg2, color: "#f97316", label: dict.threshDeg2 || "II. fok" },
+      { val: station.thresholds.low, color: "#06b6d4", label: dict.threshLow || "Kisvíz" },
     ];
     for (const th of checkThresholds) {
       if (th.val >= minVal && th.val <= maxVal) {
@@ -653,7 +678,7 @@
     const dayTicks = days
       .map((d, i) => {
         const tx = xFor(i).toFixed(1);
-        const lbl = i === 0 ? "Ma" : `+${i}n`;
+        const lbl = i === 0 ? (dict.tickToday || "Ma") : dict.tickDayShort ? dict.tickDayShort(i) : `+${i}n`;
         const weight = i === activeDayIdx ? "700" : "400";
         const fill = i === activeDayIdx ? activeColor : "#94a3b8";
         return `<text x="${tx}" y="${height - 3}" fill="${fill}" font-size="9" font-weight="${weight}" text-anchor="middle">${lbl}</text>`;
@@ -661,7 +686,7 @@
       .join("");
 
     return `
-      <svg viewBox="0 0 ${width} ${height}" width="100%" height="${height}" aria-label="7 napos vízállás előrejelzési görbe">
+      <svg viewBox="0 0 ${width} ${height}" width="100%" height="${height}" aria-label="${dict.sparklineTitle || "7-day hydrograph"}">
         <rect x="${padL}" y="${padT}" width="${plotW}" height="${plotH}" fill="rgba(15,23,42,0.22)" rx="4"/>
         ${threshLines}
         <polygon points="${conePolygon}" fill="${activeColor}" opacity="0.18"/>
@@ -677,6 +702,7 @@
 
   // Build Station Hydrological Card HTML (shared between Hover Tooltip & Pinned Inspector)
   function buildStationCardHTML(station, isPinnedView = false) {
+    const dict = t();
     const dayData = getStationDayData(station, state.activeDay);
     const todayData = station.timeline[0];
 
@@ -684,13 +710,13 @@
     const dailySign = dayData.daily_change_cm > 0 ? "+" : "";
 
     let trendClass = "trend-flat";
-    let trendIcon = "▬ Stagnáló";
+    let trendIcon = dict.trendFlat || "▬ Stagnáló";
     if (dayData.daily_change_cm >= 3) {
       trendClass = "trend-up";
-      trendIcon = "▲ Áradó";
+      trendIcon = dict.trendUp || "▲ Áradó";
     } else if (dayData.daily_change_cm <= -3) {
       trendClass = "trend-down";
-      trendIcon = "▼ Apadó";
+      trendIcon = dict.trendDown || "▼ Apadó";
     }
 
     const th = station.thresholds;
@@ -698,16 +724,21 @@
     const pct = Math.max(2, Math.min(98, ((dayData.level_cm - th.lkv) / span) * 100));
 
     const uncText =
-      state.activeDay === 0 ? "Hivatalos mérés" : `±${dayData.uncertainty_cm} cm sáv`;
+      state.activeDay === 0
+        ? dict.officialReading || "Hivatalos mérés"
+        : dict.uncBand
+        ? dict.uncBand(dayData.uncertainty_cm)
+        : `±${dayData.uncertainty_cm} cm`;
 
-    const fkmText = station.fkm > 0 ? ` • ${station.fkm} fkm` : "";
+    const fkmText = station.fkm > 0 ? ` • ${station.fkm} ${dict.fkmUnit || "fkm"}` : "";
     const countryCode = station.country || "HU";
+    const day7Short = dict.tickDayShort ? dict.tickDayShort(7) : "+7d";
 
     return `
       <div class="hover-header">
         <div>
           <span class="hover-river-badge">
-            <span class="country-tag country-${countryCode}">${countryCode}</span>${station.river}${fkmText} • Kód: ${station.code}
+            <span class="country-tag country-${countryCode}">${countryCode}</span>${station.river}${fkmText} • ${dict.codeLabel || "Kód"}: ${station.code}
           </span>
           <h3 class="hover-station-title">${station.name}</h3>
           <div class="hover-reach-sub">${station.reach_name}</div>
@@ -717,32 +748,32 @@
 
       <div class="hover-metrics-grid">
         <div class="metric-box">
-          <span class="metric-box-label">${dayData.label} vízállás</span>
+          <span class="metric-box-label">${dict.waterLevelLabel ? dict.waterLevelLabel(dayData.label) : `${dayData.label} vízállás`}</span>
           <strong class="metric-box-val">${dayData.level_cm} cm</strong>
           <span class="metric-box-label">${uncText}</span>
         </div>
         <div class="metric-box">
-          <span class="metric-box-label">24 órás változás</span>
+          <span class="metric-box-label">${dict.change24hLabel || "24 órás változás"}</span>
           <strong class="metric-box-val ${trendClass}">${dailySign}${dayData.daily_change_cm} cm</strong>
           <span class="metric-box-label ${trendClass}">${trendIcon}</span>
         </div>
         <div class="metric-box">
-          <span class="metric-box-label">${state.activeDay === 0 ? "Vízhozam & Hőfok" : "Eltérés a maitól"}</span>
+          <span class="metric-box-label">${state.activeDay === 0 ? (dict.dischargeTempLabel || "Vízhozam & Hőfok") : (dict.deltaTodayLabel || "Eltérés a maitól")}</span>
           <strong class="metric-box-val">${
             state.activeDay === 0
               ? `${dayData.discharge_m3s} m³/s`
               : `${deltaSign}${dayData.delta_from_today_cm} cm`
           }</strong>
-          <span class="metric-box-label">Vízhőfok: ${station.water_temp_c} °C</span>
+          <span class="metric-box-label">${dict.waterTempLabel ? dict.waterTempLabel(station.water_temp_c) : `Vízhőfok: ${station.water_temp_c} °C`}</span>
         </div>
       </div>
 
       <div class="threshold-gauge">
         <div class="threshold-labels">
-          <span>LKV: ${th.lkv} cm</span>
-          <span>I. fok: ${th.deg1} cm</span>
-          <span>III. fok: ${th.deg3} cm</span>
-          <span>LNV: ${th.lnv} cm</span>
+          <span>${dict.threshLkv || "LKV"}: ${th.lkv} cm</span>
+          <span>${dict.threshDeg1 || "I. fok"}: ${th.deg1} cm</span>
+          <span>${dict.threshDeg3 || "III. fok"}: ${th.deg3} cm</span>
+          <span>${dict.threshLnv || "LNV"}: ${th.lnv} cm</span>
         </div>
         <div class="threshold-bar-track">
           <div class="threshold-marker" style="left: ${pct.toFixed(1)}%;"></div>
@@ -751,13 +782,13 @@
 
       <div class="sparkline-container">
         <div class="sparkline-title">
-          <span><strong>7 napos vízállás-görbe</strong> (${formatHuDate(dayData.date)})</span>
-          <span>Csapadék: <strong>${dayData.precip_mm} mm</strong> (Σ ${dayData.cum_precip_mm} mm) • ${dayData.temp_max_c}°C</span>
+          <span><strong>${dict.sparklineTitle || "7 napos vízállás-görbe"}</strong> (${formatHuDate(dayData.date)})</span>
+          <span>${dict.precipShort || "Csapadék"}: <strong>${dayData.precip_mm} mm</strong> (Σ ${dayData.cum_precip_mm} mm) • ${dayData.temp_max_c}°C</span>
         </div>
         ${buildSparklineSVG(station, state.activeDay, isPinnedView ? 345 : 310, 82)}
         <div class="threshold-labels" style="margin-top: 2px; margin-bottom: 0;">
-          <span>Forrás: ${dayData.source}</span>
-          <span>Ma: ${todayData.level_cm} cm → +7n: ${getStationDayData(station, 7).level_cm} cm</span>
+          <span>${dict.sourceLabel || "Forrás"}: ${dayData.source}</span>
+          <span>${dict.todayShort || "Ma"}: ${todayData.level_cm} cm → ${day7Short}: ${getStationDayData(station, 7).level_cm} cm</span>
         </div>
       </div>
     `;
@@ -835,6 +866,7 @@
   // Render Right-Hand Scrollable Station List
   function renderStationList() {
     if (!state.payload) return;
+    const dict = t();
     const filtered = state.payload.stations.filter(matchesFilters);
     stationCountBadge.textContent = String(filtered.length);
 
@@ -842,10 +874,15 @@
       .map((st) => {
         const d = getStationDayData(st, state.activeDay);
         const sign = d.delta_from_today_cm > 0 ? "+" : "";
+        const d24Sign = d.daily_change_cm >= 0 ? "+" : "";
         const deltaStr =
           state.activeDay === 0
-            ? `${d.daily_change_cm >= 0 ? "+" : ""}${d.daily_change_cm} cm / 24ó`
-            : `${sign}${d.delta_from_today_cm} cm a maihoz`;
+            ? dict.rowDelta24h
+              ? dict.rowDelta24h(d24Sign, d.daily_change_cm)
+              : `${d24Sign}${d.daily_change_cm} cm / 24h`
+            : dict.rowDeltaToday
+            ? dict.rowDeltaToday(sign, d.delta_from_today_cm)
+            : `${sign}${d.delta_from_today_cm} cm`;
         const isSel = st.code === state.pinnedCode ? "selected" : "";
         const cCode = st.country || "HU";
 
@@ -890,6 +927,7 @@
   // Update KPI Cards & Timeline Slider Header
   function updateDashboardKPIs() {
     if (!state.payload) return;
+    const dict = t();
     const stations = state.payload.stations.filter(matchesFilters);
     if (!stations.length) return;
 
@@ -926,50 +964,68 @@
     const avgTemp = (tempSum / stations.length).toFixed(1);
 
     kpiActiveDay.textContent =
-      state.activeDay === 0 ? "Ma (Aktuális)" : `+${state.activeDay} napos előrejelzés`;
+      state.activeDay === 0
+        ? dict.kpiToday || "Ma (Aktuális)"
+        : dict.kpiForecastDay
+        ? dict.kpiForecastDay(state.activeDay)
+        : `+${state.activeDay} nap`;
     kpiActiveDate.textContent = fmtDate;
 
     kpiRisingCount.textContent = `${risingCount} / ${stations.length}`;
+    const riseSign = maxRise >= 0 ? "+" : "";
     kpiMaxRise.textContent =
       maxRise > -999
-        ? `Max: ${maxRise >= 0 ? "+" : ""}${maxRise} cm (${maxRiseStation})`
-        : "Stagnáló";
+        ? dict.kpiMaxRise
+          ? dict.kpiMaxRise(riseSign, maxRise, maxRiseStation)
+          : `Max: ${riseSign}${maxRise} cm (${maxRiseStation})`
+        : dict.kpiStagnant || "Stagnáló";
 
     kpiAlertCount.textContent = String(alertOrElevatedCount);
     kpiAlertDetail.textContent =
       degAlertCount > 0
-        ? `${degAlertCount} szakasz árvízi fokozatban`
+        ? dict.kpiAlertDeg
+          ? dict.kpiAlertDeg(degAlertCount)
+          : `${degAlertCount} alert`
         : alertOrElevatedCount > 0
-        ? `${alertOrElevatedCount} emelkedett vízszintű szakasz`
-        : "Minden szakasz normál mederben";
+        ? dict.kpiAlertElev
+          ? dict.kpiAlertElev(alertOrElevatedCount)
+          : `${alertOrElevatedCount} elevated`
+        : dict.kpiAlertNormal || "Normal";
 
     kpiPrecipAvg.textContent = `${avgPrecip} mm`;
-    kpiTempAvg.textContent = `Átlag max: ${avgTemp} °C`;
+    kpiTempAvg.textContent = dict.kpiAvgMaxTemp ? dict.kpiAvgMaxTemp(avgTemp) : `Avg max: ${avgTemp} °C`;
 
     const dayTitle =
       state.activeDay === 0
-        ? `Ma (${fmtDate}) — Hivatalos OVF & INHGA mért vízállások`
-        : `+${state.activeDay} nap (${fmtDate}) — Becsült várható vízállás`;
+        ? dict.dayTitleToday
+          ? dict.dayTitleToday(fmtDate)
+          : `Ma (${fmtDate})`
+        : dict.dayTitleForecast
+        ? dict.dayTitleForecast(state.activeDay, fmtDate)
+        : `+${state.activeDay} (${fmtDate})`;
     dayBadgeEl.textContent = dayTitle;
-    weatherPillEl.textContent = `Vízgyűjtő csapadék: ${avgPrecip} mm • Hőmérséklet: ${avgTemp} °C`;
+    weatherPillEl.textContent = dict.weatherPill
+      ? dict.weatherPill(avgPrecip, avgTemp)
+      : `${avgPrecip} mm • ${avgTemp} °C`;
     sliderEl.setAttribute("aria-valuetext", dayTitle);
 
     document.querySelectorAll(".step-chip").forEach((btn) => {
       btn.classList.toggle("active", Number(btn.dataset.day) === state.activeDay);
     });
-    document.querySelectorAll(".slider-tick").forEach((t) => {
-      t.classList.toggle("active", Number(t.dataset.day) === state.activeDay);
+    document.querySelectorAll(".slider-tick").forEach((tick) => {
+      tick.classList.toggle("active", Number(tick.dataset.day) === state.activeDay);
     });
   }
 
   // Build Timeline Slider Date Ticks (Days 0..7)
   function renderSliderTicks() {
     if (!state.payload || !state.payload.stations.length) return;
+    const dict = t();
     const refTimeline = state.payload.stations[0].timeline;
 
     ticksContainer.innerHTML = refTimeline
       .map((item, idx) => {
-        const lbl = idx === 0 ? "Ma (0.)" : `+${idx} nap`;
+        const lbl = idx === 0 ? (dict.chipToday || "Ma (0.)") : dict.chipDay ? dict.chipDay(idx) : `+${idx}`;
         return `
           <div class="slider-tick ${idx === state.activeDay ? "active" : ""}" data-day="${idx}">
             <span>${lbl}</span>
@@ -984,6 +1040,87 @@
         setActiveDay(Number(tickEl.dataset.day));
       });
     });
+  }
+
+  // Apply Selected UI Language Across All Static Labels, Selects, Chips, KPIs & Cards
+  function applyLanguage(langCode) {
+    if (!window.WVIS_I18N || !window.WVIS_I18N[langCode]) {
+      langCode = "hu";
+    }
+    state.lang = langCode;
+    try {
+      localStorage.setItem("wvis_lang", langCode);
+    } catch {
+      // Ignore storage restrictions
+    }
+
+    const dict = t();
+    document.documentElement.lang = langCode;
+    document.title = dict.pageTitle || document.title;
+
+    if (languageSelect && languageSelect.value !== langCode) {
+      languageSelect.value = langCode;
+    }
+
+    document.querySelectorAll("[data-i18n]").forEach((el) => {
+      const key = el.getAttribute("data-i18n");
+      if (key && typeof dict[key] === "string") {
+        el.textContent = dict[key];
+      }
+    });
+
+    const syncSelectOptions = (selectEl, optsMap) => {
+      if (!selectEl || !optsMap) return;
+      Array.from(selectEl.options).forEach((opt) => {
+        if (optsMap[opt.value]) {
+          opt.textContent = optsMap[opt.value];
+        }
+      });
+    };
+
+    syncSelectOptions(countrySelect, dict.countryOpts);
+    syncSelectOptions(basinSelect, dict.basinOpts);
+    syncSelectOptions(scenarioSelect, dict.scenarioOpts);
+    syncSelectOptions(basemapSelect, dict.basemapOpts);
+
+    if (searchInput && dict.searchPlaceholder) {
+      searchInput.placeholder = dict.searchPlaceholder;
+    }
+    if (refreshBtn) {
+      refreshBtn.title = dict.btnRefreshTitle || refreshBtn.title;
+      refreshBtn.textContent = refreshBtn.disabled ? dict.btnRefreshing : dict.btnRefresh;
+    }
+    if (themeBtn) {
+      themeBtn.title = dict.btnThemeTitle || themeBtn.title;
+      themeBtn.textContent = dict.btnTheme || themeBtn.textContent;
+    }
+    if (playBtn) {
+      playBtn.textContent = state.playTimer ? dict.btnPause : dict.btnPlay;
+    }
+
+    document.querySelectorAll(".step-chip").forEach((chip) => {
+      const dayVal = Number(chip.dataset.day);
+      chip.textContent = dayVal === 0 ? dict.chipToday : dict.chipDay(dayVal);
+    });
+
+    const emptyHintEl = document.getElementById("inspector-empty-hint");
+    if (emptyHintEl && dict.inspectorEmpty) {
+      emptyHintEl.innerHTML = dict.inspectorEmpty;
+    }
+
+    if (metaSourceLabel) {
+      metaSourceLabel.textContent = state.payload
+        ? dict.metaLoaded(state.payload.meta)
+        : dict.metaDefault;
+    }
+
+    if (state.payload) {
+      renderSliderTicks();
+      setActiveDay(state.activeDay);
+    } else if (kpiActiveDate && dict.kpiLoading) {
+      kpiActiveDate.textContent = dict.kpiLoading;
+      kpiActiveDay.textContent = dict.kpiToday;
+    }
   }
 
   // Set Active Forecast Day (0..7) and Refresh Map & Panels in Real Time
@@ -1013,9 +1150,10 @@
 
   // Fetch Hydrological & Meteorological Data from Backend API
   async function loadHydroData(forceRefresh = false) {
+    const dict = t();
     try {
       refreshBtn.disabled = true;
-      refreshBtn.textContent = "⟳ Betöltés...";
+      refreshBtn.textContent = dict.btnRefreshing || "⟳ Betöltés...";
       const endpoint = forceRefresh ? "/api/refresh" : "/api/hydro-data";
       const resp = await fetch(endpoint);
       const data = await resp.json();
@@ -1026,7 +1164,7 @@
         state.stationsByCode.set(st.code, st);
       }
 
-      metaSourceLabel.textContent = `OVF, INHGA, SHMÚ, eHYD, DHMZ & RHMZ (HU: ${data.meta.hu_stations}, RO: ${data.meta.ro_stations}, SK: ${data.meta.sk_stations}, AT: ${data.meta.at_stations}, HR: ${data.meta.hr_stations}, RS: ${data.meta.rs_stations} • ${data.meta.minor_stations} kisvízfolyás/csatorna, észlelés: ${data.meta.observation_date}) & GloFAS v4`;
+      metaSourceLabel.textContent = t().metaLoaded(data.meta);
 
       renderSliderTicks();
       setActiveDay(state.activeDay);
@@ -1035,16 +1173,23 @@
       }
     } catch (err) {
       console.error("Failed to load hydro data:", err);
-      metaSourceLabel.textContent = "Hiba az adatok betöltésekor — ellenőrizze a szervert.";
+      metaSourceLabel.textContent = t().metaError;
     } finally {
       refreshBtn.disabled = false;
-      refreshBtn.textContent = "⟳ Élő frissítés";
+      refreshBtn.textContent = t().btnRefresh;
     }
   }
 
   // Event Listeners Setup
   function initControls() {
     syncSliderCSSVariables();
+
+    if (languageSelect) {
+      languageSelect.value = state.lang;
+      languageSelect.addEventListener("change", () => {
+        applyLanguage(languageSelect.value);
+      });
+    }
 
     sliderEl.addEventListener("input", () => {
       setActiveDay(Number(sliderEl.value));
@@ -1060,9 +1205,9 @@
       if (state.playTimer) {
         clearInterval(state.playTimer);
         state.playTimer = null;
-        playBtn.textContent = "▶ Lejátszás";
+        playBtn.textContent = t().btnPlay;
       } else {
-        playBtn.textContent = "⏸ Szünet";
+        playBtn.textContent = t().btnPause;
         state.playTimer = setInterval(() => {
           const nextDay = (state.activeDay + 1) % 8;
           setActiveDay(nextDay);
@@ -1121,7 +1266,6 @@
       updateBasemapTheme();
     });
 
-    const basemapSelect = document.getElementById("basemap-source");
     if (basemapSelect) {
       basemapSelect.addEventListener("change", () => {
         state.basemapSource = basemapSelect.value;
@@ -1149,5 +1293,6 @@
   // Boot Application
   initMap();
   initControls();
+  applyLanguage(state.lang);
   loadHydroData(false);
 })();

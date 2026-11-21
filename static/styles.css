@@ -241,6 +241,48 @@ body {
   font-size: 0.82rem;
 }
 
+/* Branded Customizable Select (modern-web-guidance: branded-select-styling) */
+.brand-select,
+.brand-select::picker(select) {
+  appearance: base-select;
+}
+
+.lang-select {
+  width: 144px;
+  min-width: 144px;
+  font-weight: 600;
+  cursor: pointer;
+  align-items: center;
+}
+
+.brand-select::picker(select) {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  padding: 0.3rem;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+.brand-select::picker-icon {
+  color: var(--brand-color);
+}
+
+.brand-select option {
+  padding: 0.4rem 0.65rem;
+  border-radius: 6px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.brand-select option:hover {
+  background: var(--bg-subtle);
+}
+
+.brand-select option::checkmark {
+  color: var(--brand-color);
+}
+
 .search-control {
   min-width: 210px;
 }

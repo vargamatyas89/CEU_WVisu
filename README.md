@@ -25,6 +25,8 @@ Built with a **zero-dependency Python 3 standard-library backend** (`server.py`)
   - **OpenStreetMap HOT** (high-contrast humanitarian style)
   - **OpenStreetMap Standard** (ODbL)
   - **100% Offline Vector Mode** (disables raster tiles completely)
+- **Multi-Language UI Switcher (7 Languages)**:
+  - Live client-side localization via `static/i18n.js` supporting all 6 covered countries' languages plus English: **Magyar (`hu`)**, **English (`en`)**, **Română (`ro`)**, **Slovenčina (`sk`)**, **Deutsch (`de`)**, **Hrvatski (`hr`)**, and **Srpski (`sr`)**, persisted in `localStorage`.
 - **Adaptive Light & Dark Theme**:
   - Honors OS `prefers-color-scheme` automatically with a manual **◐ Téma** toggle and adaptive tile shading.
 
@@ -80,6 +82,7 @@ Because official national hydrological portals serve ISO-8859-2 / UTF-8 HTML tab
 ├── static/
 │   ├── index.html                 # Application shell, controls, legend & timeline dock
 │   ├── styles.css                 # Responsive layout, light/dark theme tokens & slider styling
+│   ├── i18n.js                    # 7-language UI dictionary (hu, en, ro, sk, de, hr, sr)
 │   ├── app.js                     # Leaflet map engine, hover cards, SVG hydrograph & scenario logic
 │   └── countries/
 │       ├── hungary_geo.js         # Hungary border, river reaches & lake polygons
