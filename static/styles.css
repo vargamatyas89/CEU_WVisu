@@ -54,6 +54,7 @@
   --alert-deg2: #f97316;
   --alert-deg3: #ef4444;
   --hu-border-color: #fbbf24;
+  --ro-border-color: #c084fc;
 
   /* MANDATORY fallback for browsers without light-dark() support */
   @media (prefers-color-scheme: dark) {
@@ -285,6 +286,19 @@ body {
   z-index: 1;
 }
 
+/* Adaptive dark/light shading for open-source topographic tiles (OpenTopoMap, CyclOSM, OSM) */
+.map-canvas.dark-relief-tiles .leaflet-tile-pane {
+  filter: brightness(0.68) contrast(1.15) saturate(0.78);
+}
+
+.map-canvas.light-relief-tiles .leaflet-tile-pane {
+  filter: brightness(0.96) contrast(1.03) saturate(0.92);
+}
+
+.basemap-select-wrap {
+  margin-bottom: 0.35rem;
+}
+
 /* Top-Left KPI Ribbon */
 .map-overlay-top-left {
   position: absolute;
@@ -388,6 +402,29 @@ body {
 .swatch-deg2 { background: var(--alert-deg2); height: 9px; }
 .swatch-deg3 { background: var(--alert-deg3); height: 10px; box-shadow: 0 0 6px var(--alert-deg3); }
 .swatch-border { background: transparent; border: 2px dashed var(--hu-border-color); height: 8px; }
+.swatch-ro-border { background: transparent; border: 2px dashed var(--ro-border-color); height: 8px; }
+
+.country-tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.08rem 0.36rem;
+  border-radius: 4px;
+  margin-right: 0.3rem;
+  vertical-align: middle;
+}
+
+.country-tag.country-HU {
+  background: rgba(251, 191, 36, 0.22);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.5);
+}
+
+.country-tag.country-RO {
+  background: rgba(192, 132, 252, 0.22);
+  color: #c084fc;
+  border: 1px solid rgba(192, 132, 252, 0.5);
+}
 
 .layer-toggles {
   border-top: 1px solid var(--border-color);

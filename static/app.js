@@ -1,5 +1,5 @@
 /**
- * WVis — Magyarország Interaktív Víztérképe és 1–7 Napos Vízállás-Előrejelzése
+ * WVis — Magyarország és Románia Interaktív Víztérképe és 1–7 Napos Vízállás-Előrejelzése
  * Client-side Interactive Cartography, Real-Time Forecast Slider & Hydrograph Engine
  */
 
@@ -12,6 +12,7 @@
     stationsByCode: new Map(),
     activeDay: 0,
     scenario: "live", // 'live' | 'rain50' | 'rain120' | 'drought'
+    countryFilter: "all", // 'all' | 'HU' | 'RO'
     basinFilter: "all",
     searchQuery: "",
     hoveredCode: null,
@@ -20,7 +21,24 @@
     showStations: true,
     showLabels: true,
     showBasemap: true,
+    basemapSource: "opentopomap", // 'opentopomap' | 'cyclosm' | 'osm_hot' | 'osm_standard' | 'none'
     darkMode: window.matchMedia("(prefers-color-scheme: dark)").matches,
+  };
+
+  // Geographic Bounds for Quick Zoom
+  const REGION_BOUNDS = {
+    all: [
+      [43.58, 16.05],
+      [48.62, 29.75],
+    ],
+    HU: [
+      [45.72, 16.08],
+      [48.60, 22.92],
+    ],
+    RO: [
+      [43.60, 20.22],
+      [48.28, 29.72],
+    ],
   };
 
   // Alert Level Colors
@@ -43,6 +61,7 @@
   const stationListEl = document.getElementById("station-list");
   const stationCountBadge = document.getElementById("station-count-badge");
   const playBtn = document.getElementById("btn-play-timeline");
+  const countrySelect = document.getElementById("country-filter");
   const basinSelect = document.getElementById("basin-filter");
   const scenarioSelect = document.getElementById("weather-scenario");
   const searchInput = document.getElementById("station-search");
@@ -62,11 +81,10 @@
 
   // Leaflet Map & Layer References
   let map = null;
-  let tileLayerDark = null;
-  let tileLayerLight = null;
-  const reachLayersByCode = new Map(); // code -> { visibleLines: [], glowLines: [], hitLines: [], isMain: bool }
-  const lakeLayersByCode = new Map();  // code -> L.Polygon
-  const stationMarkersByCode = new Map(); // code -> { marker: L.CircleMarker, tooltip: L.Tooltip }
+  const openSourceTileLayers = {};
+  const reachLayersByCode = new Map();
+  const lakeLayersByCode = new Map();
+  const stationMarkersByCode = new Map();
 
   // Sync Native Range Slider Custom Properties (modern-web-guidance: slider)
   function syncSliderCSSVariables() {
@@ -120,7 +138,6 @@
       return base;
     }
 
-    // Apply hydrological response for selected weather scenario on Days 1..7
     let extraRainPerDay = 0;
     if (state.scenario === "rain50") extraRainPerDay = 50 / 7;
     if (state.scenario === "rain120") extraRainPerDay = 120 / 7;
@@ -135,13 +152,11 @@
       const span = Math.max(80, station.thresholds.deg1 - station.thresholds.low);
       levelOffset = -Math.round(effectiveDays * (station.basin === "tavak" ? 1.5 : span * 0.045));
     } else {
-      // Wave propagation curve peaking across days
       const waveMultiplier = Math.pow(effectiveDays, 1.18) * respFactor * 0.92;
       levelOffset = Math.round(extraRainPerDay * waveMultiplier);
     }
 
     const adjLevel = base.level_cm + levelOffset;
-    const prevBase = station.timeline[Math.max(0, dayIdx - 1)];
     const prevAdj =
       dayIdx === 1
         ? station.timeline[0].level_cm
@@ -177,38 +192,65 @@
     };
   }
 
-  // Initialize Leaflet Map and Cartographic Layers
+  // Initialize Leaflet Map and 100% Free Open-Source Cartographic Layers
   function initMap() {
     map = L.map("map", {
-      center: [47.16, 19.5],
-      zoom: 7.4,
+      center: [46.25, 22.85],
+      zoom: 6.4,
       zoomSnap: 0.25,
-      minZoom: 6.5,
+      minZoom: 5.5,
       maxZoom: 13,
       zoomControl: true,
     });
 
-    tileLayerDark = L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png",
+    map.fitBounds(REGION_BOUNDS.all, { padding: [24, 24] });
+
+    // 1. OpenTopoMap (Open-Source Topographic & SRTM Relief Map — CC-BY-SA / ODbL)
+    openSourceTileLayers.opentopomap = L.tileLayer(
+      "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
       {
-        attribution: "&copy; OpenStreetMap &copy; CARTO | OVF Hydroinfo &amp; Open-Meteo",
-        subdomains: "abcd",
+        attribution:
+          'Alaptérkép: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> (ODbL), SRTM | Stílus: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)',
+        subdomains: "abc",
+        maxZoom: 17,
+      }
+    );
+
+    // 2. CyclOSM / OpenStreetMap France (Open-Source Hillshaded Relief & Hydrography — ODbL / CC-BY-SA)
+    openSourceTileLayers.cyclosm = L.tileLayer(
+      "https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png",
+      {
+        attribution:
+          'Alaptérkép: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="https://github.com/cyclosm/cyclosm-cartocss-style">CyclOSM</a> (OSM France)',
+        subdomains: "abc",
         maxZoom: 19,
       }
     );
 
-    tileLayerLight = L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png",
+    // 3. OpenStreetMap HOT (Humanitarian OpenStreetMap Team / OSM France — ODbL)
+    openSourceTileLayers.osm_hot = L.tileLayer(
+      "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
       {
-        attribution: "&copy; OpenStreetMap &copy; CARTO | OVF Hydroinfo &amp; Open-Meteo",
-        subdomains: "abcd",
+        attribution:
+          'Alaptérkép: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> közreműködők, HOT (OSM France)',
+        subdomains: "abc",
+        maxZoom: 19,
+      }
+    );
+
+    // 4. OpenStreetMap Standard (Official OSM Foundation Tile Server — ODbL)
+    openSourceTileLayers.osm_standard = L.tileLayer(
+      "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        attribution:
+          'Alaptérkép: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> közreműködők (ODbL)',
         maxZoom: 19,
       }
     );
 
     updateBasemapTheme();
 
-    // Create custom panes for strict z-index ordering
+    // Custom panes for strict z-index ordering
     map.createPane("maskPane").style.zIndex = 250;
     map.createPane("borderPane").style.zIndex = 350;
     map.createPane("lakePane").style.zIndex = 410;
@@ -216,126 +258,144 @@
     map.createPane("riverPane").style.zIndex = 440;
     map.createPane("stationPane").style.zIndex = 480;
 
-    renderHungaryBorderAndGeography();
+    renderBordersAndGeography();
   }
 
   function updateBasemapTheme() {
     if (!map) return;
-    if (map.hasLayer(tileLayerDark)) map.removeLayer(tileLayerDark);
-    if (map.hasLayer(tileLayerLight)) map.removeLayer(tileLayerLight);
-    if (state.showBasemap) {
-      if (state.darkMode) {
-        tileLayerDark.addTo(map);
-      } else {
-        tileLayerLight.addTo(map);
+    const mapContainer = document.getElementById("map");
+    if (mapContainer) {
+      mapContainer.classList.toggle("dark-relief-tiles", state.darkMode);
+      mapContainer.classList.toggle("light-relief-tiles", !state.darkMode);
+    }
+
+    for (const layer of Object.values(openSourceTileLayers)) {
+      if (map.hasLayer(layer)) {
+        map.removeLayer(layer);
       }
+    }
+
+    if (state.showBasemap && state.basemapSource !== "none") {
+      const activeTileLayer =
+        openSourceTileLayers[state.basemapSource] || openSourceTileLayers.opentopomap;
+      activeTileLayer.addTo(map);
     }
   }
 
-  // Render Hungary's National Border, Lakes, and River Reaches
-  function renderHungaryBorderAndGeography() {
-    const geo = window.HUNGARY_GEO;
-    if (!geo) return;
+  // Render All Registered Country Modules (Borders, Lakes, and River Reaches from static/countries/*_geo.js)
+  function renderBordersAndGeography() {
+    const countryModules = Object.values(window.COUNTRY_GEO_MODULES || {});
+    if (!countryModules.length) return;
 
-    const huLatLngs = geo.border.map((pt) => [pt[1], pt[0]]);
-
-    // 1. Exterior dim mask outside Hungary so Hungary's territory stands out clearly
     const worldRing = [
       [-85, -180],
       [85, -180],
       [85, 180],
       [-85, 180],
     ];
-    L.polygon([worldRing, huLatLngs], {
+    const maskRings = [worldRing];
+
+    for (const cMod of countryModules) {
+      if (cMod.bounds && cMod.code) {
+        REGION_BOUNDS[cMod.code] = cMod.bounds;
+      }
+      const borderLatLngs = (cMod.border || []).map((pt) => [pt[1], pt[0]]);
+      if (borderLatLngs.length) {
+        maskRings.push(borderLatLngs);
+        const borderColor = cMod.border_color || "#fbbf24";
+
+        // Country National Border outer glow + crisp boundary line
+        L.polyline(borderLatLngs, {
+          pane: "borderPane",
+          color: borderColor,
+          weight: 6,
+          opacity: 0.22,
+          interactive: false,
+        }).addTo(map);
+
+        L.polyline(borderLatLngs, {
+          pane: "borderPane",
+          color: borderColor,
+          weight: 2.2,
+          opacity: 0.88,
+          dashArray: "7 4",
+          interactive: false,
+        }).addTo(map);
+      }
+
+      // Render Country's Major Lakes
+      for (const lake of cMod.lakes || []) {
+        const latlngs = lake.polygon.map((p) => [p[1], p[0]]);
+        const poly = L.polygon(latlngs, {
+          pane: "lakePane",
+          color: "#38bdf8",
+          weight: 2.2,
+          fillColor: "#0284c7",
+          fillOpacity: 0.55,
+        }).addTo(map);
+
+        bindHydroHoverAndClick(poly, lake.station_code);
+        lakeLayersByCode.set(lake.station_code, poly);
+      }
+
+      // Render Country's Hydrological River Reaches
+      for (const reach of cMod.reaches || []) {
+        const code = reach.station_code;
+        const multiLatLngs = reach.lines.map((line) => line.map((pt) => [pt[1], pt[0]]));
+        if (!multiLatLngs.length) continue;
+
+        const baseWeight = reach.is_main_river ? 4.2 : 2.7;
+
+        const glowLine = L.polyline(multiLatLngs, {
+          pane: "riverGlowPane",
+          color: "#38bdf8",
+          weight: baseWeight + 5,
+          opacity: 0.18,
+          lineCap: "round",
+          lineJoin: "round",
+          interactive: false,
+        }).addTo(map);
+
+        const visibleLine = L.polyline(multiLatLngs, {
+          pane: "riverPane",
+          color: "#38bdf8",
+          weight: baseWeight,
+          opacity: 0.92,
+          lineCap: "round",
+          lineJoin: "round",
+          interactive: false,
+        }).addTo(map);
+
+        const hitLine = L.polyline(multiLatLngs, {
+          pane: "riverPane",
+          color: "#ffffff",
+          weight: 18,
+          opacity: 0.0,
+          lineCap: "round",
+          lineJoin: "round",
+          interactive: true,
+        }).addTo(map);
+
+        bindHydroHoverAndClick(hitLine, code);
+
+        reachLayersByCode.set(code, {
+          glowLine,
+          visibleLine,
+          hitLine,
+          isMain: reach.is_main_river,
+          basin: reach.basin,
+        });
+      }
+    }
+
+    // Exterior dim mask cutting out all registered countries
+    L.polygon(maskRings, {
       pane: "maskPane",
       color: "transparent",
       fillColor: "#020611",
       fillOpacity: 0.52,
       interactive: false,
     }).addTo(map);
-
-    // 2. Hungary National Border outer glow + crisp boundary line
-    L.polyline(huLatLngs, {
-      pane: "borderPane",
-      color: "#fbbf24",
-      weight: 6,
-      opacity: 0.22,
-      interactive: false,
-    }).addTo(map);
-
-    L.polyline(huLatLngs, {
-      pane: "borderPane",
-      color: "#fbbf24",
-      weight: 2.2,
-      opacity: 0.88,
-      dashArray: "7 4",
-      interactive: false,
-    }).addTo(map);
-
-    // 3. Render Major Lakes (Balaton, Tisza-tó, Velencei-tó, Fertő-tó)
-    for (const lake of geo.lakes) {
-      const latlngs = lake.polygon.map((p) => [p[1], p[0]]);
-      const poly = L.polygon(latlngs, {
-        pane: "lakePane",
-        color: "#38bdf8",
-        weight: 2.2,
-        fillColor: "#0284c7",
-        fillOpacity: 0.55,
-      }).addTo(map);
-
-      bindHydroHoverAndClick(poly, lake.station_code);
-      lakeLayersByCode.set(lake.station_code, poly);
-    }
-
-    // 4. Render All 59 Hydrological River Reaches (folyószakaszok)
-    for (const reach of geo.reaches) {
-      const code = reach.station_code;
-      const multiLatLngs = reach.lines.map((line) => line.map((pt) => [pt[1], pt[0]]));
-      if (!multiLatLngs.length) continue;
-
-      const baseWeight = reach.is_main_river ? 4.4 : 2.8;
-
-      const glowLine = L.polyline(multiLatLngs, {
-        pane: "riverGlowPane",
-        color: "#38bdf8",
-        weight: baseWeight + 5,
-        opacity: 0.18,
-        lineCap: "round",
-        lineJoin: "round",
-        interactive: false,
-      }).addTo(map);
-
-      const visibleLine = L.polyline(multiLatLngs, {
-        pane: "riverPane",
-        color: "#38bdf8",
-        weight: baseWeight,
-        opacity: 0.92,
-        lineCap: "round",
-        lineJoin: "round",
-        interactive: false,
-      }).addTo(map);
-
-      // Wide transparent hit area for effortless cursor hover along the river reach
-      const hitLine = L.polyline(multiLatLngs, {
-        pane: "riverPane",
-        color: "#ffffff",
-        weight: 18,
-        opacity: 0.0,
-        lineCap: "round",
-        lineJoin: "round",
-        interactive: true,
-      }).addTo(map);
-
-      bindHydroHoverAndClick(hitLine, code);
-
-      reachLayersByCode.set(code, {
-        glowLine,
-        visibleLine,
-        hitLine,
-        isMain: reach.is_main_river,
-        basin: reach.basin,
-      });
-    }
   }
 
   // Bind Hover & Click Events to a River Reach, Lake, or Station Marker
@@ -373,7 +433,7 @@
       if (!entry) {
         const marker = L.circleMarker([st.lat, st.lon], {
           pane: "stationPane",
-          radius: 6,
+          radius: 5.8,
           color: "#ffffff",
           weight: 2,
           fillColor: color,
@@ -394,7 +454,6 @@
         stationMarkersByCode.set(code, entry);
       }
 
-      // Check basin & search visibility
       const isVisible = matchesFilters(st);
       const alertWeightBoost =
         dayData.alert_level === "deg3"
@@ -411,7 +470,7 @@
         if (!map.hasLayer(entry.marker)) entry.marker.addTo(map);
         entry.marker.setStyle({
           fillColor: color,
-          radius: (code === state.pinnedCode ? 8 : 5.8) + alertWeightBoost * 0.65,
+          radius: (code === state.pinnedCode ? 8 : 5.6) + alertWeightBoost * 0.65,
           weight: code === state.pinnedCode ? 2.8 : 1.8,
         });
 
@@ -443,22 +502,21 @@
       const dayData = getStationDayData(st, state.activeDay);
       const color = ALERT_COLORS[dayData.alert_level] || ALERT_COLORS.normal;
 
-      // Dynamic thickness scaling with water level & alert status
       const span = Math.max(120, st.thresholds.deg1 - st.thresholds.low);
       const normalizedStage = Math.max(
         0,
         Math.min(1.6, (dayData.level_cm - st.thresholds.low) / span)
       );
       const baseW = rLayer.isMain ? 3.8 : 2.3;
-      const stageBoost = normalizedStage * (rLayer.isMain ? 3.6 : 2.2);
+      const stageBoost = normalizedStage * (rLayer.isMain ? 3.5 : 2.2);
       const isHoveredOrPinned = code === state.hoveredCode || code === state.pinnedCode;
 
       const weight = baseW + stageBoost + (isHoveredOrPinned ? 2.2 : 0);
 
       rLayer.visibleLine.setStyle({
         color,
-        weight: isVisible ? weight : 1.5,
-        opacity: isVisible ? 0.95 : 0.14,
+        weight: isVisible ? weight : 1.4,
+        opacity: isVisible ? 0.95 : 0.12,
       });
 
       rLayer.glowLine.setStyle({
@@ -474,7 +532,6 @@
       });
     }
 
-    // Update Lake Polygons
     for (const [code, poly] of lakeLayersByCode.entries()) {
       const st = state.stationsByCode.get(code);
       if (!st) continue;
@@ -529,7 +586,6 @@
     const xFor = (d) => padL + (d / 7) * plotW;
     const yFor = (val) => padT + plotH - ((val - minVal) / range) * plotH;
 
-    // Confidence cone polygon
     const upperPts = days.map((d, i) => `${xFor(i).toFixed(1)},${yFor(d.level_cm + d.uncertainty_cm).toFixed(1)}`);
     const lowerPts = [...days]
       .reverse()
@@ -538,11 +594,8 @@
         return `${xFor(i).toFixed(1)},${yFor(d.level_cm - d.uncertainty_cm).toFixed(1)}`;
       });
     const conePolygon = [...upperPts, ...lowerPts].join(" ");
-
-    // Main hydrograph polyline
     const linePts = days.map((d, i) => `${xFor(i).toFixed(1)},${yFor(d.level_cm).toFixed(1)}`).join(" ");
 
-    // Optional threshold lines if within visible range
     let threshLines = "";
     const checkThresholds = [
       { val: station.thresholds.deg1, color: "#f59e0b", label: "I. fok" },
@@ -564,7 +617,6 @@
     const ay = yFor(activeD.level_cm).toFixed(1);
     const activeColor = ALERT_COLORS[activeD.alert_level] || "#38bdf8";
 
-    // X-axis day labels
     const dayTicks = days
       .map((d, i) => {
         const tx = xFor(i).toFixed(1);
@@ -608,7 +660,6 @@
       trendIcon = "▼ Apadó";
     }
 
-    // Threshold progress percentage between LKV and LNV
     const th = station.thresholds;
     const span = Math.max(50, th.lnv - th.lkv);
     const pct = Math.max(2, Math.min(98, ((dayData.level_cm - th.lkv) / span) * 100));
@@ -617,11 +668,14 @@
       state.activeDay === 0 ? "Hivatalos mérés" : `±${dayData.uncertainty_cm} cm sáv`;
 
     const fkmText = station.fkm > 0 ? ` • ${station.fkm} fkm` : "";
+    const countryCode = station.country || "HU";
 
     return `
       <div class="hover-header">
         <div>
-          <span class="hover-river-badge">${station.river}${fkmText} • Kód: ${station.code}</span>
+          <span class="hover-river-badge">
+            <span class="country-tag country-${countryCode}">${countryCode}</span>${station.river}${fkmText} • Kód: ${station.code}
+          </span>
           <h3 class="hover-station-title">${station.name}</h3>
           <div class="hover-reach-sub">${station.reach_name}</div>
         </div>
@@ -724,14 +778,17 @@
     highlightSelectedStationRow();
   }
 
-  // Filter Check
+  // Filter Check (Country, Basin, Search Query)
   function matchesFilters(station) {
+    if (state.countryFilter !== "all" && (station.country || "HU") !== state.countryFilter) {
+      return false;
+    }
     if (state.basinFilter !== "all" && station.basin !== state.basinFilter) {
       return false;
     }
     if (state.searchQuery) {
       const q = state.searchQuery.toLowerCase();
-      const hay = `${station.name} ${station.river} ${station.reach_name} ${station.code}`.toLowerCase();
+      const hay = `${station.name} ${station.river} ${station.reach_name} ${station.code} ${station.country}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;
@@ -752,11 +809,15 @@
             ? `${d.daily_change_cm >= 0 ? "+" : ""}${d.daily_change_cm} cm / 24ó`
             : `${sign}${d.delta_from_today_cm} cm a maihoz`;
         const isSel = st.code === state.pinnedCode ? "selected" : "";
+        const cCode = st.country || "HU";
 
         return `
           <div class="station-row ${isSel}" data-code="${st.code}">
             <div class="station-row-left">
-              <span class="station-row-name">${st.name} <small style="font-weight:500;opacity:0.75;">(${st.river})</small></span>
+              <span class="station-row-name">
+                <span class="country-tag country-${cCode}">${cCode}</span>${st.name}
+                <small style="font-weight:500;opacity:0.75;">(${st.river})</small>
+              </span>
               <span class="station-row-meta">${st.reach_name}</span>
             </div>
             <div class="station-row-right">
@@ -847,16 +908,14 @@
     kpiPrecipAvg.textContent = `${avgPrecip} mm`;
     kpiTempAvg.textContent = `Átlag max: ${avgTemp} °C`;
 
-    // Update Slider Status Line & ARIA Valuetext
     const dayTitle =
       state.activeDay === 0
-        ? `Ma (${fmtDate}) — Hivatalos OVF mért vízállások`
+        ? `Ma (${fmtDate}) — Hivatalos OVF & INHGA mért vízállások`
         : `+${state.activeDay} nap (${fmtDate}) — Becsült várható vízállás`;
     dayBadgeEl.textContent = dayTitle;
     weatherPillEl.textContent = `Vízgyűjtő csapadék: ${avgPrecip} mm • Hőmérséklet: ${avgTemp} °C`;
     sliderEl.setAttribute("aria-valuetext", dayTitle);
 
-    // Highlight active quick-step chip and tick
     document.querySelectorAll(".step-chip").forEach((btn) => {
       btn.classList.toggle("active", Number(btn.dataset.day) === state.activeDay);
     });
@@ -929,7 +988,7 @@
         state.stationsByCode.set(st.code, st);
       }
 
-      metaSourceLabel.textContent = `OVF Hydroinfo (${data.meta.live_hydroinfo_matched}/${data.meta.total_stations} élő mérőpont, észlelés: ${data.meta.observation_date}) & Open-Meteo IFS/GloFAS`;
+      metaSourceLabel.textContent = `OVF & INHGA (HU: ${data.meta.hu_stations}, RO: ${data.meta.ro_stations} • ${data.meta.live_hydroinfo_matched} élő hydroinfo.hu mérőpont, észlelés: ${data.meta.observation_date}) & Open-Meteo GloFAS`;
 
       renderSliderTicks();
       setActiveDay(state.activeDay);
@@ -959,7 +1018,6 @@
       });
     });
 
-    // Play / Pause 0-7 Day Wave Propagation Animation
     playBtn.addEventListener("click", () => {
       if (state.playTimer) {
         clearInterval(state.playTimer);
@@ -972,6 +1030,15 @@
           setActiveDay(nextDay);
         }, 1350);
       }
+    });
+
+    countrySelect.addEventListener("change", () => {
+      state.countryFilter = countrySelect.value;
+      const bounds = REGION_BOUNDS[state.countryFilter] || REGION_BOUNDS.all;
+      if (map) {
+        map.flyToBounds(bounds, { padding: [24, 24], duration: 0.65 });
+      }
+      setActiveDay(state.activeDay);
     });
 
     basinSelect.addEventListener("change", () => {
@@ -993,7 +1060,6 @@
       loadHydroData(true);
     });
 
-    // Layer visibility checkboxes
     document.getElementById("toggle-stations").addEventListener("change", (e) => {
       state.showStations = e.target.checked;
       renderStationMarkers();
@@ -1009,7 +1075,16 @@
       updateBasemapTheme();
     });
 
-    // Theme Toggle + System Preference Change Listener (modern-web-guidance: dark-mode)
+    const basemapSelect = document.getElementById("basemap-source");
+    if (basemapSelect) {
+      basemapSelect.addEventListener("change", () => {
+        state.basemapSource = basemapSelect.value;
+        state.showBasemap = state.basemapSource !== "none";
+        document.getElementById("toggle-basemap").checked = state.showBasemap;
+        updateBasemapTheme();
+      });
+    }
+
     const darkMql = window.matchMedia("(prefers-color-scheme: dark)");
     darkMql.addEventListener("change", (e) => {
       if (!document.documentElement.hasAttribute("data-theme")) {
