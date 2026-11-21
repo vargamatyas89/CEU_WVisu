@@ -18,6 +18,7 @@
     hoveredCode: null,
     pinnedCode: "442027", // Default pinned: Budapest (Duna)
     playTimer: null,
+    showMinorWaters: true,
     showStations: true,
     showLabels: true,
     showBasemap: true,
@@ -259,6 +260,9 @@
     map.createPane("stationPane").style.zIndex = 480;
 
     renderBordersAndGeography();
+    map.on("zoomend", () => {
+      renderStationMarkers();
+    });
   }
 
   function updateBasemapTheme() {
@@ -344,7 +348,8 @@
         const multiLatLngs = reach.lines.map((line) => line.map((pt) => [pt[1], pt[0]]));
         if (!multiLatLngs.length) continue;
 
-        const baseWeight = reach.is_main_river ? 4.2 : 2.7;
+        const isMinor = reach.water_category === "minor";
+        const baseWeight = reach.is_main_river ? 4.2 : isMinor ? 1.9 : 2.7;
 
         const glowLine = L.polyline(multiLatLngs, {
           pane: "riverGlowPane",
@@ -369,7 +374,7 @@
         const hitLine = L.polyline(multiLatLngs, {
           pane: "riverPane",
           color: "#ffffff",
-          weight: 18,
+          weight: 16,
           opacity: 0.0,
           lineCap: "round",
           lineJoin: "round",
@@ -383,6 +388,7 @@
           visibleLine,
           hitLine,
           isMain: reach.is_main_river,
+          isMinor,
           basin: reach.basin,
         });
       }
@@ -455,6 +461,7 @@
       }
 
       const isVisible = matchesFilters(st);
+      const isMinor = st.water_category === "minor";
       const alertWeightBoost =
         dayData.alert_level === "deg3"
           ? 4.5
@@ -468,10 +475,11 @@
 
       if (isVisible && state.showStations) {
         if (!map.hasLayer(entry.marker)) entry.marker.addTo(map);
+        const baseRadius = code === state.pinnedCode ? 8 : isMinor ? 4.4 : 5.6;
         entry.marker.setStyle({
           fillColor: color,
-          radius: (code === state.pinnedCode ? 8 : 5.6) + alertWeightBoost * 0.65,
-          weight: code === state.pinnedCode ? 2.8 : 1.8,
+          radius: baseRadius + alertWeightBoost * 0.65,
+          weight: code === state.pinnedCode ? 2.8 : isMinor ? 1.5 : 1.8,
         });
 
         const sign = dayData.delta_from_today_cm > 0 ? "+" : "";
@@ -481,7 +489,16 @@
             : ` (${sign}${dayData.delta_from_today_cm})`;
         entry.tooltip.setContent(`${st.name}: ${dayData.level_cm} cm${deltaTxt}`);
 
-        if (state.showLabels) {
+        const currentZoom = map ? map.getZoom() : 7;
+        const shouldShowLabel =
+          state.showLabels &&
+          (!isMinor ||
+            currentZoom >= 7.75 ||
+            state.basinFilter === "minor_only" ||
+            Boolean(state.searchQuery) ||
+            code === state.pinnedCode);
+
+        if (shouldShowLabel) {
           if (!entry.marker.isTooltipOpen()) entry.marker.openTooltip();
         } else {
           if (entry.marker.isTooltipOpen()) entry.marker.closeTooltip();
@@ -507,26 +524,26 @@
         0,
         Math.min(1.6, (dayData.level_cm - st.thresholds.low) / span)
       );
-      const baseW = rLayer.isMain ? 3.8 : 2.3;
-      const stageBoost = normalizedStage * (rLayer.isMain ? 3.5 : 2.2);
+      const baseW = rLayer.isMain ? 3.8 : rLayer.isMinor ? 1.85 : 2.4;
+      const stageBoost = normalizedStage * (rLayer.isMain ? 3.5 : rLayer.isMinor ? 1.6 : 2.2);
       const isHoveredOrPinned = code === state.hoveredCode || code === state.pinnedCode;
 
       const weight = baseW + stageBoost + (isHoveredOrPinned ? 2.2 : 0);
 
       rLayer.visibleLine.setStyle({
         color,
-        weight: isVisible ? weight : 1.4,
-        opacity: isVisible ? 0.95 : 0.12,
+        weight: isVisible ? weight : 1.0,
+        opacity: isVisible ? 0.94 : 0.08,
       });
 
       rLayer.glowLine.setStyle({
         color,
-        weight: isVisible ? weight + 7 : 0,
+        weight: isVisible ? weight + (rLayer.isMinor ? 5 : 7) : 0,
         opacity: isVisible
           ? isHoveredOrPinned
             ? 0.5
             : dayData.alert_level === "normal"
-            ? 0.18
+            ? 0.16
             : 0.36
           : 0,
       });
@@ -778,12 +795,17 @@
     highlightSelectedStationRow();
   }
 
-  // Filter Check (Country, Basin, Search Query)
+  // Filter Check (Country, Basin / Water Category, Search Query)
   function matchesFilters(station) {
+    if (!state.showMinorWaters && station.water_category === "minor" && state.basinFilter !== "minor_only") {
+      return false;
+    }
     if (state.countryFilter !== "all" && (station.country || "HU") !== state.countryFilter) {
       return false;
     }
-    if (state.basinFilter !== "all" && station.basin !== state.basinFilter) {
+    if (state.basinFilter === "minor_only") {
+      if (station.water_category !== "minor") return false;
+    } else if (state.basinFilter !== "all" && station.basin !== state.basinFilter) {
       return false;
     }
     if (state.searchQuery) {
@@ -988,7 +1010,7 @@
         state.stationsByCode.set(st.code, st);
       }
 
-      metaSourceLabel.textContent = `OVF & INHGA (HU: ${data.meta.hu_stations}, RO: ${data.meta.ro_stations} • ${data.meta.live_hydroinfo_matched} élő hydroinfo.hu mérőpont, észlelés: ${data.meta.observation_date}) & Open-Meteo GloFAS`;
+      metaSourceLabel.textContent = `OVF hydroinfo.hu, vizugy.hu & INHGA (HU: ${data.meta.hu_stations}, RO: ${data.meta.ro_stations} • ${data.meta.minor_stations} kisvízfolyás/csatorna, észlelés: ${data.meta.observation_date}) & GloFAS v4`;
 
       renderSliderTicks();
       setActiveDay(state.activeDay);
@@ -1059,6 +1081,14 @@
     refreshBtn.addEventListener("click", () => {
       loadHydroData(true);
     });
+
+    const minorToggle = document.getElementById("toggle-minor-waters");
+    if (minorToggle) {
+      minorToggle.addEventListener("change", (e) => {
+        state.showMinorWaters = e.target.checked;
+        setActiveDay(state.activeDay);
+      });
+    }
 
     document.getElementById("toggle-stations").addEventListener("change", (e) => {
       state.showStations = e.target.checked;

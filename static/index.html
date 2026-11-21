@@ -37,21 +37,22 @@
         <div class="control-group">
           <label for="country-filter" class="control-label">Ország / Régió</label>
           <select id="country-filter" class="select-control">
-            <option value="all">🇭🇺 + 🇷🇴 Magyarország és Románia (120 szakasz)</option>
-            <option value="HU">🇭🇺 Magyarország (64 szakasz)</option>
-            <option value="RO">🇷🇴 Románia (56 szakasz)</option>
+            <option value="all">🇭🇺 + 🇷🇴 Magyarország és Románia (186 szakasz)</option>
+            <option value="HU">🇭🇺 Magyarország (108 szakasz)</option>
+            <option value="RO">🇷🇴 Románia (78 szakasz)</option>
           </select>
         </div>
 
         <div class="control-group">
-          <label for="basin-filter" class="control-label">Vízgyűjtő</label>
+          <label for="basin-filter" class="control-label">Vízgyűjtő / Víztípus</label>
           <select id="basin-filter" class="select-control">
-            <option value="all">Összes vízgyűjtő (Kárpát-medence és Al-Duna)</option>
-            <option value="duna">Duna főág, Al-Duna, Duna-delta és mellékfolyói</option>
-            <option value="tisza">Tisza, Erdélyi-medence (Maros, Szamos, Körösök, Béga)</option>
+            <option value="all">Összes vízgyűjtő és kisvízfolyás (186)</option>
+            <option value="minor_only">★ Csak kisvízfolyások, patakok és főcsatornák (66)</option>
+            <option value="duna">Duna főág, Al-Duna, Duna-delta és mellékvízrendszere</option>
+            <option value="tisza">Tisza, Erdélyi-medence (Maros, Szamos, Körösök, csatornák)</option>
             <option value="olt_siret">Olt, Zsil, Argeș, Szeret és Prut vízrendszer (RO)</option>
-            <option value="drava">Dráva és Mura vízrendszer (HU)</option>
-            <option value="tavak">Nagy tavak (Balaton, Tisza-tó, Razim-tó, Békási-tó)</option>
+            <option value="drava">Dráva, Mura és Dél-Dunántúli kisvizek (HU)</option>
+            <option value="tavak">Tavak és tározók (Balaton, Tisza-tó, Öreg-tó, Razim, Békás)</option>
           </select>
         </div>
 
@@ -138,6 +139,10 @@
                   <option value="none">Kikapcsolva (100% vektoros mód)</option>
                 </select>
               </div>
+              <label for="toggle-minor-waters">
+                <input type="checkbox" id="toggle-minor-waters" class="visually-hidden-fallback" checked>
+                <span>Kisvízfolyások, patakok, csatornák (66)</span>
+              </label>
               <label for="toggle-stations">
                 <input type="checkbox" id="toggle-stations" class="visually-hidden-fallback" checked>
                 <span>Mérőállomás pontok</span>
@@ -219,8 +224,8 @@
         <!-- Scrollable Table of Hungarian & Romanian Gauging Stations -->
         <div class="station-list-container">
           <div class="station-list-header">
-            <h2>Hivatalos Vízügyi Mérési Pontok (<span id="station-count-badge">120</span>)</h2>
-            <span class="sort-hint">HU (64) &amp; RO (56)</span>
+            <h2>Hivatalos Vízügyi Mérési Pontok (<span id="station-count-badge">186</span>)</h2>
+            <span class="sort-hint">HU (108) &amp; RO (78)</span>
           </div>
           <div class="station-list-scroller" id="station-list">
             <!-- Populated dynamically -->

@@ -1,6 +1,6 @@
 """
-Magyarország (HU) — Vízgyűjtők és Hivatalos Vízügyi Mérőállomások (OVF / hydroinfo.hu)
-Különálló ország-forrásfájl (64 hivatalos magyarországi vízmérce és 11 vízgyűjtő)
+Magyarország (HU) — Vízgyűjtők és Hivatalos Vízügyi Mérőállomások (OVF hydroinfo.hu & vizugy.hu OperativVizallas)
+Különálló ország-forrásfájl (101 magyarországi vízmérce: 64 főfolyó/nagy tó + 37 kisvízfolyás, patak, főcsatorna és tározó)
 """
 
 COUNTRY_META = {
@@ -20,13 +20,15 @@ CATCHMENTS = {
     "lower_tisza": {"name": "Alsó-Tisza és Maros-torkolat (HU/RO)", "lat": 46.25, "lon": 20.15, "response_factor": 3.1, "lag_days": 3},
     "korosok": {"name": "Körösök és Berettyó vízgyűjtő (HU/RO)", "lat": 46.85, "lon": 21.65, "response_factor": 3.6, "lag_days": 1},
     "west_transdanubia": {"name": "Nyugat-Dunántúl (Rába, Zala, Lajta, HU)", "lat": 47.25, "lon": 16.95, "response_factor": 3.2, "lag_days": 1},
-    "drava_mura": {"name": "Dráva és Mura vízgyűjtő (HU)", "lat": 45.95, "lon": 17.45, "response_factor": 2.9, "lag_days": 1},
+    "drava_mura": {"name": "Dráva, Mura és Dél-Dunántúl (HU)", "lat": 45.95, "lon": 17.45, "response_factor": 2.9, "lag_days": 1},
     "north_hills": {"name": "Északi-középhegység (Sajó, Hernád, Ipoly, Zagyva, HU)", "lat": 48.10, "lon": 20.78, "response_factor": 3.5, "lag_days": 1},
     "lakes_balaton": {"name": "Közép-Dunántúl és Nagy tavak (Balaton, Velencei-tó, Sió, HU)", "lat": 46.90, "lon": 18.05, "response_factor": 0.9, "lag_days": 0},
 }
 
 STATIONS = [
-    # --- DUNA FŐÁG (15 állomás) ---
+    # =========================================================================
+    # 1. FŐFOLYÓK ÉS NAGY TAVAK (64 állomás)
+    # =========================================================================
     {
         "code": "442020", "country": "HU", "name": "Rajka", "river": "Duna", "basin": "duna", "catchment": "upper_duna",
         "reach_name": "Duna – Felső-szigetközi határszakasz (Rajka)", "lat": 47.998, "lon": 17.206, "fkm": 1848.4,
@@ -420,5 +422,317 @@ STATIONS = [
         "reach_name": "Fertő-tó magyarországi medence (Fertőrákos – Balf)", "lat": 47.728, "lon": 16.678, "fkm": 0.0,
         "thresholds": {"lkv": -45, "low": -15, "deg1": 40, "deg2": 55, "deg3": 70, "lnv": 92},
         "default_level": -6, "default_diff24h": 0, "default_discharge": 3, "default_temp": 5.1, "downstream_order": 1
+    },
+
+    # =========================================================================
+    # 2. KISVÍZFOLYÁSOK, PATAKOK, FŐCSATORNÁK ÉS TÁROZÓK (vizugy.hu & OVF — 37 állomás)
+    # =========================================================================
+    {
+        "code": "442609", "vizugy_id": "345", "water_category": "minor", "country": "HU",
+        "name": "Felsőcsatár", "river": "Pinka", "basin": "duna", "catchment": "west_transdanubia",
+        "reach_name": "Pinka-patak – Felsőcsatár – Pornóapáti – Pinkamindszent", "lat": 47.205, "lon": 16.452, "fkm": 33.8,
+        "thresholds": {"lkv": 1, "low": 35, "deg1": 320, "deg2": 380, "deg3": 440, "lnv": 506},
+        "default_level": 59, "default_diff24h": 19, "default_discharge": 4.2, "default_temp": 7.0, "downstream_order": 1
+    },
+    {
+        "code": "442504", "vizugy_id": "349", "water_category": "minor", "country": "HU",
+        "name": "Répcevis", "river": "Répce", "basin": "duna", "catchment": "west_transdanubia",
+        "reach_name": "Répce – Répcevis – Bük – Répcelak", "lat": 47.448, "lon": 16.672, "fkm": 76.4,
+        "thresholds": {"lkv": -19, "low": 2, "deg1": 250, "deg2": 320, "deg3": 380, "lnv": 470},
+        "default_level": 4, "default_diff24h": 4, "default_discharge": 2.8, "default_temp": 7.1, "downstream_order": 1
+    },
+    {
+        "code": "442603", "vizugy_id": "31", "water_category": "minor", "country": "HU",
+        "name": "Rábcakapi", "river": "Rábca", "basin": "duna", "catchment": "west_transdanubia",
+        "reach_name": "Rábca – Hanság – Rábcakapi – Lébény – Győr", "lat": 47.702, "lon": 17.152, "fkm": 28.2,
+        "thresholds": {"lkv": 24, "low": 70, "deg1": 250, "deg2": 310, "deg3": 370, "lnv": 434},
+        "default_level": 133, "default_diff24h": 30, "default_discharge": 8.5, "default_temp": 7.3, "downstream_order": 1
+    },
+    {
+        "code": "442518", "vizugy_id": "350", "water_category": "minor", "country": "HU",
+        "name": "Karakó", "river": "Marcal", "basin": "duna", "catchment": "west_transdanubia",
+        "reach_name": "Marcal – Sümeg – Karakó – Mórichida – Gyirmót", "lat": 47.185, "lon": 17.202, "fkm": 71.3,
+        "thresholds": {"lkv": 11, "low": 55, "deg1": 240, "deg2": 290, "deg3": 340, "lnv": 375},
+        "default_level": 116, "default_diff24h": -2, "default_discharge": 5.4, "default_temp": 7.4, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_3557", "vizugy_id": "3557", "water_category": "minor", "country": "HU",
+        "name": "Kőszeg", "river": "Gyöngyös-patak", "basin": "duna", "catchment": "west_transdanubia",
+        "reach_name": "Gyöngyös-patak – Kőszeg – Lukácsháza – Szombathely – Sárvár", "lat": 47.388, "lon": 16.542, "fkm": 53.0,
+        "thresholds": {"lkv": 26, "low": 35, "deg1": 160, "deg2": 195, "deg3": 225, "lnv": 252},
+        "default_level": 44, "default_diff24h": 2, "default_discharge": 3.3, "default_temp": 6.8, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_347", "vizugy_id": "347", "water_category": "minor", "country": "HU",
+        "name": "Szombathely-Olad", "river": "Arany-patak", "basin": "duna", "catchment": "west_transdanubia",
+        "reach_name": "Arany-patak – Rohonc – Dozmat – Szombathely-Olad", "lat": 47.235, "lon": 16.592, "fkm": 1.7,
+        "thresholds": {"lkv": 9, "low": 16, "deg1": 165, "deg2": 205, "deg3": 240, "lnv": 278},
+        "default_level": 25, "default_diff24h": 1, "default_discharge": 1.4, "default_temp": 7.1, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_26", "vizugy_id": "26", "water_category": "minor", "country": "HU",
+        "name": "Nagycenk", "river": "Ikva-patak", "basin": "duna", "catchment": "west_transdanubia",
+        "reach_name": "Ikva-patak – Sopron – Kópháza – Nagycenk – Fertőszentmiklós", "lat": 47.608, "lon": 16.705, "fkm": 0.6,
+        "thresholds": {"lkv": 6, "low": 15, "deg1": 150, "deg2": 185, "deg3": 215, "lnv": 242},
+        "default_level": 22, "default_diff24h": 0, "default_discharge": 1.6, "default_temp": 7.0, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_3064", "vizugy_id": "3064", "water_category": "minor", "country": "HU",
+        "name": "Sorkifalud", "river": "Sorok-Perint", "basin": "duna", "catchment": "west_transdanubia",
+        "reach_name": "Sorok-Perint – Szombathely – Sorkifalud – Zsennye", "lat": 47.135, "lon": 16.735, "fkm": 8.8,
+        "thresholds": {"lkv": 10, "low": 30, "deg1": 170, "deg2": 210, "deg3": 245, "lnv": 274},
+        "default_level": 54, "default_diff24h": 2, "default_discharge": 2.1, "default_temp": 7.2, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_4551", "vizugy_id": "4551", "water_category": "minor", "country": "HU",
+        "name": "Fertőszéli zsilip", "river": "Hanság-főcsatorna", "basin": "duna", "catchment": "west_transdanubia",
+        "reach_name": "Hanság-főcsatorna – Pomogy – Fertőszéli zsilip – Kapuvár – Király-tó", "lat": 47.692, "lon": 16.925, "fkm": 32.3,
+        "thresholds": {"lkv": 50, "low": 75, "deg1": 175, "deg2": 205, "deg3": 225, "lnv": 241},
+        "default_level": 90, "default_diff24h": 1, "default_discharge": 3.5, "default_temp": 7.1, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_4524", "vizugy_id": "4524", "water_category": "minor", "country": "HU",
+        "name": "Bajánsenye", "river": "Kerka", "basin": "drava", "catchment": "west_transdanubia",
+        "reach_name": "Kerka – Bajánsenye – Lenti – Tormafölde – Muraszemenye", "lat": 46.798, "lon": 16.382, "fkm": 53.2,
+        "thresholds": {"lkv": -22, "low": 5, "deg1": 180, "deg2": 215, "deg3": 245, "lnv": 264},
+        "default_level": 29, "default_diff24h": 3, "default_discharge": 4.1, "default_temp": 7.3, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_4216", "vizugy_id": "4216", "water_category": "minor", "country": "HU",
+        "name": "Rédics", "river": "Kebele-patak", "basin": "drava", "catchment": "west_transdanubia",
+        "reach_name": "Kebele-patak (Lendva-vízgyűjtő) – Rédics", "lat": 46.625, "lon": 16.485, "fkm": 6.6,
+        "thresholds": {"lkv": 21, "low": 30, "deg1": 210, "deg2": 255, "deg3": 295, "lnv": 328},
+        "default_level": 37, "default_diff24h": 1, "default_discharge": 1.8, "default_temp": 7.4, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_365", "vizugy_id": "365", "water_category": "minor", "country": "HU",
+        "name": "Nagykanizsa", "river": "Principális-csatorna", "basin": "drava", "catchment": "drava_mura",
+        "reach_name": "Principális-csatorna – Gelse – Nagykanizsa – Murakeresztúr", "lat": 46.452, "lon": 16.985, "fkm": 18.3,
+        "thresholds": {"lkv": 38, "low": 50, "deg1": 185, "deg2": 220, "deg3": 250, "lnv": 272},
+        "default_level": 68, "default_diff24h": 2, "default_discharge": 3.2, "default_temp": 7.6, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_142007", "vizugy_id": "142007", "water_category": "minor", "country": "HU",
+        "name": "Apácatorna", "river": "Torna-patak", "basin": "duna", "catchment": "west_transdanubia",
+        "reach_name": "Torna-patak – Ajka – Devecser – Apácatorna – Karakó", "lat": 47.122, "lon": 17.305, "fkm": 8.5,
+        "thresholds": {"lkv": 17, "low": 40, "deg1": 195, "deg2": 235, "deg3": 275, "lnv": 310},
+        "default_level": 73, "default_diff24h": 1, "default_discharge": 2.4, "default_temp": 7.3, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_43", "vizugy_id": "43", "water_category": "minor", "country": "HU",
+        "name": "Tatabánya", "river": "Által-ér", "basin": "duna", "catchment": "mid_duna",
+        "reach_name": "Által-ér – Oroszlány – Tatabánya – Tata – Dunaalmás", "lat": 47.585, "lon": 18.395, "fkm": 21.0,
+        "thresholds": {"lkv": -3, "low": 4, "deg1": 95, "deg2": 115, "deg3": 130, "lnv": 140},
+        "default_level": 8, "default_diff24h": 0, "default_discharge": 1.9, "default_temp": 7.5, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_53", "vizugy_id": "53", "water_category": "minor", "country": "HU",
+        "name": "Tata (Öreg-tó)", "river": "Tatai Öreg-tó", "basin": "tavak", "catchment": "mid_duna",
+        "reach_name": "Tatai Öreg-tó (Vecserei-zsilip – Tata)", "lat": 47.648, "lon": 18.328, "fkm": 0.0,
+        "thresholds": {"lkv": -210, "low": -120, "deg1": 120, "deg2": 160, "deg3": 190, "lnv": 213},
+        "default_level": -67, "default_diff24h": 1, "default_discharge": 1.8, "default_temp": 7.2, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_39", "vizugy_id": "39", "water_category": "minor", "country": "HU",
+        "name": "Bakonybánk", "river": "Cuhai-Bakony-ér", "basin": "duna", "catchment": "mid_duna",
+        "reach_name": "Cuhai-Bakony-ér (Concó) – Zirc – Bakonybánk – Gönyű", "lat": 47.465, "lon": 17.895, "fkm": 37.8,
+        "thresholds": {"lkv": -5, "low": 2, "deg1": 190, "deg2": 240, "deg3": 280, "lnv": 314},
+        "default_level": 6, "default_diff24h": 0, "default_discharge": 1.5, "default_temp": 7.2, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_565", "vizugy_id": "565", "water_category": "minor", "country": "HU",
+        "name": "Bodajk", "river": "Gaja-patak", "basin": "duna", "catchment": "lakes_balaton",
+        "reach_name": "Gaja-patak – Bakonynána – Bodajk – Fehérvárcsurgó – Székesfehérvár", "lat": 47.322, "lon": 18.232, "fkm": 26.7,
+        "thresholds": {"lkv": -4, "low": 0, "deg1": 180, "deg2": 225, "deg3": 265, "lnv": 291},
+        "default_level": 1, "default_diff24h": 0, "default_discharge": 1.3, "default_temp": 7.3, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_140043", "vizugy_id": "140043", "water_category": "minor", "country": "HU",
+        "name": "Kisfalud-puszta", "river": "Császár-víz", "basin": "duna", "catchment": "lakes_balaton",
+        "reach_name": "Császár-víz – Csákvár – Zámolyi-medence – Kisfalud-puszta (Velencei-tó befolyó)", "lat": 47.235, "lon": 18.525, "fkm": 3.9,
+        "thresholds": {"lkv": -2, "low": 0, "deg1": 105, "deg2": 130, "deg3": 148, "lnv": 160},
+        "default_level": 1, "default_diff24h": 0, "default_discharge": 0.9, "default_temp": 7.4, "downstream_order": 1
+    },
+    {
+        "code": "442616", "vizugy_id": "567", "water_category": "minor", "country": "HU",
+        "name": "Sárszentmihály", "river": "Nádor-csatorna", "basin": "duna", "catchment": "lakes_balaton",
+        "reach_name": "Nádor-csatorna (Sárvíz) – Sárszentmihály – Aba – Cece – Sió", "lat": 47.152, "lon": 18.338, "fkm": 95.4,
+        "thresholds": {"lkv": -34, "low": 5, "deg1": 130, "deg2": 210, "deg3": 285, "lnv": 360},
+        "default_level": 33, "default_diff24h": 26, "default_discharge": 5.8, "default_temp": 7.5, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_4375", "vizugy_id": "4375", "water_category": "minor", "country": "HU",
+        "name": "Balatonkeresztúr", "river": "Nyugati-övcsatorna", "basin": "tavak", "catchment": "lakes_balaton",
+        "reach_name": "Nyugati-övcsatorna – Nagyberek – Marcali – Balatonkeresztúr", "lat": 46.695, "lon": 17.372, "fkm": 1.6,
+        "thresholds": {"lkv": -13, "low": -2, "deg1": 85, "deg2": 105, "deg3": 120, "lnv": 131},
+        "default_level": 10, "default_diff24h": 1, "default_discharge": 2.2, "default_temp": 7.5, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_2895", "vizugy_id": "2895", "water_category": "minor", "country": "HU",
+        "name": "Visz", "river": "Tetves-patak", "basin": "tavak", "catchment": "lakes_balaton",
+        "reach_name": "Tetves-patak – Visz – Somogybabod – Balatonlelle", "lat": 46.725, "lon": 17.775, "fkm": 9.4,
+        "thresholds": {"lkv": 31, "low": 38, "deg1": 115, "deg2": 140, "deg3": 158, "lnv": 169},
+        "default_level": 49, "default_diff24h": 1, "default_discharge": 0.8, "default_temp": 7.4, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_3061", "vizugy_id": "3061", "water_category": "minor", "country": "HU",
+        "name": "Pamuk", "river": "Keleti-Bozót-csatorna", "basin": "tavak", "catchment": "lakes_balaton",
+        "reach_name": "Keleti-Bozót-csatorna (Pogányvölgyi-víz) – Somogyvár – Pamuk – Buzsák – Fonyód", "lat": 46.582, "lon": 17.648, "fkm": 24.3,
+        "thresholds": {"lkv": 1, "low": 20, "deg1": 145, "deg2": 175, "deg3": 205, "lnv": 221},
+        "default_level": 48, "default_diff24h": 2, "default_discharge": 1.9, "default_temp": 7.5, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_564", "vizugy_id": "564", "water_category": "minor", "country": "HU",
+        "name": "Tamási", "river": "Koppány-patak", "basin": "duna", "catchment": "lakes_balaton",
+        "reach_name": "Koppány-patak – Törökkoppány – Tamási – Regöly (Kapos-torkolat)", "lat": 46.632, "lon": 18.288, "fkm": 14.5,
+        "thresholds": {"lkv": 18, "low": 55, "deg1": 250, "deg2": 310, "deg3": 355, "lnv": 388},
+        "default_level": 138, "default_diff24h": 2, "default_discharge": 2.6, "default_temp": 7.5, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_570", "vizugy_id": "570", "water_category": "minor", "country": "HU",
+        "name": "Bonyhád", "river": "Völgységi-patak", "basin": "duna", "catchment": "lower_duna",
+        "reach_name": "Völgységi-patak – Mecseknádasd – Bonyhád – Bonyhádi-Sió", "lat": 46.302, "lon": 18.532, "fkm": 20.3,
+        "thresholds": {"lkv": 82, "low": 115, "deg1": 270, "deg2": 330, "deg3": 375, "lnv": 408},
+        "default_level": 152, "default_diff24h": 1, "default_discharge": 1.7, "default_temp": 7.6, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_851", "vizugy_id": "851", "water_category": "minor", "country": "HU",
+        "name": "Babócsa", "river": "Rinya-patak", "basin": "drava", "catchment": "drava_mura",
+        "reach_name": "Rinya (Babócsai- és Lábodi-Rinya) – Nagyatád – Lábod – Babócsa", "lat": 46.042, "lon": 17.345, "fkm": 5.3,
+        "thresholds": {"lkv": -30, "low": -5, "deg1": 205, "deg2": 255, "deg3": 295, "lnv": 326},
+        "default_level": 6, "default_diff24h": 0, "default_discharge": 2.9, "default_temp": 7.8, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_844", "vizugy_id": "844", "water_category": "minor", "country": "HU",
+        "name": "Szentlőrinc", "river": "Bükkösdi-víz", "basin": "drava", "catchment": "drava_mura",
+        "reach_name": "Bükkösdi-víz – Hetvehely – Bükkösd – Szentlőrinc", "lat": 46.042, "lon": 17.985, "fkm": 6.5,
+        "thresholds": {"lkv": 11, "low": 30, "deg1": 225, "deg2": 280, "deg3": 325, "lnv": 357},
+        "default_level": 53, "default_diff24h": 2, "default_discharge": 1.6, "default_temp": 7.7, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_845", "vizugy_id": "845", "water_category": "minor", "country": "HU",
+        "name": "Kémes–Cún", "river": "Fekete-víz", "basin": "drava", "catchment": "drava_mura",
+        "reach_name": "Fekete-víz (Ormánság) – Sellye – Kémes – Cún – Drávaszabolcs", "lat": 45.818, "lon": 18.082, "fkm": 7.2,
+        "thresholds": {"lkv": -20, "low": 60, "deg1": 330, "deg2": 395, "deg3": 450, "lnv": 485},
+        "default_level": 202, "default_diff24h": 4, "default_discharge": 5.2, "default_temp": 7.9, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_837", "vizugy_id": "837", "water_category": "minor", "country": "HU",
+        "name": "Villány", "river": "Karasica", "basin": "duna", "catchment": "lower_duna",
+        "reach_name": "Karasica-patak – Pécsvárad – Szederkény – Villány – Magyarbóly", "lat": 45.868, "lon": 18.458, "fkm": 42.2,
+        "thresholds": {"lkv": -2, "low": 20, "deg1": 195, "deg2": 240, "deg3": 280, "lnv": 309},
+        "default_level": 35, "default_diff24h": 1, "default_discharge": 2.1, "default_temp": 7.8, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_841", "vizugy_id": "841", "water_category": "minor", "country": "HU",
+        "name": "Csikóstőttős", "river": "Baranya-csatorna", "basin": "drava", "catchment": "drava_mura",
+        "reach_name": "Baranya-csatorna – Sásd – Mágocs – Csikóstőttős – Dombóvár", "lat": 46.332, "lon": 18.158, "fkm": 3.2,
+        "thresholds": {"lkv": 5, "low": 25, "deg1": 280, "deg2": 350, "deg3": 410, "lnv": 460},
+        "default_level": 43, "default_diff24h": 1, "default_discharge": 1.8, "default_temp": 7.5, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_1038", "vizugy_id": "1038", "water_category": "minor", "country": "HU",
+        "name": "Szentendre", "river": "Szentendrei-Duna", "basin": "duna", "catchment": "mid_duna",
+        "reach_name": "Szentendrei-Duna-ág (Kisoroszi – Tahitótfalu – Szentendre – Békásmegyer)", "lat": 47.668, "lon": 19.082, "fkm": 10.8,
+        "thresholds": {"lkv": -114, "low": -50, "deg1": 500, "deg2": 580, "deg3": 650, "lnv": 796},
+        "default_level": -32, "default_diff24h": 10, "default_discharge": 310.0, "default_temp": 8.1, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_1047", "vizugy_id": "1047", "water_category": "minor", "country": "HU",
+        "name": "Bernecebaráti", "river": "Kemence-patak", "basin": "duna", "catchment": "north_hills",
+        "reach_name": "Kemence-patak (Börzsöny) – Diósjenő – Kemence – Bernecebaráti", "lat": 48.042, "lon": 18.912, "fkm": 4.4,
+        "thresholds": {"lkv": -12, "low": 15, "deg1": 210, "deg2": 270, "deg3": 320, "lnv": 369},
+        "default_level": 35, "default_diff24h": 2, "default_discharge": 1.5, "default_temp": 6.6, "downstream_order": 1
+    },
+    {
+        "code": "444686", "vizugy_id": "1055", "water_category": "minor", "country": "HU",
+        "name": "Maconkai tározó", "river": "Zagyva-patak", "basin": "tisza", "catchment": "north_hills",
+        "reach_name": "Felső-Zagyva és Maconkai-víztározó (Bátonyterenye – Maconka – Pásztó)", "lat": 47.992, "lon": 19.825, "fkm": 133.8,
+        "thresholds": {"lkv": 180, "low": 260, "deg1": 450, "deg2": 510, "deg3": 560, "lnv": 615},
+        "default_level": 369, "default_diff24h": 2, "default_discharge": 3.4, "default_temp": 6.9, "downstream_order": 1
+    },
+    {
+        "code": "444544", "vizugy_id": "1062", "water_category": "minor", "country": "HU",
+        "name": "Hévízgyörk", "river": "Galga-patak", "basin": "tisza", "catchment": "north_hills",
+        "reach_name": "Galga-patak – Galgamácsa – Aszód – Hévízgyörk – Tura", "lat": 47.628, "lon": 19.528, "fkm": 18.0,
+        "thresholds": {"lkv": 13, "low": 45, "deg1": 210, "deg2": 255, "deg3": 295, "lnv": 321},
+        "default_level": 118, "default_diff24h": 4, "default_discharge": 2.3, "default_temp": 7.3, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_1755", "vizugy_id": "1755", "water_category": "minor", "country": "HU",
+        "name": "Borsodivánka", "river": "Eger-patak", "basin": "tisza", "catchment": "north_hills",
+        "reach_name": "Eger-patak (Rima) – Szarvaskő – Almár – Eger – Maklár – Borsodivánka", "lat": 47.702, "lon": 20.648, "fkm": 3.2,
+        "thresholds": {"lkv": 3, "low": 40, "deg1": 230, "deg2": 285, "deg3": 335, "lnv": 371},
+        "default_level": 143, "default_diff24h": 3, "default_discharge": 3.8, "default_temp": 7.1, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_1749", "vizugy_id": "1749", "water_category": "minor", "country": "HU",
+        "name": "Bánhorváti", "river": "Bán-patak", "basin": "tisza", "catchment": "north_hills",
+        "reach_name": "Bán-patak és Lázbérci-víztározó (Uppony – Dédestapolcsány – Bánhorváti – Sajó)", "lat": 48.222, "lon": 20.515, "fkm": 5.2,
+        "thresholds": {"lkv": 3, "low": 10, "deg1": 185, "deg2": 230, "deg3": 270, "lnv": 302},
+        "default_level": 15, "default_diff24h": 1, "default_discharge": 1.6, "default_temp": 6.7, "downstream_order": 1
+    },
+    {
+        "code": "444653", "vizugy_id": "1764", "water_category": "minor", "country": "HU",
+        "name": "Taktaföldvár", "river": "Takta", "basin": "tisza", "catchment": "north_hills",
+        "reach_name": "Takta – Szerencs – Taktaharkány – Taktaföldvár – Taktakenéz", "lat": 48.095, "lon": 21.185, "fkm": 24.4,
+        "thresholds": {"lkv": 61, "low": 110, "deg1": 200, "deg2": 280, "deg3": 350, "lnv": 410},
+        "default_level": 181, "default_diff24h": 4, "default_discharge": 6.2, "default_temp": 7.1, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_1541", "vizugy_id": "1541", "water_category": "minor", "country": "HU",
+        "name": "Kótaj", "river": "Lónyay-főcsatorna", "basin": "tisza", "catchment": "upper_tisza",
+        "reach_name": "Lónyay-főcsatorna (Nyírség) – Nyírbátor – Kemecse – Kótaj – Gávavencsellő", "lat": 48.062, "lon": 21.725, "fkm": 21.2,
+        "thresholds": {"lkv": 460, "low": 510, "deg1": 650, "deg2": 740, "deg3": 820, "lnv": 898},
+        "default_level": 606, "default_diff24h": 5, "default_discharge": 7.5, "default_temp": 7.0, "downstream_order": 1
+    },
+    {
+        "code": "444662", "vizugy_id": "2549", "water_category": "minor", "country": "HU",
+        "name": "Bakonszeg zsilip felvíz", "river": "Keleti-főcsatorna", "basin": "tisza", "catchment": "mid_tisza",
+        "reach_name": "Keleti-főcsatorna – Tiszalök – Hajdúszoboszló – Bakonszeg (Berettyó)", "lat": 47.202, "lon": 21.432, "fkm": 98.2,
+        "thresholds": {"lkv": -76, "low": 40, "deg1": 240, "deg2": 265, "deg3": 280, "lnv": 290},
+        "default_level": 219, "default_diff24h": 1, "default_discharge": 18.0, "default_temp": 7.5, "downstream_order": 1
+    },
+    {
+        "code": "444670", "vizugy_id": "3416", "water_category": "minor", "country": "HU",
+        "name": "Abádszalók felső", "river": "Nagykunsági-főcsatorna", "basin": "tisza", "catchment": "mid_tisza",
+        "reach_name": "Nagykunsági-főcsatorna – Abádszalók – Kunhegyes – Karcag – Öcsöd", "lat": 47.412, "lon": 20.648, "fkm": 0.0,
+        "thresholds": {"lkv": 414, "low": 580, "deg1": 830, "deg2": 860, "deg3": 890, "lnv": 920},
+        "default_level": 810, "default_diff24h": 5, "default_discharge": 20.3, "default_temp": 7.7, "downstream_order": 1
+    },
+    {
+        "code": "444668", "vizugy_id": "2065", "water_category": "minor", "country": "HU",
+        "name": "Kisköre felső (Jászsági fcs.)", "river": "Jászsági-főcsatorna", "basin": "tisza", "catchment": "mid_tisza",
+        "reach_name": "Jászsági-főcsatorna – Kisköre – Heves – Jászapáti", "lat": 47.542, "lon": 20.382, "fkm": 0.0,
+        "thresholds": {"lkv": 598, "low": 680, "deg1": 900, "deg2": 980, "deg3": 1060, "lnv": 1168},
+        "default_level": 806, "default_diff24h": 2, "default_discharge": 14.2, "default_temp": 7.6, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_130050", "vizugy_id": "130050", "water_category": "minor", "country": "HU",
+        "name": "Kecel (Vádei híd)", "river": "Duna-völgyi-főcsatorna", "basin": "duna", "catchment": "lower_duna",
+        "reach_name": "Duna-völgyi-főcsatorna – Kunpeszér – Akasztó – Kecel – Baja", "lat": 46.535, "lon": 19.228, "fkm": 50.4,
+        "thresholds": {"lkv": 2, "low": 45, "deg1": 180, "deg2": 200, "deg3": 215, "lnv": 222},
+        "default_level": 145, "default_diff24h": 2, "default_discharge": 9.4, "default_temp": 8.0, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_2561", "vizugy_id": "2561", "water_category": "minor", "country": "HU",
+        "name": "Nádudvar", "river": "Kösely-főcsatorna", "basin": "tisza", "catchment": "korosok",
+        "reach_name": "Kösely-főcsatorna – Debrecen – Hajdúszoboszló – Nádudvar", "lat": 47.415, "lon": 21.182, "fkm": 6.7,
+        "thresholds": {"lkv": 52, "low": 80, "deg1": 220, "deg2": 255, "deg3": 285, "lnv": 305},
+        "default_level": 135, "default_diff24h": 3, "default_discharge": 4.8, "default_temp": 7.5, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_210206", "vizugy_id": "210206", "water_category": "minor", "country": "HU",
+        "name": "Battonya", "river": "Királyhegyesi-Száraz-ér", "basin": "tisza", "catchment": "lower_tisza",
+        "reach_name": "Száraz-ér (Királyhegyesi-Szárazéri fcs.) – Battonya – Mezőhegyes – Makó", "lat": 46.282, "lon": 21.018, "fkm": 97.3,
+        "thresholds": {"lkv": -10, "low": 10, "deg1": 140, "deg2": 180, "deg3": 215, "lnv": 255},
+        "default_level": 34, "default_diff24h": 1, "default_discharge": 2.4, "default_temp": 7.9, "downstream_order": 1
+    },
+    {
+        "code": "VIZUGY_210224", "vizugy_id": "210224", "water_category": "minor", "country": "HU",
+        "name": "Szeged-Fehérpart", "river": "Gyálai Holt-Tisza", "basin": "tisza", "catchment": "lower_tisza",
+        "reach_name": "Gyálai Holt-Tisza (Szeged-Röszke – Fehérparti-zsilip)", "lat": 46.192, "lon": 20.068, "fkm": 18.0,
+        "thresholds": {"lkv": 90, "low": 140, "deg1": 250, "deg2": 285, "deg3": 315, "lnv": 350},
+        "default_level": 196, "default_diff24h": 1, "default_discharge": 2.1, "default_temp": 8.2, "downstream_order": 1
     },
 ]

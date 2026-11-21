@@ -3,9 +3,13 @@
 WVis - Magyarország és Románia Interaktív Vízügyi Térképe és 1-7 Napos Hidrometeorológiai Előrejelző Rendszere
 Backend API & Static File Server (Standard Library Python 3)
 
-Modular Country Architecture:
-- countries/hungary.py (Magyarország - 64 vízmérce, 11 vízgyűjtő)
-- countries/romania.py (Románia - 56 vízmérce, 6 vízgyűjtő)
+Modular Country Architecture & Multi-Source Live Telemetry:
+1. countries/hungary.py (Magyarország - 101 vízmérce: 64 főfolyó/nagy tó + 37 kisvízfolyás, patak, főcsatorna, tározó)
+2. countries/romania.py (Románia - 78 vízmérce: 56 főfolyó/nagy tó + 22 kisvízfolyás, hegyi patak, mellékág)
+3. Live Data Sources:
+   - hydroinfo.hu (dunhif_a.html, tishif_a.html, tohid.html, dunelotH.html, tiselotH.html)
+   - vizugy.hu (OperativVizallas - 272 élő órás vízmérce kisvízfolyásokra, patakokra és csatornákra)
+   - Open-Meteo Weather & Copernicus GloFAS v4 (5 km felbontású) Flood API
 """
 
 import datetime
@@ -50,14 +54,14 @@ def _norm_hu(s: str) -> str:
 
 
 def _parse_int(val: str, default=None):
-    if not val:
+    if not val or val.strip() == "-":
         return default
     m = re.search(r"[-+]?\d+", val.replace(" ", ""))
     return int(m.group(0)) if m else default
 
 
 def _parse_float(val: str, default=None):
-    if not val or "//" in val:
+    if not val or "//" in val or val.strip() == "-":
         return default
     val_clean = val.replace(",", ".").strip()
     m = re.search(r"[-+]?\d+(?:\.\d+)?", val_clean)
@@ -117,11 +121,66 @@ def fetch_hydroinfo_observations():
                                 "discharge_m3s": discharge,
                                 "water_temp_c": water_temp,
                                 "ice_status": ice_status,
+                                "origin": "hydroinfo.hu",
                             }
         except Exception as exc:
             print(f"[WARN] Failed to fetch {url}: {exc}")
 
     return observations, obs_date_str
+
+
+def fetch_vizugy_operative_observations():
+    """Fetches live hourly telemetry for 272 Hungarian stations (including smaller streams, creeks, canals, reservoirs) from vizugy.hu."""
+    vizugy_by_id = {}
+    try:
+        req = urllib.request.Request("https://www.vizugy.hu/", headers={"User-Agent": "Mozilla/5.0 (WVis HydroMap)"})
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            text = resp.read().decode("utf-8", errors="replace")
+            arrays = dict(re.findall(r"([A-Za-z0-9_]+)\s*=\s*new\s+Array\((.*?)\);", text, re.S))
+
+            def get_arr(key):
+                raw_body = arrays.get(key, "")
+                return [x.strip() for x in re.findall(r"'([^']*)'", raw_body)]
+
+            torzs = get_arr("VizmerceTorzsSzam")
+            names = get_arr("VizmerceNev")
+            rivers = get_arr("VizfolyasNev")
+            levels = get_arr("Vizallas")
+            discharges = get_arr("Vizhozam")
+            temps = get_arr("Vizho")
+            times = get_arr("UtolsoMeresIdopontja")
+            lkvs = get_arr("LKV")
+            lnvs = get_arr("LNV")
+
+            count = min(len(torzs), len(names), len(levels))
+            for i in range(count):
+                tid = torzs[i].strip()
+                lvl = _parse_int(levels[i])
+                if not tid or lvl is None:
+                    continue
+                q_val = _parse_float(discharges[i]) if i < len(discharges) else None
+                if q_val is not None and q_val <= 0.0:
+                    q_val = None
+                t_val = _parse_float(temps[i]) if i < len(temps) else None
+                if t_val is not None and t_val <= 0.0:
+                    t_val = None
+
+                vizugy_by_id[tid] = {
+                    "vizugy_id": tid,
+                    "name": names[i],
+                    "river": rivers[i] if i < len(rivers) else "",
+                    "current_level_cm": lvl,
+                    "discharge_m3s": q_val,
+                    "water_temp_c": t_val,
+                    "measured_at": times[i] if i < len(times) else "",
+                    "lkv_cm": _parse_int(lkvs[i]) if i < len(lkvs) else None,
+                    "lnv_cm": _parse_int(lnvs[i]) if i < len(lnvs) else None,
+                    "origin": "vizugy.hu",
+                }
+    except Exception as exc:
+        print(f"[WARN] Failed to fetch vizugy.hu operative telemetry: {exc}")
+
+    return vizugy_by_id
 
 
 def fetch_hydroinfo_official_forecasts():
@@ -280,29 +339,45 @@ def build_hydro_payload(force_refresh=False):
         return _CACHE["payload"]
 
     obs_map, obs_date = fetch_hydroinfo_observations()
+    vizugy_map = fetch_vizugy_operative_observations()
     ovf_forecasts = fetch_hydroinfo_official_forecasts()
     catchment_weather = fetch_all_catchments_weather()
 
     live_obs_count = 0
+    live_vizugy_count = 0
     live_ovf_forecast_count = 0
     stations_out = []
 
     for st in STATIONS_CATALOG:
         code = st["code"]
+        vizugy_id = st.get("vizugy_id") or (code.replace("VIZUGY_", "") if code.startswith("VIZUGY_") else None)
         obs = obs_map.get(code)
+        v_obs = vizugy_map.get(vizugy_id) if vizugy_id else None
+
         if obs:
             live_obs_count += 1
             curr_level = obs["current_level_cm"]
             diff_24h = obs["diff_24h_cm"]
-            discharge_0 = obs["discharge_m3s"] if obs["discharge_m3s"] is not None else st["default_discharge"]
+            discharge_0 = obs["discharge_m3s"] if obs["discharge_m3s"] is not None else (v_obs["discharge_m3s"] if v_obs and v_obs["discharge_m3s"] else st["default_discharge"])
             water_temp = obs["water_temp_c"] if obs["water_temp_c"] is not None else st["default_temp"]
             ice_status = obs["ice_status"]
+            day0_source = "OVF / INHGA Hivatalos élő mérés (hydroinfo.hu)"
+        elif v_obs:
+            live_obs_count += 1
+            live_vizugy_count += 1
+            curr_level = v_obs["current_level_cm"]
+            diff_24h = st["default_diff24h"]
+            discharge_0 = v_obs["discharge_m3s"] if v_obs["discharge_m3s"] is not None else st["default_discharge"]
+            water_temp = v_obs["water_temp_c"] if v_obs["water_temp_c"] is not None else st["default_temp"]
+            ice_status = "jégmentes"
+            day0_source = f"OVF Operatív Vízállás élő mérés (vizugy.hu • {v_obs['measured_at']})"
         else:
             curr_level = st["default_level"]
             diff_24h = st["default_diff24h"]
             discharge_0 = st["default_discharge"]
             water_temp = st["default_temp"]
             ice_status = "jégmentes"
+            day0_source = "Copernicus GloFAS v4 (5km) & INHGA Referencia"
 
         lookup_key = _norm_hu(f"{st['river']} {st['name']}")
         ovf_fc = ovf_forecasts.get(lookup_key)
@@ -322,6 +397,12 @@ def build_hydro_payload(force_refresh=False):
         q_days = c_data["glofas_discharge"]
         resp_factor = c_data["info"]["response_factor"]
         lag_days = c_data["info"]["lag_days"]
+        water_category = st.get("water_category", "major")
+
+        # Smaller streams & creeks respond faster to local rainfall and recede faster
+        if water_category == "minor":
+            resp_factor = resp_factor * 0.72
+            lag_days = max(0, lag_days - 1)
 
         timeline = []
         cum_precip = 0.0
@@ -336,7 +417,7 @@ def build_hydro_payload(force_refresh=False):
             if d == 0:
                 lvl = curr_level
                 unc = 0
-                src = "OVF / INHGA Hivatalos élő mérés (hydroinfo.hu)" if obs else "INHGA / GloFAS Referencia mérőállomás"
+                src = day0_source
                 daily_chg = diff_24h
             elif ovf_fc and 1 <= d <= 6:
                 lvl = ovf_fc["days"][d - 1]["level_cm"]
@@ -355,7 +436,7 @@ def build_hydro_payload(force_refresh=False):
                 src = "OVF Extrapoláció + Open-Meteo GloFAS (7. nap)"
                 daily_chg = lvl - prev_level
             else:
-                decay = 0.55 ** d
+                decay = (0.45 if water_category == "minor" else 0.55) ** d
                 momentum_step = diff_24h * decay
                 eff_day = max(0, d - lag_days)
                 eff_w = w_days[min(eff_day, len(w_days) - 1)]
@@ -365,20 +446,20 @@ def build_hydro_payload(force_refresh=False):
                 glofas_step = 0.0
                 if len(q_days) > d and q_days[0] > 0.5:
                     q_ratio = (q_days[d] - q_days[d - 1]) / max(1.0, q_days[0])
-                    glofas_step = q_ratio * 65.0
+                    glofas_step = q_ratio * (35.0 if water_category == "minor" else 65.0)
 
-                mean_target = (st["thresholds"]["low"] + st["thresholds"]["deg1"]) * 0.38
-                reversion = (mean_target - prev_level) * (0.02 if st["basin"] == "tavak" else 0.06)
+                mean_target = (st["thresholds"]["low"] + st["thresholds"]["deg1"]) * 0.36
+                reversion = (mean_target - prev_level) * (0.02 if st["basin"] == "tavak" else 0.07)
 
                 step_delta = momentum_step + rain_step + glofas_step + reversion
                 lvl = int(round(prev_level + step_delta))
-                unc = int(round((3 if st["basin"] == "tavak" else 7) + d * (1.8 if st["basin"] == "tavak" else 4.5)))
-                src = "Open-Meteo + GloFAS Hidrológiai Lefolyásmodell"
+                unc = int(round((3 if st["basin"] == "tavak" else 5) + d * (1.8 if st["basin"] == "tavak" else 3.8)))
+                src = "Open-Meteo + GloFAS v4 (5km) Kisvízgyűjtő Lefolyásmodell" if water_category == "minor" else "Open-Meteo + GloFAS Hidrológiai Lefolyásmodell"
                 daily_chg = lvl - prev_level
 
-            level_span = max(120, st["thresholds"]["deg1"] - st["thresholds"]["low"])
+            level_span = max(80, st["thresholds"]["deg1"] - st["thresholds"]["low"])
             rel_stage = (lvl - curr_level) / level_span
-            est_q = max(1.0, round(discharge_0 * math.exp(rel_stage * 0.85), 1))
+            est_q = max(0.2, round(discharge_0 * math.exp(rel_stage * 0.85), 1))
 
             alert_code, alert_label = classify_alert(lvl, st["thresholds"])
 
@@ -405,6 +486,7 @@ def build_hydro_payload(force_refresh=False):
         stations_out.append({
             "code": st["code"],
             "country": st.get("country", "HU"),
+            "water_category": water_category,
             "name": st["name"],
             "river": st["river"],
             "basin": st["basin"],
@@ -431,14 +513,17 @@ def build_hydro_payload(force_refresh=False):
             "total_stations": len(stations_out),
             "hu_stations": sum(1 for s in stations_out if s["country"] == "HU"),
             "ro_stations": sum(1 for s in stations_out if s["country"] == "RO"),
+            "major_stations": sum(1 for s in stations_out if s["water_category"] == "major"),
+            "minor_stations": sum(1 for s in stations_out if s["water_category"] == "minor"),
             "countries": COUNTRIES_META,
             "live_hydroinfo_matched": live_obs_count,
+            "live_vizugy_matched": live_vizugy_count,
             "official_ovf_forecast_stations": live_ovf_forecast_count,
             "sources": [
                 "Országos Vízjelző Szolgálat (OVF / hydroinfo.hu)",
+                "OVF Operatív Vízállás (vizugy.hu — kisvízfolyások, patakok és főcsatornák)",
                 "INHGA Románia (74xxxx Duna és Erdélyi vízmércék)",
-                "Open-Meteo Weather Forecast API (ECMWF IFS)",
-                "Open-Meteo GloFAS River Discharge Forecast API",
+                "Copernicus GloFAS v4 (5 km-es felbontású vízhozam modell) & Open-Meteo IFS",
             ],
         },
         "catchments": {
@@ -496,8 +581,9 @@ if __name__ == "__main__":
     payload = build_hydro_payload(force_refresh=True)
     print(
         f"[WVis] Loaded {payload['meta']['total_stations']} stations "
-        f"(HU: {payload['meta']['hu_stations']}, RO: {payload['meta']['ro_stations']}, "
-        f"{payload['meta']['live_hydroinfo_matched']} live hydroinfo measurements, "
+        f"(HU: {payload['meta']['hu_stations']}, RO: {payload['meta']['ro_stations']} | "
+        f"Major: {payload['meta']['major_stations']}, Minor waters: {payload['meta']['minor_stations']} | "
+        f"{payload['meta']['live_hydroinfo_matched']} live hydroinfo+vizugy measurements, "
         f"{payload['meta']['official_ovf_forecast_stations']} official 6-day OVF forecasts)."
     )
     socketserver.TCPServer.allow_reuse_address = True

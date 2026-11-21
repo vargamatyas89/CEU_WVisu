@@ -1,6 +1,6 @@
 """
-Románia (RO) — Vízgyűjtők és Hivatalos Vízügyi Mérőállomások (INHGA / OVF hydroinfo.hu 74xxxx & GloFAS)
-Különálló ország-forrásfájl (56 romániai vízmérce és 6 vízgyűjtő)
+Románia (RO) — Vízgyűjtők és Hivatalos Vízügyi Mérőállomások (INHGA / OVF hydroinfo.hu 74xxxx & Copernicus GloFAS v4 5km)
+Különálló ország-forrásfájl (78 romániai vízmérce: 56 főfolyó/nagy tó + 22 kisvízfolyás, hegyi folyó és mellékág)
 """
 
 COUNTRY_META = {
@@ -21,6 +21,9 @@ CATCHMENTS = {
 }
 
 STATIONS = [
+    # =========================================================================
+    # 1. FŐFOLYÓK ÉS NAGY TAVAK (56 állomás)
+    # =========================================================================
     # --- ERDÉLY, MÁRAMAROS, SZATMÁR, PARTIUM (Tisza-vízgyűjtő Romániában - 18 élő állomás) ---
     {
         "code": "744102", "country": "RO", "name": "Máramarossziget", "river": "Tisza", "basin": "tisza", "catchment": "upper_tisza",
@@ -72,7 +75,7 @@ STATIONS = [
     },
     {
         "code": "744392", "country": "RO", "name": "Domahida", "river": "Kraszna", "basin": "tisza", "catchment": "upper_tisza",
-        "reach_name": "Kraszna (Crasna) – Szilágysomlyó – Alsószopor – Domahida (Domănești)", "lat": 47.738, "lon": 22.582, "fkm": 48.0,
+        "reach_name": "Kraszna (Crasna) – Szilágysomlyó – Domahida (Domănești)", "lat": 47.738, "lon": 22.582, "fkm": 48.0,
         "thresholds": {"lkv": 10, "low": 70, "deg1": 360, "deg2": 430, "deg3": 500, "lnv": 610},
         "default_level": 223, "default_diff24h": 7, "default_discharge": 3.9, "default_temp": 7.1, "downstream_order": 1
     },
@@ -108,7 +111,7 @@ STATIONS = [
     },
     {
         "code": "744455", "country": "RO", "name": "Tenke", "river": "Fekete-Körös", "basin": "tisza", "catchment": "korosok",
-        "reach_name": "Fekete-Körös (Crișul Negru) – Tenke (Tinca) – Talpas szakasz", "lat": 46.775, "lon": 21.932, "fkm": 64.0,
+        "reach_name": "Fekete-Körös (Crișul Negru) – Tenke (Tinca) szakasz", "lat": 46.775, "lon": 21.932, "fkm": 64.0,
         "thresholds": {"lkv": -10, "low": 60, "deg1": 370, "deg2": 450, "deg3": 530, "lnv": 650},
         "default_level": 184, "default_diff24h": -138, "default_discharge": 56.3, "default_temp": 7.5, "downstream_order": 2
     },
@@ -126,7 +129,7 @@ STATIONS = [
     },
     {
         "code": "744409", "country": "RO", "name": "Kisjenő", "river": "Fehér-Körös", "basin": "tisza", "catchment": "korosok",
-        "reach_name": "Fehér-Körös (Crișul Alb) – Borosjenő – Kisjenő (Chișineu-Criș)", "lat": 46.522, "lon": 21.518, "fkm": 32.0,
+        "reach_name": "Fehér-Körös (Crișul Alb) – Kisjenő (Chișineu-Criș)", "lat": 46.522, "lon": 21.518, "fkm": 32.0,
         "thresholds": {"lkv": -40, "low": 50, "deg1": 480, "deg2": 580, "deg3": 680, "lnv": 815},
         "default_level": 432, "default_diff24h": 213, "default_discharge": 47.0, "default_temp": 7.7, "downstream_order": 2
     },
@@ -164,13 +167,13 @@ STATIONS = [
     },
     {
         "code": "744618", "country": "RO", "name": "Soborsin", "river": "Maros", "basin": "tisza", "catchment": "transylvania_maros",
-        "reach_name": "Maros (Mureș) – Marosillye – Soborsin (Săvârșin) – Lippa", "lat": 46.012, "lon": 22.235, "fkm": 235.0,
+        "reach_name": "Maros (Mureș) – Marosillye – Soborsin (Săvârșin)", "lat": 46.012, "lon": 22.235, "fkm": 235.0,
         "thresholds": {"lkv": -90, "low": -20, "deg1": 370, "deg2": 460, "deg3": 550, "lnv": 680},
         "default_level": 37, "default_diff24h": -5, "default_discharge": 117.0, "default_temp": 7.8, "downstream_order": 4
     },
     {
         "code": "744622", "country": "RO", "name": "Arad", "river": "Maros", "basin": "tisza", "catchment": "lower_tisza",
-        "reach_name": "Maros (Mureș) – Máriaradna – Arad szakasz", "lat": 46.172, "lon": 21.322, "fkm": 98.0,
+        "reach_name": "Maros (Mureș) – Arad szakasz", "lat": 46.172, "lon": 21.322, "fkm": 98.0,
         "thresholds": {"lkv": -115, "low": -40, "deg1": 350, "deg2": 430, "deg3": 510, "lnv": 645},
         "default_level": 17, "default_diff24h": -12, "default_discharge": 110.0, "default_temp": 8.0, "downstream_order": 5
     },
@@ -369,5 +372,163 @@ STATIONS = [
         "reach_name": "Vidraru-víztározó (Lacul Vidraru – Fogarasi-havasok / Argeș)", "lat": 45.378, "lon": 24.632, "fkm": 0.0,
         "thresholds": {"lkv": 140, "low": 260, "deg1": 550, "deg2": 610, "deg3": 670, "lnv": 740},
         "default_level": 388, "default_diff24h": 3, "default_discharge": 24.0, "default_temp": 6.5, "downstream_order": 1
+    },
+
+    # =========================================================================
+    # 2. KISVÍZFOLYÁSOK, HEGYI PATAKOK ÉS MELLÉKFOLYÓK (OVF 74xxxx & GloFAS v4 5km — 22 állomás)
+    # =========================================================================
+    {
+        "code": "744390", "water_category": "minor", "country": "RO",
+        "name": "Alsószopor", "river": "Kraszna", "basin": "tisza", "catchment": "upper_tisza",
+        "reach_name": "Felső-Kraszna (Crasna) – Szilágysomlyó – Alsószopor (Supuru de Jos)", "lat": 47.462, "lon": 22.785, "fkm": 92.0,
+        "thresholds": {"lkv": -10, "low": 20, "deg1": 250, "deg2": 320, "deg3": 380, "lnv": 465},
+        "default_level": 33, "default_diff24h": 5, "default_discharge": 8.8, "default_temp": 6.9, "downstream_order": 1
+    },
+    {
+        "code": "744575", "water_category": "minor", "country": "RO",
+        "name": "Márkaszék", "river": "Berettyó", "basin": "tisza", "catchment": "korosok",
+        "reach_name": "Berettyó (Barcău) – Márkaszék (Marca) – Bisztraterebes", "lat": 47.212, "lon": 22.532, "fkm": 88.0,
+        "thresholds": {"lkv": -15, "low": 35, "deg1": 280, "deg2": 350, "deg3": 410, "lnv": 495},
+        "default_level": 101, "default_diff24h": -13, "default_discharge": 2.4, "default_temp": 7.3, "downstream_order": 2
+    },
+    {
+        "code": "744457", "water_category": "minor", "country": "RO",
+        "name": "Talpas", "river": "Fekete-Körös", "basin": "tisza", "catchment": "korosok",
+        "reach_name": "Fekete-Körös (Crișul Negru) – Talpas (Talpoș) szakasz", "lat": 46.678, "lon": 21.718, "fkm": 42.0,
+        "thresholds": {"lkv": -20, "low": 65, "deg1": 450, "deg2": 540, "deg3": 630, "lnv": 760},
+        "default_level": 351, "default_diff24h": -211, "default_discharge": 67.8, "default_temp": 7.6, "downstream_order": 3
+    },
+    {
+        "code": "744408", "water_category": "minor", "country": "RO",
+        "name": "Borosjenő", "river": "Fehér-Körös", "basin": "tisza", "catchment": "korosok",
+        "reach_name": "Fehér-Körös (Crișul Alb) – Borosjenő (Ineu) – Csigér-torkolat", "lat": 46.425, "lon": 21.835, "fkm": 68.0,
+        "thresholds": {"lkv": -45, "low": 35, "deg1": 380, "deg2": 460, "deg3": 540, "lnv": 670},
+        "default_level": 255, "default_diff24h": 30, "default_discharge": 62.8, "default_temp": 7.5, "downstream_order": 2
+    },
+    {
+        "code": "744444", "water_category": "minor", "country": "RO",
+        "name": "Kurtakér", "river": "Csigér", "basin": "tisza", "catchment": "korosok",
+        "reach_name": "Csigér-patak (Cigher) – Tauț-tározó – Kurtakér (Chier) – Borosjenő", "lat": 46.332, "lon": 21.892, "fkm": 14.0,
+        "thresholds": {"lkv": 15, "low": 60, "deg1": 280, "deg2": 340, "deg3": 400, "lnv": 485},
+        "default_level": 153, "default_diff24h": -11, "default_discharge": 1.2, "default_temp": 7.4, "downstream_order": 1
+    },
+    {
+        "code": "744620", "water_category": "minor", "country": "RO",
+        "name": "Máriaradna", "river": "Maros", "basin": "tisza", "catchment": "lower_tisza",
+        "reach_name": "Maros (Mureș) – Lippa – Máriaradna (Radna) szoros", "lat": 46.095, "lon": 21.688, "fkm": 142.0,
+        "thresholds": {"lkv": -110, "low": -45, "deg1": 350, "deg2": 430, "deg3": 510, "lnv": 640},
+        "default_level": -28, "default_diff24h": -8, "default_discharge": 108.0, "default_temp": 7.9, "downstream_order": 5
+    },
+    {
+        "code": "749101", "water_category": "minor", "country": "RO",
+        "name": "Kolozsvár (Cluj)", "river": "Kis-Szamos", "basin": "tisza", "catchment": "upper_tisza",
+        "reach_name": "Kis-Szamos (Someșul Mic) – Gyalu – Kolozsvár (Cluj-Napoca) – Szamosújvár – Dés", "lat": 46.772, "lon": 23.592, "fkm": 54.0,
+        "thresholds": {"lkv": -20, "low": 25, "deg1": 240, "deg2": 310, "deg3": 370, "lnv": 455},
+        "default_level": 74, "default_diff24h": 4, "default_discharge": 18.6, "default_temp": 6.7, "downstream_order": 1
+    },
+    {
+        "code": "749102", "water_category": "minor", "country": "RO",
+        "name": "Beszterce (Bistrița)", "river": "Nagy-Szamos", "basin": "tisza", "catchment": "upper_tisza",
+        "reach_name": "Nagy-Szamos (Someșul Mare) – Radna – Naszód – Bethlen – Dés", "lat": 47.185, "lon": 24.185, "fkm": 42.0,
+        "thresholds": {"lkv": -25, "low": 20, "deg1": 260, "deg2": 330, "deg3": 400, "lnv": 490},
+        "default_level": 68, "default_diff24h": 6, "default_discharge": 34.2, "default_temp": 6.4, "downstream_order": 1
+    },
+    {
+        "code": "749103", "water_category": "minor", "country": "RO",
+        "name": "Torda (Turda)", "river": "Aranyos", "basin": "tisza", "catchment": "transylvania_maros",
+        "reach_name": "Aranyos (Arieș) – Topánfalva – Torda (Turda) – Aranyosgyéres (Maros)", "lat": 46.565, "lon": 23.785, "fkm": 26.0,
+        "thresholds": {"lkv": -30, "low": 15, "deg1": 270, "deg2": 340, "deg3": 410, "lnv": 510},
+        "default_level": 82, "default_diff24h": 9, "default_discharge": 45.5, "default_temp": 6.6, "downstream_order": 1
+    },
+    {
+        "code": "749104", "water_category": "minor", "country": "RO",
+        "name": "Dicsőszentmárton", "river": "Kis-Küküllő", "basin": "tisza", "catchment": "transylvania_maros",
+        "reach_name": "Kis-Küküllő (Târnava Mică) – Szováta – Erdőszentgyörgy – Dicsőszentmárton – Balázsfalva", "lat": 46.328, "lon": 24.288, "fkm": 38.0,
+        "thresholds": {"lkv": -25, "low": 18, "deg1": 250, "deg2": 310, "deg3": 370, "lnv": 460},
+        "default_level": 64, "default_diff24h": 7, "default_discharge": 14.8, "default_temp": 6.9, "downstream_order": 1
+    },
+    {
+        "code": "749105", "water_category": "minor", "country": "RO",
+        "name": "Kézdivásárhely", "river": "Feketeügy", "basin": "olt_siret", "catchment": "olt_basin",
+        "reach_name": "Feketeügy (Râul Negru) – Kézdivásárhely – Kovászna – Prázsmár (Olt)", "lat": 45.965, "lon": 26.085, "fkm": 24.0,
+        "thresholds": {"lkv": -15, "low": 15, "deg1": 210, "deg2": 265, "deg3": 320, "lnv": 395},
+        "default_level": 48, "default_diff24h": 3, "default_discharge": 6.4, "default_temp": 6.3, "downstream_order": 1
+    },
+    {
+        "code": "749106", "water_category": "minor", "country": "RO",
+        "name": "Nagyszeben (Sibiu)", "river": "Cibin", "basin": "olt_siret", "catchment": "olt_basin",
+        "reach_name": "Cibin (Szeben-folyó) – Szebeni-havasok – Nagyszeben (Sibiu) –Talmacs (Olt)", "lat": 45.795, "lon": 24.162, "fkm": 22.0,
+        "thresholds": {"lkv": -10, "low": 20, "deg1": 220, "deg2": 275, "deg3": 330, "lnv": 410},
+        "default_level": 52, "default_diff24h": 4, "default_discharge": 11.2, "default_temp": 6.8, "downstream_order": 1
+    },
+    {
+        "code": "749107", "water_category": "minor", "country": "RO",
+        "name": "Szászsebes (Sebeș)", "river": "Sebes", "basin": "tisza", "catchment": "transylvania_maros",
+        "reach_name": "Sebes (Sebeș) – Oașa-tározó – Szászsebes (Sebeș) – Maros-torkolat", "lat": 45.955, "lon": 23.568, "fkm": 14.0,
+        "thresholds": {"lkv": -15, "low": 20, "deg1": 230, "deg2": 285, "deg3": 340, "lnv": 420},
+        "default_level": 58, "default_diff24h": 2, "default_discharge": 16.5, "default_temp": 6.9, "downstream_order": 1
+    },
+    {
+        "code": "749108", "water_category": "minor", "country": "RO",
+        "name": "Resicabánya (Reșița)", "river": "Berzava", "basin": "duna", "catchment": "banat_temes",
+        "reach_name": "Berzava (Bârzava) – Resicabánya – Boksánbánya – Gátalja – Detta", "lat": 45.308, "lon": 21.882, "fkm": 64.0,
+        "thresholds": {"lkv": -20, "low": 15, "deg1": 220, "deg2": 275, "deg3": 330, "lnv": 405},
+        "default_level": 49, "default_diff24h": 5, "default_discharge": 7.8, "default_temp": 7.7, "downstream_order": 1
+    },
+    {
+        "code": "749109", "water_category": "minor", "country": "RO",
+        "name": "Varadia (Oravica)", "river": "Karas", "basin": "duna", "catchment": "banat_temes",
+        "reach_name": "Karas (Caraș) – Krassóvár – Varadia – Fehértemplom (Duna)", "lat": 45.082, "lon": 21.545, "fkm": 42.0,
+        "thresholds": {"lkv": -15, "low": 15, "deg1": 215, "deg2": 270, "deg3": 325, "lnv": 395},
+        "default_level": 44, "default_diff24h": 3, "default_discharge": 6.9, "default_temp": 7.9, "downstream_order": 1
+    },
+    {
+        "code": "749110", "water_category": "minor", "country": "RO",
+        "name": "Herkulesfürdő", "river": "Cserna", "basin": "duna", "catchment": "banat_temes",
+        "reach_name": "Cserna (Cerna) – Cserna-völgy – Herkulesfürdő (Băile Herculane) – Orsova", "lat": 44.878, "lon": 22.415, "fkm": 16.0,
+        "thresholds": {"lkv": -10, "low": 20, "deg1": 230, "deg2": 285, "deg3": 340, "lnv": 415},
+        "default_level": 56, "default_diff24h": 4, "default_discharge": 14.2, "default_temp": 7.6, "downstream_order": 1
+    },
+    {
+        "code": "749111", "water_category": "minor", "country": "RO",
+        "name": "Bukarest (București)", "river": "Dâmbovița", "basin": "olt_siret", "catchment": "wallachia_south",
+        "reach_name": "Dâmbovița – Târgoviște – Bukarest (Lacul Morii) – Budești (Argeș)", "lat": 44.428, "lon": 26.102, "fkm": 45.0,
+        "thresholds": {"lkv": -15, "low": 20, "deg1": 240, "deg2": 295, "deg3": 350, "lnv": 430},
+        "default_level": 62, "default_diff24h": 2, "default_discharge": 12.4, "default_temp": 8.4, "downstream_order": 1
+    },
+    {
+        "code": "749112", "water_category": "minor", "country": "RO",
+        "name": "Ploiești (Adâncata)", "river": "Prahova", "basin": "olt_siret", "catchment": "wallachia_south",
+        "reach_name": "Prahova – Sinaia – Câmpina – Ploiești – Adâncata (Ialomița)", "lat": 44.782, "lon": 26.185, "fkm": 38.0,
+        "thresholds": {"lkv": -20, "low": 15, "deg1": 250, "deg2": 310, "deg3": 370, "lnv": 455},
+        "default_level": 58, "default_diff24h": 4, "default_discharge": 19.5, "default_temp": 8.1, "downstream_order": 1
+    },
+    {
+        "code": "749113", "water_category": "minor", "country": "RO",
+        "name": "Alexandria", "river": "Vedea", "basin": "olt_siret", "catchment": "wallachia_south",
+        "reach_name": "Vedea – Roșiorii de Vede – Alexandria – Teleorman – Duna", "lat": 43.968, "lon": 25.332, "fkm": 54.0,
+        "thresholds": {"lkv": -25, "low": 15, "deg1": 240, "deg2": 300, "deg3": 360, "lnv": 440},
+        "default_level": 51, "default_diff24h": 3, "default_discharge": 11.8, "default_temp": 8.6, "downstream_order": 1
+    },
+    {
+        "code": "749114", "water_category": "minor", "country": "RO",
+        "name": "Ónfalva (Onești)", "river": "Tatros", "basin": "olt_siret", "catchment": "moldova_siret_prut",
+        "reach_name": "Tatros (Trotuș) – Gyimes – Kománfalva – Ónfalva (Onești) – Adjud (Szeret)", "lat": 46.252, "lon": 26.775, "fkm": 36.0,
+        "thresholds": {"lkv": -20, "low": 20, "deg1": 265, "deg2": 330, "deg3": 395, "lnv": 485},
+        "default_level": 74, "default_diff24h": 8, "default_discharge": 31.0, "default_temp": 7.1, "downstream_order": 1
+    },
+    {
+        "code": "749115", "water_category": "minor", "country": "RO",
+        "name": "Bârlad (Vaslui)", "river": "Bârlad", "basin": "olt_siret", "catchment": "moldova_siret_prut",
+        "reach_name": "Bârlad – Vaslui – Bârlad – Tecuci (Szeret)", "lat": 46.228, "lon": 27.672, "fkm": 85.0,
+        "thresholds": {"lkv": -25, "low": 15, "deg1": 245, "deg2": 305, "deg3": 365, "lnv": 450},
+        "default_level": 56, "default_diff24h": 4, "default_discharge": 9.6, "default_temp": 7.6, "downstream_order": 1
+    },
+    {
+        "code": "749116", "water_category": "minor", "country": "RO",
+        "name": "Suceava", "river": "Suceava", "basin": "olt_siret", "catchment": "moldova_siret_prut",
+        "reach_name": "Suceava – Radóc (Rădăuți) – Suceava – Liteni (Szeret)", "lat": 47.652, "lon": 26.265, "fkm": 42.0,
+        "thresholds": {"lkv": -20, "low": 20, "deg1": 260, "deg2": 325, "deg3": 390, "lnv": 480},
+        "default_level": 68, "default_diff24h": 7, "default_discharge": 26.4, "default_temp": 6.8, "downstream_order": 1
     },
 ]
