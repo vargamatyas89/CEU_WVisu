@@ -55,6 +55,8 @@
   --alert-deg3: #ef4444;
   --hu-border-color: #fbbf24;
   --ro-border-color: #c084fc;
+  --sk-border-color: #22d3ee;
+  --at-border-color: #fb7185;
 
   /* MANDATORY fallback for browsers without light-dark() support */
   @media (prefers-color-scheme: dark) {
@@ -403,6 +405,8 @@ body {
 .swatch-deg3 { background: var(--alert-deg3); height: 10px; box-shadow: 0 0 6px var(--alert-deg3); }
 .swatch-border { background: transparent; border: 2px dashed var(--hu-border-color); height: 8px; }
 .swatch-ro-border { background: transparent; border: 2px dashed var(--ro-border-color); height: 8px; }
+.swatch-sk-border { background: transparent; border: 2px dashed var(--sk-border-color); height: 8px; }
+.swatch-at-border { background: transparent; border: 2px dashed var(--at-border-color); height: 8px; }
 
 .country-tag {
   display: inline-block;
@@ -424,6 +428,18 @@ body {
   background: rgba(192, 132, 252, 0.22);
   color: #c084fc;
   border: 1px solid rgba(192, 132, 252, 0.5);
+}
+
+.country-tag.country-SK {
+  background: rgba(34, 211, 238, 0.22);
+  color: #22d3ee;
+  border: 1px solid rgba(34, 211, 238, 0.5);
+}
+
+.country-tag.country-AT {
+  background: rgba(251, 113, 133, 0.22);
+  color: #fb7185;
+  border: 1px solid rgba(251, 113, 133, 0.5);
 }
 
 .layer-toggles {

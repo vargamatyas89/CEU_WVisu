@@ -513,6 +513,8 @@ def build_hydro_payload(force_refresh=False):
             "total_stations": len(stations_out),
             "hu_stations": sum(1 for s in stations_out if s["country"] == "HU"),
             "ro_stations": sum(1 for s in stations_out if s["country"] == "RO"),
+            "sk_stations": sum(1 for s in stations_out if s["country"] == "SK"),
+            "at_stations": sum(1 for s in stations_out if s["country"] == "AT"),
             "major_stations": sum(1 for s in stations_out if s["water_category"] == "major"),
             "minor_stations": sum(1 for s in stations_out if s["water_category"] == "minor"),
             "countries": COUNTRIES_META,
@@ -522,7 +524,7 @@ def build_hydro_payload(force_refresh=False):
             "sources": [
                 "Országos Vízjelző Szolgálat (OVF / hydroinfo.hu)",
                 "OVF Operatív Vízállás (vizugy.hu — kisvízfolyások, patakok és főcsatornák)",
-                "INHGA Románia (74xxxx Duna és Erdélyi vízmércék)",
+                "SHMÚ Szlovákia (14xxxx) & eHYD Ausztria (24xxxx) & INHGA Románia (74xxxx)",
                 "Copernicus GloFAS v4 (5 km-es felbontású vízhozam modell) & Open-Meteo IFS",
             ],
         },
