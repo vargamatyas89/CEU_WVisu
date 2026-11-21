@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- MANDATORY: Declare support for both light and dark themes early to prevent FOUC -->
+  <meta name="color-scheme" content="light dark">
+  <title>WVis — Magyarország Interaktív Víztérképe és 1–7 Napos Vízállás-Előrejelzése</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top Header Bar -->
+    <header class="top-bar">
+      <div class="brand-group">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="28" height="28" fill="none">
+            <path d="M3 19C6.5 15.5 10.5 15.5 14 19C17.5 22.5 21.5 22.5 25 19C26.8 17.2 28.2 16.5 29.5 16.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+            <path d="M3 12.5C6.5 9 10.5 9 14 12.5C17.5 16 21.5 16 25 12.5C26.8 10.7 28.2 10 29.5 10" stroke="#38bdf8" stroke-width="2.6" stroke-linecap="round"/>
+            <circle cx="14" cy="12.5" r="3" fill="#f59e0b"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">Magyarország Interaktív Vízügyi és Előrejelző Térképe</h1>
+          <p class="brand-subtitle">
+            <span class="live-dot" aria-hidden="true"></span>
+            <span id="meta-source-label">Országos Vízjelző Szolgálat (OVF / hydroinfo.hu) &amp; Open-Meteo Hidrometeorológiai Modell</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Filter & Scenario Controls -->
+      <div class="header-controls">
+        <div class="control-group">
+          <label for="basin-filter" class="control-label">Vízgyűjtő</label>
+          <select id="basin-filter" class="select-control">
+            <option value="all">Összes magyar vízgyűjtő (64 szakasz)</option>
+            <option value="duna">Duna és mellékfolyói (Rába, Ipoly, Sió, Zala)</option>
+            <option value="tisza">Tisza és mellékfolyói (Körösök, Maros, Sajó, Bodrog)</option>
+            <option value="drava">Dráva és Mura vízrendszer</option>
+            <option value="tavak">Nagy tavak (Balaton, Tisza-tó, Velencei-tó, Fertő)</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="weather-scenario" class="control-label">Időjárási szcenárió (1–7. nap)</label>
+          <select id="weather-scenario" class="select-control">
+            <option value="live">Valós Open-Meteo &amp; OVF előrejelzés (Alap)</option>
+            <option value="rain50">+50 mm Intenzív vízgyűjtő csapadék</option>
+            <option value="rain120">+120 mm Extrém ciklon / Árhullám</option>
+            <option value="drought">Tartós szárazság / Apadási szcenárió</option>
+          </select>
+        </div>
+
+        <div class="control-group search-group">
+          <label for="station-search" class="control-label">Vízmérce / Folyó keresése</label>
+          <input type="search" id="station-search" class="search-control" placeholder="Pl. Budapest, Tisza, Tokaj, Balaton...">
+        </div>
+
+        <div class="action-buttons">
+          <button type="button" id="btn-refresh" class="btn-secondary" title="Élő adatok frissítése a hydroinfo.hu és Open-Meteo szerverekről">
+            ⟳ Élő frissítés
+          </button>
+          <button type="button" id="btn-theme-toggle" class="btn-secondary" title="Térkép színséma váltása (Sötét / Világos)">
+            ◐ Téma
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Grid: Map + Inspector Sidebar -->
+    <main class="main-layout">
+      <!-- Left / Center Interactive Map Area -->
+      <section class="map-section" aria-label="Magyarország interaktív víztérképe">
+        <div id="map" class="map-canvas"></div>
+
+        <!-- Top-Left Floating KPI Summary Ribbon -->
+        <div class="map-overlay-top-left">
+          <div class="kpi-card">
+            <span class="kpi-label">Kiválasztott idősík</span>
+            <strong class="kpi-value highlight-blue" id="kpi-active-day">Ma (Aktuális)</strong>
+            <span class="kpi-sub" id="kpi-active-date">Betöltés...</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Áradó szakaszok</span>
+            <strong class="kpi-value" id="kpi-rising-count">0</strong>
+            <span class="kpi-sub" id="kpi-max-rise">Max: +0 cm</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Készültségi / Emelkedett</span>
+            <strong class="kpi-value" id="kpi-alert-count">0</strong>
+            <span class="kpi-sub" id="kpi-alert-detail">Minden szakasz normál</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Vízgyűjtő csapadék</span>
+            <strong class="kpi-value" id="kpi-precip-avg">0.0 mm</strong>
+            <span class="kpi-sub" id="kpi-temp-avg">Átlag: -- °C</span>
+          </div>
+        </div>
+
+        <!-- Top-Right Map Layer & Legend Controls -->
+        <div class="map-overlay-top-right">
+          <div class="legend-panel">
+            <div class="legend-header">
+              <span class="legend-title">Vízállás és Készültségi Színkódok</span>
+            </div>
+            <ul class="legend-list">
+              <li><span class="swatch swatch-low"></span> Kisvíz / Alacsony vízállás</li>
+              <li><span class="swatch swatch-normal"></span> Normál üzemi vízjárás</li>
+              <li><span class="swatch swatch-elevated"></span> Emelkedett vízszint / Árhullám</li>
+              <li><span class="swatch swatch-deg1"></span> I. fokú árvízi készültség</li>
+              <li><span class="swatch swatch-deg2"></span> II. fokú árvízi készültség</li>
+              <li><span class="swatch swatch-deg3"></span> III. fokú árvízi készültség</li>
+              <li><span class="swatch swatch-border"></span> Magyarország államhatára</li>
+            </ul>
+            <div class="layer-toggles">
+              <label for="toggle-stations">
+                <input type="checkbox" id="toggle-stations" class="visually-hidden-fallback" checked>
+                <span>Mérőállomás pontok</span>
+              </label>
+              <label for="toggle-labels">
+                <input type="checkbox" id="toggle-labels" class="visually-hidden-fallback" checked>
+                <span>Folyó- és állomásnevek</span>
+              </label>
+              <label for="toggle-basemap">
+                <input type="checkbox" id="toggle-basemap" class="visually-hidden-fallback" checked>
+                <span>Domborzati alaptérkép</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Floating Timeline Slider Dock (0 - 7 days) -->
+        <div class="timeline-dock" role="region" aria-label="1-7 napos vízállás előrejelzési időcsúszka">
+          <div class="timeline-header">
+            <div class="timeline-title-block">
+              <button type="button" id="btn-play-timeline" class="btn-play" aria-label="Idősor animáció lejátszása">
+                ▶ Lejátszás
+              </button>
+              <div>
+                <label for="forecast-day-slider" class="timeline-label">
+                  Vízállás-előrejelzési időcsúszka (Időjárás és OVF modell alapján):
+                </label>
+                <div class="timeline-status-line">
+                  <strong id="slider-day-badge" class="day-badge">Ma — Aktuális hivatalos mérés</strong>
+                  <span id="slider-weather-summary" class="weather-pill">Csapadék: 0.0 mm • Hőmérséklet: -- °C</span>
+                </div>
+              </div>
+            </div>
+            <div class="timeline-quick-steps">
+              <button type="button" class="step-chip active" data-day="0">Ma (0.)</button>
+              <button type="button" class="step-chip" data-day="1">+1 nap</button>
+              <button type="button" class="step-chip" data-day="2">+2 nap</button>
+              <button type="button" class="step-chip" data-day="3">+3 nap</button>
+              <button type="button" class="step-chip" data-day="4">+4 nap</button>
+              <button type="button" class="step-chip" data-day="5">+5 nap</button>
+              <button type="button" class="step-chip" data-day="6">+6 nap</button>
+              <button type="button" class="step-chip" data-day="7">+7 nap</button>
+            </div>
+          </div>
+
+          <div class="slider-wrapper">
+            <input
+              type="range"
+              id="forecast-day-slider"
+              min="0"
+              max="7"
+              step="1"
+              value="0"
+              aria-valuetext="Ma (Aktuális mért vízállás)"
+            >
+            <div class="slider-ticks" id="slider-ticks-container" aria-hidden="true">
+              <!-- Populated dynamically with dates & day names -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Floating Hover Tooltip Card (Follows cursor over rivers, lakes, and stations) -->
+        <div id="hydro-hover-card" class="hydro-hover-card hidden" role="tooltip" aria-live="polite">
+          <!-- Populated dynamically on hover -->
+        </div>
+      </section>
+
+      <!-- Right Sidebar: Detailed Station Inspector & All Stations List -->
+      <aside class="inspector-sidebar" aria-label="Részletes vízügyi adatlap és állomáslista">
+        <!-- Pinned / Selected Station Detailed Card -->
+        <div class="inspector-card" id="pinned-station-panel">
+          <div class="inspector-empty">
+            <p class="inspector-hint">
+              Vigye az egeret bármely <strong>folyószakasz, tó vagy mérőállomás</strong> fölé a térképen az azonnali vízállás-adatlaphoz, vagy kattintson rá a részletes elemzés rögzítéséhez!
+            </p>
+          </div>
+        </div>
+
+        <!-- Scrollable Table of Hungarian Gauging Stations -->
+        <div class="station-list-container">
+          <div class="station-list-header">
+            <h2>Hivatalos Vízügyi Mérési Pontok (<span id="station-count-badge">64</span>)</h2>
+            <span class="sort-hint">Rendezve folyásirány szerint</span>
+          </div>
+          <div class="station-list-scroller" id="station-list">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Leaflet JS & Hungary Hydrography Geometry Bundle -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="/hungary_geo.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
