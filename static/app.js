@@ -30,7 +30,7 @@
     playTimer: null,
     showMinorWaters: true,
     showStations: true,
-    showLabels: true,
+    labelMode: "off", // 'off' (clean default) | 'smart' (zoom + alerts w/ collision avoidance) | 'all'
     showBasemap: true,
     basemapSource: "opentopomap", // 'opentopomap' | 'cyclosm' | 'osm_hot' | 'osm_standard' | 'none'
     darkMode: window.matchMedia("(prefers-color-scheme: dark)").matches,
@@ -105,6 +105,7 @@
   const basinSelect = document.getElementById("basin-filter");
   const scenarioSelect = document.getElementById("weather-scenario");
   const basemapSelect = document.getElementById("basemap-source");
+  const labelModeSelect = document.getElementById("label-mode-select");
   const searchInput = document.getElementById("station-search");
   const refreshBtn = document.getElementById("btn-refresh");
   const themeBtn = document.getElementById("btn-theme-toggle");
@@ -308,7 +309,7 @@
     map.createPane("stationPane").style.zIndex = 480;
 
     renderBordersAndGeography();
-    map.on("zoomend", () => {
+    map.on("zoomend moveend", () => {
       renderStationMarkers();
     });
   }
@@ -477,21 +478,29 @@
     });
   }
 
-  // Build or Update Gauging Station Markers on the Map
+  // Build or Update Gauging Station Markers & Smart Collision-Free Labels on the Map
   function renderStationMarkers() {
+    const currentZoom = map ? map.getZoom() : 7;
+    const mapBounds = map ? map.getBounds() : null;
+    const isOverviewZoom = currentZoom < 7.25;
+
+    // 1. Update markers & collect label candidates for priority-ordered collision avoidance
+    const smartCandidates = [];
+
     for (const [code, st] of state.stationsByCode.entries()) {
       let entry = stationMarkersByCode.get(code);
       const dayData = getStationDayData(st, state.activeDay);
       const color = ALERT_COLORS[dayData.alert_level] || ALERT_COLORS.normal;
+      const isAlert = ["deg1", "deg2", "deg3"].includes(dayData.alert_level);
 
       if (!entry) {
         const marker = L.circleMarker([st.lat, st.lon], {
           pane: "stationPane",
-          radius: 5.8,
+          radius: 4.5,
           color: "#ffffff",
-          weight: 2,
+          weight: 1.5,
           fillColor: color,
-          fillOpacity: 1,
+          fillOpacity: 0.95,
         }).addTo(map);
 
         const tooltip = L.tooltip({
@@ -502,6 +511,7 @@
         });
 
         marker.bindTooltip(tooltip);
+        marker.closeTooltip();
         bindHydroHoverAndClick(marker, code);
 
         entry = { marker, tooltip };
@@ -510,49 +520,129 @@
 
       const isVisible = matchesFilters(st);
       const isMinor = st.water_category === "minor";
+      const isPinned = code === state.pinnedCode;
       const alertWeightBoost =
         dayData.alert_level === "deg3"
-          ? 4.5
+          ? 4.2
           : dayData.alert_level === "deg2"
-          ? 3.2
+          ? 3.0
           : dayData.alert_level === "deg1"
-          ? 2.2
+          ? 2.0
           : dayData.alert_level === "elevated"
-          ? 1.2
+          ? 0.9
           : 0;
 
       if (isVisible && state.showStations) {
         if (!map.hasLayer(entry.marker)) entry.marker.addTo(map);
-        const baseRadius = code === state.pinnedCode ? 8 : isMinor ? 4.4 : 5.6;
+
+        // Zoom-aware clean marker sizing so rivers shine clearly at overview zoom
+        const baseRadius = isPinned
+          ? 7.5
+          : isMinor
+          ? isOverviewZoom
+            ? 2.8
+            : 4.2
+          : isOverviewZoom
+          ? 4.1
+          : 5.5;
+
         entry.marker.setStyle({
           fillColor: color,
-          radius: baseRadius + alertWeightBoost * 0.65,
-          weight: code === state.pinnedCode ? 2.8 : isMinor ? 1.5 : 1.8,
+          fillOpacity: isPinned || isAlert ? 1 : isMinor && isOverviewZoom ? 0.78 : 0.92,
+          color: isAlert ? "#fef08a" : "#ffffff",
+          opacity: isPinned || isAlert ? 1 : isOverviewZoom ? 0.72 : 0.92,
+          radius: baseRadius + alertWeightBoost * 0.6,
+          weight: isPinned ? 2.8 : isAlert ? 2.3 : isMinor ? 1.1 : 1.5,
         });
+
+        const pathEl = entry.marker.getElement && entry.marker.getElement();
+        if (pathEl) {
+          pathEl.classList.toggle("alert-pulse-marker", isAlert);
+        }
 
         const sign = dayData.delta_from_today_cm > 0 ? "+" : "";
         const deltaTxt =
           state.activeDay === 0
             ? ""
             : ` (${sign}${dayData.delta_from_today_cm})`;
-        entry.tooltip.setContent(`${st.name}: ${dayData.level_cm} cm${deltaTxt}`);
+        const labelText = `${st.name}: ${dayData.level_cm} cm${deltaTxt}`;
+        entry.tooltip.setContent(labelText);
 
-        const currentZoom = map ? map.getZoom() : 7;
-        const shouldShowLabel =
-          state.showLabels &&
-          (!isMinor ||
+        if (state.labelMode === "off") {
+          if (entry.marker.isTooltipOpen()) entry.marker.closeTooltip();
+        } else if (state.labelMode === "all") {
+          const showAll =
+            !isMinor ||
             currentZoom >= 7.75 ||
             state.basinFilter === "minor_only" ||
             Boolean(state.searchQuery) ||
-            code === state.pinnedCode);
-
-        if (shouldShowLabel) {
-          if (!entry.marker.isTooltipOpen()) entry.marker.openTooltip();
+            isPinned;
+          if (showAll) {
+            if (!entry.marker.isTooltipOpen()) entry.marker.openTooltip();
+          } else {
+            if (entry.marker.isTooltipOpen()) entry.marker.closeTooltip();
+          }
         } else {
-          if (entry.marker.isTooltipOpen()) entry.marker.closeTooltip();
+          // Smart mode: collect in-viewport eligible stations for collision-free placement
+          const inView = !mapBounds || mapBounds.contains([st.lat, st.lon]);
+          const eligible =
+            inView &&
+            (isPinned ||
+              isAlert ||
+              Boolean(state.searchQuery) ||
+              (currentZoom >= 8.5 && (!isMinor || currentZoom >= 9.5 || state.basinFilter === "minor_only")));
+
+          if (eligible) {
+            const priority = isPinned
+              ? 100
+              : dayData.alert_level === "deg3"
+              ? 90
+              : dayData.alert_level === "deg2"
+              ? 80
+              : dayData.alert_level === "deg1"
+              ? 70
+              : dayData.alert_level === "elevated"
+              ? 40
+              : isMinor
+              ? 10
+              : 25;
+            smartCandidates.push({ entry, st, labelText, priority });
+          } else {
+            if (entry.marker.isTooltipOpen()) entry.marker.closeTooltip();
+          }
         }
       } else {
+        if (entry.marker.isTooltipOpen()) entry.marker.closeTooltip();
         if (map.hasLayer(entry.marker)) map.removeLayer(entry.marker);
+      }
+    }
+
+    // 2. Priority-ordered 2D screen-space collision avoidance for Smart mode
+    if (state.labelMode === "smart" && map && smartCandidates.length) {
+      smartCandidates.sort((a, b) => b.priority - a.priority);
+      const placedBoxes = [];
+
+      for (const item of smartCandidates) {
+        const pt = map.latLngToContainerPoint([item.st.lat, item.st.lon]);
+        const estW = Math.min(210, Math.max(76, item.labelText.length * 6.4 + 14));
+        const estH = 22;
+        const box = {
+          x1: pt.x - estW / 2 - 4,
+          x2: pt.x + estW / 2 + 4,
+          y1: pt.y - estH - 12,
+          y2: pt.y - 4,
+        };
+
+        const overlaps = placedBoxes.some(
+          (b) => !(box.x2 < b.x1 || box.x1 > b.x2 || box.y2 < b.y1 || box.y1 > b.y2)
+        );
+
+        if (!overlaps) {
+          placedBoxes.push(box);
+          if (!item.entry.marker.isTooltipOpen()) item.entry.marker.openTooltip();
+        } else {
+          if (item.entry.marker.isTooltipOpen()) item.entry.marker.closeTooltip();
+        }
       }
     }
   }
@@ -1090,6 +1180,7 @@
     syncSelectOptions(basinSelect, dict.basinOpts);
     syncSelectOptions(scenarioSelect, dict.scenarioOpts);
     syncSelectOptions(basemapSelect, dict.basemapOpts);
+    syncSelectOptions(labelModeSelect, dict.labelModeOpts);
 
     if (searchInput && dict.searchPlaceholder) {
       searchInput.placeholder = dict.searchPlaceholder;
@@ -1264,10 +1355,13 @@
       renderStationMarkers();
     });
 
-    document.getElementById("toggle-labels").addEventListener("change", (e) => {
-      state.showLabels = e.target.checked;
-      renderStationMarkers();
-    });
+    if (labelModeSelect) {
+      labelModeSelect.value = state.labelMode;
+      labelModeSelect.addEventListener("change", () => {
+        state.labelMode = labelModeSelect.value;
+        renderStationMarkers();
+      });
+    }
 
     document.getElementById("toggle-basemap").addEventListener("change", (e) => {
       state.showBasemap = e.target.checked;

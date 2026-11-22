@@ -169,6 +169,14 @@
                   <option value="none">Kikapcsolva (100% vektoros mód)</option>
                 </select>
               </div>
+              <div class="basemap-select-wrap">
+                <label for="label-mode-select" class="control-label" data-i18n="lblLabelMode">Állomás-címkék</label>
+                <select id="label-mode-select" name="label_mode" class="select-control" style="width: 100%; margin-top: 0.2rem;">
+                  <option value="off" selected>Kikapcsolva (Tiszta térkép)</option>
+                  <option value="smart">Okos (Zoom + Riasztás)</option>
+                  <option value="all">Mind megjelenítése</option>
+                </select>
+              </div>
               <label for="toggle-minor-waters">
                 <input type="checkbox" id="toggle-minor-waters" class="visually-hidden-fallback" checked>
                 <span data-i18n="toggleMinor">Kisvízfolyások, patakok, csatornák (156)</span>
@@ -176,10 +184,6 @@
               <label for="toggle-stations">
                 <input type="checkbox" id="toggle-stations" class="visually-hidden-fallback" checked>
                 <span data-i18n="toggleStations">Mérőállomás pontok</span>
-              </label>
-              <label for="toggle-labels">
-                <input type="checkbox" id="toggle-labels" class="visually-hidden-fallback" checked>
-                <span data-i18n="toggleLabels">Folyó- és állomásnevek</span>
               </label>
               <label for="toggle-basemap">
                 <input type="checkbox" id="toggle-basemap" class="visually-hidden-fallback" checked>
