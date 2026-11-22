@@ -12,6 +12,7 @@ Modular Country Architecture & Multi-Source Live Telemetry:
    - Open-Meteo Weather & Copernicus GloFAS v4 (5 km felbontású) Flood API
 """
 
+import concurrent.futures
 import datetime
 import html
 import http.server
@@ -294,6 +295,98 @@ def fetch_arso_slovenia_observations():
     return arso_by_id
 
 
+def fetch_hnd_bayern_observations():
+    """Fetches live official Bavarian Danube Basin telemetry from HND Bayern (hnd.bayern.de)."""
+    urls = [
+        "https://www.hnd.bayern.de/pegel/donau_bis_kelheim/tabellen",
+        "https://www.hnd.bayern.de/pegel/donau_bis_passau/tabellen",
+        "https://www.hnd.bayern.de/pegel/iller_lech/tabellen",
+        "https://www.hnd.bayern.de/pegel/isar/tabellen",
+        "https://www.hnd.bayern.de/pegel/naab_regen/tabellen",
+        "https://www.hnd.bayern.de/pegel/inn/tabellen",
+    ]
+    hnd_by_id = {}
+
+    def _fetch_one(url):
+        rows_out = {}
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Fluvio HydroMap)"})
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                page = resp.read().decode("utf-8", errors="replace")
+            for tr in re.findall(r"<tr\b[^>]*>(.*?)</tr>", page, re.S | re.I):
+                m_id = re.search(r"-(\d{7,8})(?:[\"'/])", tr)
+                if not m_id:
+                    continue
+                cells = [
+                    _clean_html(c).replace("\u00ad", "").strip()
+                    for c in re.findall(r"<td\b[^>]*>(.*?)</td>", tr, re.S | re.I)
+                ]
+                if len(cells) < 6:
+                    continue
+                raw_w = cells[3].strip()
+                if not raw_w or raw_w == "---":
+                    continue
+                w_float = _parse_float(raw_w)
+                if w_float is None:
+                    continue
+                # Lakes on HND Bayern are reported in m ü. NHN with decimal comma (e.g. 517,83)
+                is_m_nhn = ("," in raw_w or "." in raw_w) and w_float > 300.0
+                lvl_cm = None if is_m_nhn else int(round(w_float))
+                diff_2h = _parse_int(cells[4], None)
+                q_val = _parse_float(cells[5])
+                rows_out[m_id.group(1)] = {
+                    "name": cells[0],
+                    "river": cells[1],
+                    "measured_at": cells[2],
+                    "current_level_cm": lvl_cm,
+                    "level_raw_m": w_float if is_m_nhn else None,
+                    "diff_2h_cm": diff_2h,
+                    "discharge_m3s": q_val,
+                    "origin": "hnd.bayern.de (HND Bayern)",
+                }
+        except Exception as exc:
+            print(f"[WARN] Failed to fetch HND Bayern table {url}: {exc}")
+        return rows_out
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(urls)) as ex:
+        for part in ex.map(_fetch_one, urls):
+            hnd_by_id.update(part)
+
+    return hnd_by_id
+
+
+def fetch_hvz_bw_observations():
+    """Fetches live official Upper Danube headwater telemetry from HVZ Baden-Württemberg."""
+    hvz_by_id = {}
+    url = "https://www.hvz.baden-wuerttemberg.de/js/hvz_peg_stmn.js"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Fluvio HydroMap)"})
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            text = resp.read().decode("utf-8", errors="replace")
+        # Rows look like: ['00151','Donaueschingen (Add.)','Donau',6,'117','cm','22.11.2026 13:00 MEZ','--','','...',...]
+        pat = re.compile(
+            r"\['(\d{5})','([^']*)','([^']*)',\d+,'([^']*)','cm','([^']*)','([^']*)'"
+        )
+        for m in pat.finditer(text):
+            sid, name, river, w_str, measured_at, q_str = m.groups()
+            lvl = _parse_int(w_str)
+            if lvl is None:
+                continue
+            q_val = _parse_float(q_str)
+            hvz_by_id[sid] = {
+                "name": name,
+                "river": river,
+                "current_level_cm": lvl,
+                "discharge_m3s": q_val,
+                "measured_at": measured_at,
+                "origin": "hvz.baden-wuerttemberg.de (HVZ BW)",
+            }
+    except Exception as exc:
+        print(f"[WARN] Failed to fetch HVZ Baden-Württemberg telemetry: {exc}")
+
+    return hvz_by_id
+
+
 def fetch_hydroinfo_official_forecasts():
     """Fetches official 6-day water level predictions from hydroinfo.hu (dunelotH.html, tiselotH.html)."""
     forecasts_by_key = {}
@@ -465,6 +558,8 @@ def _fetch_and_build_payload(now: float):
     dhmz_map = fetch_dhmz_croatia_observations()
     rhmz_map = fetch_rhmz_serbia_observations()
     arso_map = fetch_arso_slovenia_observations()
+    hnd_map = fetch_hnd_bayern_observations()
+    hvz_map = fetch_hvz_bw_observations()
     ovf_forecasts = fetch_hydroinfo_official_forecasts()
     catchment_weather = fetch_all_catchments_weather()
 
@@ -479,11 +574,15 @@ def _fetch_and_build_payload(now: float):
         dhmz_id = st.get("dhmz_id") or (code.replace("DHMZ_", "") if code.startswith("DHMZ_") else None)
         rhmz_id = st.get("rhmz_id") or (code.replace("RHMZ_", "") if code.startswith("RHMZ_") else None)
         arso_id = st.get("arso_id") or (code.replace("ARSO_", "") if code.startswith("ARSO_") else None)
+        hnd_id = st.get("hnd_id") or (code.replace("DE_BY_", "") if code.startswith("DE_BY_") else None)
+        hvz_id = st.get("hvz_id") or (code.replace("DE_BW_", "") if code.startswith("DE_BW_") else None)
         obs = obs_map.get(code)
         v_obs = vizugy_map.get(vizugy_id) if vizugy_id else None
         d_obs = dhmz_map.get(dhmz_id) if dhmz_id else None
         r_obs = rhmz_map.get(rhmz_id) if rhmz_id else None
         a_obs = arso_map.get(arso_id) if arso_id else None
+        hnd_obs = hnd_map.get(hnd_id) if hnd_id else None
+        hvz_obs = hvz_map.get(hvz_id) if hvz_id else None
 
         if obs:
             live_obs_count += 1
@@ -493,12 +592,16 @@ def _fetch_and_build_payload(now: float):
                 obs["discharge_m3s"]
                 if obs["discharge_m3s"] is not None
                 else (
-                    v_obs["discharge_m3s"]
-                    if v_obs and v_obs["discharge_m3s"]
+                    hnd_obs["discharge_m3s"]
+                    if hnd_obs and hnd_obs["discharge_m3s"]
                     else (
-                        r_obs["discharge_m3s"]
-                        if r_obs and r_obs["discharge_m3s"]
-                        else (a_obs["discharge_m3s"] if a_obs and a_obs["discharge_m3s"] else st["default_discharge"])
+                        v_obs["discharge_m3s"]
+                        if v_obs and v_obs["discharge_m3s"]
+                        else (
+                            r_obs["discharge_m3s"]
+                            if r_obs and r_obs["discharge_m3s"]
+                            else (a_obs["discharge_m3s"] if a_obs and a_obs["discharge_m3s"] else st["default_discharge"])
+                        )
                     )
                 )
             )
@@ -508,7 +611,7 @@ def _fetch_and_build_payload(now: float):
                 else (a_obs["water_temp_c"] if a_obs and a_obs["water_temp_c"] is not None else st["default_temp"])
             )
             ice_status = obs["ice_status"]
-            day0_source = "OVF / INHGA / SHMÚ / eHYD / ARSO Hivatalos élő mérés (hydroinfo.hu)"
+            day0_source = "OVF / INHGA / SHMÚ / eHYD / ARSO / HND Hivatalos élő mérés (hydroinfo.hu)"
         elif v_obs:
             live_obs_count += 1
             live_vizugy_count += 1
@@ -542,6 +645,25 @@ def _fetch_and_build_payload(now: float):
             water_temp = a_obs["water_temp_c"] if a_obs["water_temp_c"] is not None else st["default_temp"]
             ice_status = "jégmentes"
             day0_source = f"ARSO Szlovénia élő mérés (arso.gov.si • {a_obs['measured_at']})"
+        elif hnd_obs and (hnd_obs["current_level_cm"] is not None or (hnd_obs["level_raw_m"] is not None and st.get("zero_m_nhn"))):
+            live_obs_count += 1
+            if hnd_obs["level_raw_m"] is not None and st.get("zero_m_nhn"):
+                curr_level = int(round((hnd_obs["level_raw_m"] - st["zero_m_nhn"]) * 100.0))
+            else:
+                curr_level = hnd_obs["current_level_cm"]
+            diff_24h = hnd_obs["diff_2h_cm"] if hnd_obs["diff_2h_cm"] is not None else st["default_diff24h"]
+            discharge_0 = hnd_obs["discharge_m3s"] if hnd_obs["discharge_m3s"] is not None else st["default_discharge"]
+            water_temp = st["default_temp"]
+            ice_status = "jégmentes"
+            day0_source = f"HND Bayern hivatalos élő mérés (hnd.bayern.de • {hnd_obs['measured_at']})"
+        elif hvz_obs:
+            live_obs_count += 1
+            curr_level = hvz_obs["current_level_cm"]
+            diff_24h = st["default_diff24h"]
+            discharge_0 = hvz_obs["discharge_m3s"] if hvz_obs["discharge_m3s"] is not None else st["default_discharge"]
+            water_temp = st["default_temp"]
+            ice_status = "jégmentes"
+            day0_source = f"HVZ Baden-Württemberg élő mérés (hvz.baden-wuerttemberg.de • {hvz_obs['measured_at']})"
         else:
             anchor_code = st.get("transboundary_anchor")
             anchor_obs = obs_map.get(anchor_code) if anchor_code else None
@@ -721,6 +843,7 @@ def _fetch_and_build_payload(now: float):
             "rs_stations": sum(1 for s in stations_out if s["country"] == "RS"),
             "si_stations": sum(1 for s in stations_out if s["country"] == "SI"),
             "ua_stations": sum(1 for s in stations_out if s["country"] == "UA"),
+            "de_stations": sum(1 for s in stations_out if s["country"] == "DE"),
             "major_stations": sum(1 for s in stations_out if s["water_category"] == "major"),
             "minor_stations": sum(1 for s in stations_out if s["water_category"] == "minor"),
             "countries": COUNTRIES_META,
@@ -731,6 +854,7 @@ def _fetch_and_build_payload(now: float):
                 "Országos Vízjelző Szolgálat (OVF / hydroinfo.hu & vizugy.hu)",
                 "INHGA Románia (74xxxx), SHMÚ Szlovákia (14xxxx) & eHYD Ausztria (24xxxx)",
                 "DHMZ Horvátország (hidro.dhz.hr), RHMZ Szerbia (hidmet.gov.rs) & ARSO Szlovénia (arso.gov.si)",
+                "HND Bayern (hnd.bayern.de) & HVZ Baden-Württemberg (hvz.baden-wuerttemberg.de)",
                 "Copernicus GloFAS v4 (5 km-es felbontású vízhozam modell) & Open-Meteo IFS",
             ],
         },
@@ -857,7 +981,7 @@ if __name__ == "__main__":
         f"[Fluvio] Loaded {meta['total_stations']} stations "
         f"(HU: {meta['hu_stations']}, RO: {meta['ro_stations']}, SK: {meta['sk_stations']}, "
         f"AT: {meta['at_stations']}, HR: {meta['hr_stations']}, RS: {meta['rs_stations']}, "
-        f"SI: {meta['si_stations']}, UA-ZK: {meta['ua_stations']} | "
+        f"SI: {meta['si_stations']}, UA-ZK: {meta['ua_stations']}, DE-Danube: {meta['de_stations']} | "
         f"Major: {meta['major_stations']}, Minor waters: {meta['minor_stations']} | "
         f"{meta['live_hydroinfo_matched']} live measurements, {meta['official_ovf_forecast_stations']} official 6-day OVF forecasts)."
     )

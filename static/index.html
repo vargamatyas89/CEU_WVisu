@@ -44,7 +44,7 @@
             <option value="en">🇬🇧 English</option>
             <option value="ro">🇷🇴 Română</option>
             <option value="sk">🇸🇰 Slovenčina</option>
-            <option value="de">🇦🇹 Deutsch</option>
+            <option value="de">🇩🇪 / 🇦🇹 Deutsch</option>
             <option value="hr">🇭🇷 Hrvatski</option>
             <option value="sr">🇷🇸 Srpski</option>
             <option value="sl">🇸🇮 Slovenščina</option>
@@ -55,11 +55,12 @@
         <div class="control-group">
           <label for="country-filter" class="control-label" data-i18n="lblCountry">Ország / Régió</label>
           <select id="country-filter" name="country" class="select-control">
-            <option value="all">🇭🇺 + 🇷🇴 + 🇸🇰 + 🇦🇹 + 🇭🇷 + 🇷🇸 + 🇸🇮 + 🇺🇦 Teljes régió (424 szakasz)</option>
+            <option value="all">🇭🇺 + 🇷🇴 + 🇸🇰 + 🇦🇹 + 🇩🇪 + 🇭🇷 + 🇷🇸 + 🇸🇮 + 🇺🇦 Teljes régió (469 szakasz)</option>
             <option value="HU">🇭🇺 Magyarország (108 szakasz)</option>
             <option value="RO">🇷🇴 Románia (78 szakasz)</option>
             <option value="SK">🇸🇰 Szlovákia (45 szakasz)</option>
             <option value="AT">🇦🇹 Ausztria (41 szakasz)</option>
+            <option value="DE">🇩🇪 Német Duna-vízgyűjtő (45 szakasz)</option>
             <option value="HR">🇭🇷 Horvátország (45 szakasz)</option>
             <option value="RS">🇷🇸 Szerbia (46 szakasz)</option>
             <option value="SI">🇸🇮 Szlovénia (37 szakasz)</option>
@@ -70,13 +71,13 @@
         <div class="control-group">
           <label for="basin-filter" class="control-label" data-i18n="lblBasin">Vízgyűjtő / Víztípus</label>
           <select id="basin-filter" name="basin" class="select-control">
-            <option value="all">Összes vízgyűjtő és kisvízfolyás (424)</option>
-            <option value="minor_only">★ Csak kisvízfolyások, patakok és főcsatornák (156)</option>
-            <option value="duna">Duna főág (AT–SK–HU–HR–RS–RO), Száva (SI–HR–RS), Morava és mellékvizek</option>
+            <option value="all">Összes vízgyűjtő és kisvízfolyás (469)</option>
+            <option value="minor_only">★ Csak kisvízfolyások, patakok és főcsatornák (173)</option>
+            <option value="duna">Duna főág (DE–AT–SK–HU–HR–RS–RO), Inn, Isar, Száva és mellékvizek</option>
             <option value="tisza">Tisza (Kárpátalja–RO–HU–RS), Latorca, Ung, Felvidék, Erdély és Vajdaság</option>
             <option value="olt_siret">Olt, Zsil, Argeș, Szeret és Prut vízrendszer (RO)</option>
             <option value="drava">Dráva, Mura, Soča és Adriai-karsztfolyók (AT–SI–HU–HR)</option>
-            <option value="tavak">Tavak és tározók (Balaton, Fertő, Bled, Bohinj, Plitvice, Vaskapu, Boden, Razim)</option>
+            <option value="tavak">Tavak és tározók (Balaton, Chiemsee, Starnberger, Fertő, Bled, Plitvice, Vaskapu)</option>
           </select>
         </div>
 
@@ -157,6 +158,7 @@
               <li><span class="swatch swatch-rs-border"></span> <span data-i18n="borderRS">Szerbia államhatára</span></li>
               <li><span class="swatch swatch-si-border"></span> <span data-i18n="borderSI">Szlovénia államhatára</span></li>
               <li><span class="swatch swatch-ua-border"></span> <span data-i18n="borderUA">Kárpátalja (UA) határa</span></li>
+              <li><span class="swatch swatch-de-border"></span> <span data-i18n="borderDE">Német Duna-vízgyűjtő (DE)</span></li>
             </ul>
             <div class="layer-toggles">
               <div class="basemap-select-wrap">
@@ -179,7 +181,7 @@
               </div>
               <label for="toggle-minor-waters">
                 <input type="checkbox" id="toggle-minor-waters" class="visually-hidden-fallback" checked>
-                <span data-i18n="toggleMinor">Kisvízfolyások, patakok, csatornák (156)</span>
+                <span data-i18n="toggleMinor">Kisvízfolyások, patakok, csatornák (173)</span>
               </label>
               <label for="toggle-stations">
                 <input type="checkbox" id="toggle-stations" class="visually-hidden-fallback" checked>
@@ -258,8 +260,8 @@
         <!-- Scrollable Table of Gauging Stations across HU, RO, SK, AT, HR & RS -->
         <div class="station-list-container">
           <div class="station-list-header">
-            <h2><span data-i18n="stationListTitle">Hivatalos Vízügyi Mérési Pontok</span> (<span id="station-count-badge">424</span>)</h2>
-            <span class="sort-hint">HU • RO • SK • AT • HR • RS • SI • UA</span>
+            <h2><span data-i18n="stationListTitle">Hivatalos Vízügyi Mérési Pontok</span> (<span id="station-count-badge">469</span>)</h2>
+            <span class="sort-hint">DE • AT • SK • HU • SI • HR • RS • RO • UA</span>
           </div>
           <div class="station-list-scroller" id="station-list">
             <!-- Populated dynamically -->
@@ -280,6 +282,7 @@
   <script src="/countries/serbia_geo.js"></script>
   <script src="/countries/slovenia_geo.js"></script>
   <script src="/countries/zakarpattia_geo.js"></script>
+  <script src="/countries/germany_danube_geo.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

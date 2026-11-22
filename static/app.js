@@ -22,7 +22,7 @@
     stationsByCode: new Map(),
     activeDay: 0,
     scenario: "live", // 'live' | 'rain50' | 'rain120' | 'drought'
-    countryFilter: "all", // 'all' | 'HU' | 'RO' | 'SK' | 'AT' | 'HR' | 'RS' | 'SI' | 'UA'
+    countryFilter: "all", // 'all' | 'HU' | 'RO' | 'SK' | 'AT' | 'HR' | 'RS' | 'SI' | 'UA' | 'DE'
     basinFilter: "all",
     searchQuery: "",
     hoveredCode: null,
@@ -43,8 +43,8 @@
   // Geographic Bounds for Quick Zoom
   const REGION_BOUNDS = {
     all: [
-      [42.20, 9.53],
-      [49.62, 29.75],
+      [42.20, 8.15],
+      [49.95, 29.75],
     ],
     HU: [
       [45.72, 16.08],
@@ -77,6 +77,10 @@
     UA: [
       [47.89, 22.13],
       [49.09, 24.64],
+    ],
+    DE: [
+      [47.27, 8.15],
+      [49.95, 13.85],
     ],
   };
 
@@ -245,10 +249,10 @@
   // Initialize Leaflet Map and 100% Free Open-Source Cartographic Layers
   function initMap() {
     map = L.map("map", {
-      center: [46.25, 22.85],
-      zoom: 6.4,
+      center: [46.6, 18.8],
+      zoom: 6.0,
       zoomSnap: 0.25,
-      minZoom: 5.5,
+      minZoom: 5.0,
       maxZoom: 13,
       zoomControl: true,
     });

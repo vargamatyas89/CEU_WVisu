@@ -61,6 +61,7 @@
   --rs-border-color: #818cf8;
   --si-border-color: #2dd4bf;
   --ua-border-color: #e879f9;
+  --de-border-color: #34d399;
 
   /* MANDATORY fallback for browsers without light-dark() support */
   @media (prefers-color-scheme: dark) {
@@ -457,6 +458,7 @@ body {
 .swatch-rs-border { background: transparent; border: 2px dashed var(--rs-border-color); height: 8px; }
 .swatch-si-border { background: transparent; border: 2px dashed var(--si-border-color); height: 8px; }
 .swatch-ua-border { background: transparent; border: 2px dashed var(--ua-border-color); height: 8px; }
+.swatch-de-border { background: transparent; border: 2px dashed var(--de-border-color); height: 8px; }
 
 .country-tag {
   display: inline-block;
@@ -514,6 +516,12 @@ body {
   background: rgba(232, 121, 249, 0.22);
   color: #e879f9;
   border: 1px solid rgba(232, 121, 249, 0.5);
+}
+
+.country-tag.country-DE {
+  background: rgba(52, 211, 153, 0.22);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.5);
 }
 
 .layer-toggles {
