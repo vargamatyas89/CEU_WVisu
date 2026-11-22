@@ -543,12 +543,39 @@ def _fetch_and_build_payload(now: float):
             ice_status = "jégmentes"
             day0_source = f"ARSO Szlovénia élő mérés (arso.gov.si • {a_obs['measured_at']})"
         else:
-            curr_level = st["default_level"]
-            diff_24h = st["default_diff24h"]
-            discharge_0 = st["default_discharge"]
-            water_temp = st["default_temp"]
-            ice_status = "jégmentes"
-            day0_source = "Copernicus GloFAS v4 (5km) & Regionális Referencia"
+            anchor_code = st.get("transboundary_anchor")
+            anchor_obs = obs_map.get(anchor_code) if anchor_code else None
+            if anchor_obs:
+                anchor_st = next((x for x in STATIONS_CATALOG if x["code"] == anchor_code), None)
+                if anchor_st:
+                    a_span = max(80, anchor_st["thresholds"]["deg1"] - anchor_st["thresholds"]["low"])
+                    st_span = max(60, st["thresholds"]["deg1"] - st["thresholds"]["low"])
+                    rel_anom = (anchor_obs["current_level_cm"] - anchor_st["default_level"]) / a_span
+                    scale = 0.25 if st["basin"] == "tavak" else 0.72
+                    curr_level = int(round(st["default_level"] + rel_anom * st_span * scale))
+                    diff_24h = int(round((anchor_obs["diff_24h_cm"] / a_span) * st_span * scale))
+                    discharge_0 = max(0.2, round(st["default_discharge"] * math.exp(rel_anom * 0.7), 1))
+                    water_temp = (
+                        anchor_obs["water_temp_c"]
+                        if anchor_obs["water_temp_c"] is not None
+                        else st["default_temp"]
+                    )
+                    ice_status = anchor_obs.get("ice_status", "jégmentes")
+                    day0_source = f"Copernicus GloFAS v4 (5km) & Határ menti kalibráció ({anchor_st['name']})"
+                else:
+                    curr_level = st["default_level"]
+                    diff_24h = st["default_diff24h"]
+                    discharge_0 = st["default_discharge"]
+                    water_temp = st["default_temp"]
+                    ice_status = "jégmentes"
+                    day0_source = "Copernicus GloFAS v4 (5km) & Regionális Referencia"
+            else:
+                curr_level = st["default_level"]
+                diff_24h = st["default_diff24h"]
+                discharge_0 = st["default_discharge"]
+                water_temp = st["default_temp"]
+                ice_status = "jégmentes"
+                day0_source = "Copernicus GloFAS v4 (5km) & Regionális Referencia"
 
         lookup_key = _norm_hu(f"{st['river']} {st['name']}")
         ovf_fc = ovf_forecasts.get(lookup_key)
@@ -693,6 +720,7 @@ def _fetch_and_build_payload(now: float):
             "hr_stations": sum(1 for s in stations_out if s["country"] == "HR"),
             "rs_stations": sum(1 for s in stations_out if s["country"] == "RS"),
             "si_stations": sum(1 for s in stations_out if s["country"] == "SI"),
+            "ua_stations": sum(1 for s in stations_out if s["country"] == "UA"),
             "major_stations": sum(1 for s in stations_out if s["water_category"] == "major"),
             "minor_stations": sum(1 for s in stations_out if s["water_category"] == "minor"),
             "countries": COUNTRIES_META,
@@ -828,7 +856,8 @@ if __name__ == "__main__":
     print(
         f"[WVis] Loaded {meta['total_stations']} stations "
         f"(HU: {meta['hu_stations']}, RO: {meta['ro_stations']}, SK: {meta['sk_stations']}, "
-        f"AT: {meta['at_stations']}, HR: {meta['hr_stations']}, RS: {meta['rs_stations']}, SI: {meta['si_stations']} | "
+        f"AT: {meta['at_stations']}, HR: {meta['hr_stations']}, RS: {meta['rs_stations']}, "
+        f"SI: {meta['si_stations']}, UA-ZK: {meta['ua_stations']} | "
         f"Major: {meta['major_stations']}, Minor waters: {meta['minor_stations']} | "
         f"{meta['live_hydroinfo_matched']} live measurements, {meta['official_ovf_forecast_stations']} official 6-day OVF forecasts)."
     )

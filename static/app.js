@@ -22,7 +22,7 @@
     stationsByCode: new Map(),
     activeDay: 0,
     scenario: "live", // 'live' | 'rain50' | 'rain120' | 'drought'
-    countryFilter: "all", // 'all' | 'HU' | 'RO' | 'SK' | 'AT' | 'HR' | 'RS' | 'SI'
+    countryFilter: "all", // 'all' | 'HU' | 'RO' | 'SK' | 'AT' | 'HR' | 'RS' | 'SI' | 'UA'
     basinFilter: "all",
     searchQuery: "",
     hoveredCode: null,
@@ -73,6 +73,10 @@
     SI: [
       [45.42, 13.38],
       [46.88, 16.61],
+    ],
+    UA: [
+      [47.89, 22.13],
+      [49.09, 24.64],
     ],
   };
 

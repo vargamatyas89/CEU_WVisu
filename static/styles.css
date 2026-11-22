@@ -60,6 +60,7 @@
   --hr-border-color: #a3e635;
   --rs-border-color: #818cf8;
   --si-border-color: #2dd4bf;
+  --ua-border-color: #e879f9;
 
   /* MANDATORY fallback for browsers without light-dark() support */
   @media (prefers-color-scheme: dark) {
@@ -455,6 +456,7 @@ body {
 .swatch-hr-border { background: transparent; border: 2px dashed var(--hr-border-color); height: 8px; }
 .swatch-rs-border { background: transparent; border: 2px dashed var(--rs-border-color); height: 8px; }
 .swatch-si-border { background: transparent; border: 2px dashed var(--si-border-color); height: 8px; }
+.swatch-ua-border { background: transparent; border: 2px dashed var(--ua-border-color); height: 8px; }
 
 .country-tag {
   display: inline-block;
@@ -506,6 +508,12 @@ body {
   background: rgba(45, 212, 191, 0.22);
   color: #2dd4bf;
   border: 1px solid rgba(45, 212, 191, 0.5);
+}
+
+.country-tag.country-UA {
+  background: rgba(232, 121, 249, 0.22);
+  color: #e879f9;
+  border: 1px solid rgba(232, 121, 249, 0.5);
 }
 
 .layer-toggles {

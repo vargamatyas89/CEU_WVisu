@@ -1,6 +1,6 @@
 """
-Ország-modulok regisztrációja és összesítése (Minden ország külön forrásfájlban:
-hungary.py, romania.py, slovakia.py, austria.py, croatia.py, serbia.py, slovenia.py)
+Ország- és régió-modulok regisztrációja és összesítése (Minden ország/régió külön forrásfájlban:
+hungary.py, romania.py, slovakia.py, austria.py, croatia.py, serbia.py, slovenia.py, zakarpattia.py)
 """
 
 from . import austria
@@ -10,8 +10,18 @@ from . import romania
 from . import serbia
 from . import slovakia
 from . import slovenia
+from . import zakarpattia
 
-REGISTERED_COUNTRY_MODULES = [hungary, romania, slovakia, austria, croatia, serbia, slovenia]
+REGISTERED_COUNTRY_MODULES = [
+    hungary,
+    romania,
+    slovakia,
+    austria,
+    croatia,
+    serbia,
+    slovenia,
+    zakarpattia,
+]
 
 COUNTRIES_META = {
     mod.COUNTRY_META["code"]: mod.COUNTRY_META
