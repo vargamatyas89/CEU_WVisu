@@ -20,22 +20,27 @@ import math
 import os
 import re
 import socketserver
+import threading
 import time
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 
 from countries import CATCHMENTS, COUNTRIES_META, STATIONS_CATALOG
+import storage
 
 PORT = int(os.environ.get("PORT", 8080))
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 
-# Cache state
+# Cache & Hourly Background Refresh Configuration
 _CACHE = {
     "timestamp": 0,
     "payload": None,
 }
-CACHE_TTL_SECONDS = 900  # 15 minutes
+_CACHE_LOCK = threading.Lock()
+_REFRESH_LOCK = threading.Lock()
+REFRESH_INTERVAL_SECONDS = int(os.environ.get("REFRESH_INTERVAL_SECONDS", 3600))  # 1 hour default
+CACHE_TTL_SECONDS = REFRESH_INTERVAL_SECONDS
 
 
 def _clean_html(raw: str) -> str:
@@ -441,9 +446,20 @@ def classify_alert(level_cm: int, thresholds: dict):
 
 def build_hydro_payload(force_refresh=False):
     now = time.time()
-    if not force_refresh and _CACHE["payload"] and (now - _CACHE["timestamp"] < CACHE_TTL_SECONDS):
-        return _CACHE["payload"]
+    with _CACHE_LOCK:
+        if not force_refresh and _CACHE["payload"] and (now - _CACHE["timestamp"] < CACHE_TTL_SECONDS):
+            return _CACHE["payload"]
 
+    with _REFRESH_LOCK:
+        now = time.time()
+        with _CACHE_LOCK:
+            if not force_refresh and _CACHE["payload"] and (now - _CACHE["timestamp"] < CACHE_TTL_SECONDS):
+                return _CACHE["payload"]
+
+        return _fetch_and_build_payload(now)
+
+
+def _fetch_and_build_payload(now: float):
     obs_map, obs_date = fetch_hydroinfo_observations()
     vizugy_map = fetch_vizugy_operative_observations()
     dhmz_map = fetch_dhmz_croatia_observations()
@@ -664,6 +680,10 @@ def build_hydro_payload(force_refresh=False):
     payload = {
         "meta": {
             "generated_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "next_refresh_at": (
+                datetime.datetime.now() + datetime.timedelta(seconds=REFRESH_INTERVAL_SECONDS)
+            ).strftime("%Y-%m-%d %H:%M:%S"),
+            "refresh_interval_seconds": REFRESH_INTERVAL_SECONDS,
             "observation_date": obs_date or datetime.date.today().strftime("%Y. %m. %d."),
             "total_stations": len(stations_out),
             "hu_stations": sum(1 for s in stations_out if s["country"] == "HU"),
@@ -696,9 +716,39 @@ def build_hydro_payload(force_refresh=False):
         "stations": stations_out,
     }
 
-    _CACHE["timestamp"] = now
-    _CACHE["payload"] = payload
+    try:
+        storage.init_db()
+        payload["meta"]["storage"] = storage.save_snapshot(payload)
+    except Exception as exc:
+        print(f"[WARN] Failed to persist snapshot to SQLite: {exc}", flush=True)
+
+    with _CACHE_LOCK:
+        _CACHE["timestamp"] = now
+        _CACHE["payload"] = payload
     return payload
+
+
+def start_hourly_refresh_worker(stop_event: threading.Event, interval_seconds: int = REFRESH_INTERVAL_SECONDS):
+    """Starts a daemon background thread that refreshes hydrological and weather data on a fixed interval."""
+    def _worker():
+        while not stop_event.wait(interval_seconds):
+            started = time.time()
+            try:
+                refreshed = build_hydro_payload(force_refresh=True)
+                elapsed = time.time() - started
+                meta = refreshed["meta"]
+                print(
+                    f"[WVis] Hourly background refresh complete in {elapsed:.2f}s "
+                    f"({meta['total_stations']} stations, {meta['live_hydroinfo_matched']} live measurements, "
+                    f"next at {meta['next_refresh_at']}).",
+                    flush=True,
+                )
+            except Exception as exc:
+                print(f"[WARN] Hourly background refresh failed: {exc}", flush=True)
+
+    thread = threading.Thread(target=_worker, name="wvis-hourly-refresh", daemon=True)
+    thread.start()
+    return thread
 
 
 class HydroRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -710,25 +760,58 @@ class HydroRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store, must-revalidate")
         super().end_headers()
 
+    def _send_json(self, obj, status=200):
+        body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
         if parsed.path in ("/api/hydro-data", "/api/refresh"):
             force = parsed.path == "/api/refresh"
             try:
                 data = build_hydro_payload(force_refresh=force)
-                body = json.dumps(data, ensure_ascii=False).encode("utf-8")
-                self.send_response(200)
-                self.send_header("Content-Type", "application/json; charset=utf-8")
-                self.send_header("Content-Length", str(len(body)))
-                self.end_headers()
-                self.wfile.write(body)
+                self._send_json(data, 200)
             except Exception as exc:
-                err_body = json.dumps({"error": str(exc)}).encode("utf-8")
-                self.send_response(500)
-                self.send_header("Content-Type", "application/json; charset=utf-8")
-                self.send_header("Content-Length", str(len(err_body)))
-                self.end_headers()
-                self.wfile.write(err_body)
+                self._send_json({"error": str(exc)}, 500)
+            return
+
+        if parsed.path == "/api/history/stats":
+            try:
+                self._send_json(storage.get_db_stats(), 200)
+            except Exception as exc:
+                self._send_json({"error": str(exc)}, 500)
+            return
+
+        if parsed.path == "/api/history":
+            try:
+                qs = urllib.parse.parse_qs(parsed.query)
+                station_code = qs.get("station", [None])[0]
+                if not station_code:
+                    limit = int(qs.get("limit", ["48"])[0])
+                    self._send_json(
+                        {
+                            "stats": storage.get_db_stats(),
+                            "snapshots": storage.list_recent_snapshots(limit=limit),
+                        },
+                        200,
+                    )
+                    return
+
+                hours = int(qs.get("hours", ["720"])[0])
+                lead_raw = qs.get("lead_day", ["0"])[0]
+                lead_day = None if lead_raw == "all" else int(lead_raw)
+                result = storage.query_station_history(
+                    station_code=station_code,
+                    hours=hours,
+                    lead_day=lead_day,
+                )
+                self._send_json(result, 200)
+            except Exception as exc:
+                self._send_json({"error": str(exc)}, 400)
             return
 
         if parsed.path == "/":
@@ -737,16 +820,32 @@ class HydroRequestHandler(http.server.SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    storage.init_db()
     print(f"[WVis] Pre-warming live hydrological & meteorological cache (Modular countries: {', '.join(COUNTRIES_META.keys())})...")
     payload = build_hydro_payload(force_refresh=True)
+    meta = payload["meta"]
+    st_info = meta.get("storage", {})
     print(
-        f"[WVis] Loaded {payload['meta']['total_stations']} stations "
-        f"(HU: {payload['meta']['hu_stations']}, RO: {payload['meta']['ro_stations']} | "
-        f"Major: {payload['meta']['major_stations']}, Minor waters: {payload['meta']['minor_stations']} | "
-        f"{payload['meta']['live_hydroinfo_matched']} live hydroinfo+vizugy measurements, "
-        f"{payload['meta']['official_ovf_forecast_stations']} official 6-day OVF forecasts)."
+        f"[WVis] Loaded {meta['total_stations']} stations "
+        f"(HU: {meta['hu_stations']}, RO: {meta['ro_stations']}, SK: {meta['sk_stations']}, "
+        f"AT: {meta['at_stations']}, HR: {meta['hr_stations']}, RS: {meta['rs_stations']}, SI: {meta['si_stations']} | "
+        f"Major: {meta['major_stations']}, Minor waters: {meta['minor_stations']} | "
+        f"{meta['live_hydroinfo_matched']} live measurements, {meta['official_ovf_forecast_stations']} official 6-day OVF forecasts)."
     )
+    if st_info:
+        print(
+            f"[WVis] SQLite 30-day archive ready at {st_info.get('db_path')} "
+            f"({st_info.get('snapshots_count')} snapshots, {st_info.get('station_rows')} station rows, "
+            f"{st_info.get('db_size_bytes', 0) / 1024:.1f} KiB, retention={st_info.get('retention_days')}d)."
+        )
+    stop_event = threading.Event()
+    start_hourly_refresh_worker(stop_event, REFRESH_INTERVAL_SECONDS)
+    print(f"[WVis] Background refresh thread active (every {REFRESH_INTERVAL_SECONDS}s, next at {meta['next_refresh_at']}).")
     socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.ThreadingTCPServer(("127.0.0.1", PORT), HydroRequestHandler) as httpd:
-        print(f"[WVis] Server listening at http://localhost:{PORT}")
-        httpd.serve_forever()
+    try:
+        with socketserver.ThreadingTCPServer(("127.0.0.1", PORT), HydroRequestHandler) as httpd:
+            print(f"[WVis] Server listening at http://localhost:{PORT}")
+            httpd.serve_forever()
+    except KeyboardInterrupt:
+        stop_event.set()
+        print("\n[WVis] Shutting down cleanly.")

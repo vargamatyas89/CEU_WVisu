@@ -73,7 +73,8 @@ Because official national hydrological portals serve ISO-8859-2 / UTF-8 HTML tab
 
 ```text
 .
-├── server.py                      # Python 3 HTTP server, live scrapers, forecast engine & REST API
+├── server.py                      # Python 3 HTTP server, hourly refresh worker, live scrapers & REST API
+├── storage.py                     # 30-day rolling SQLite time-series archive (WAL mode, indexed)
 ├── countries/
 │   ├── __init__.py                # Registers and aggregates all country modules
 │   ├── hungary.py                 # Hungary (HU) catchments & 108 stations
@@ -117,11 +118,18 @@ cd CEU_WVisu
 python3 server.py
 ```
 
-By default, the server pre-warms the live hydrological & meteorological cache and listens on **`http://localhost:8080`**. You can override the port with the `PORT` environment variable:
+By default, the server pre-warms the live hydrological & meteorological cache, saves the snapshot to `data/wvis_history.sqlite` (30-day rolling retention), starts an hourly background refresh thread, and listens on **`http://localhost:8080`**. You can configure runtime options via environment variables:
 
 ```bash
-PORT=8090 python3 server.py
+PORT=8090 REFRESH_INTERVAL_SECONDS=3600 WVIS_RETENTION_DAYS=30 python3 server.py
 ```
+
+| Environment Variable | Default | Description |
+| :--- | :---: | :--- |
+| `PORT` | `8080` | HTTP server port |
+| `REFRESH_INTERVAL_SECONDS` | `3600` | Background thread refresh interval (seconds) & cache TTL |
+| `WVIS_DB_PATH` | `data/wvis_history.sqlite` | Path to the SQLite time-series database |
+| `WVIS_RETENTION_DAYS` | `30` | Rolling retention window in days (~325 MiB full 8-day archive for 30 days) |
 
 ---
 
@@ -130,8 +138,10 @@ PORT=8090 python3 server.py
 | Endpoint | Method | Description |
 | :--- | :---: | :--- |
 | `/` | `GET` | Serves the interactive frontend (`static/index.html`) |
-| `/api/hydro-data` | `GET` | Returns cached (15-min TTL) JSON payload with metadata, 37 catchments, and 400 station 8-day timelines |
-| `/api/refresh` | `GET` | Forces an immediate live refresh from all upstream hydrological and meteorological providers |
+| `/api/hydro-data` | `GET` | Returns cached (hourly refreshed) JSON payload with metadata, 37 catchments, and 400 station 8-day timelines |
+| `/api/refresh` | `GET` | Forces an immediate live refresh from all upstream providers and saves a new snapshot to SQLite |
+| `/api/history/stats` | `GET` | Returns 30-day SQLite archive statistics (snapshot count, row counts, oldest/newest timestamps, disk size) |
+| `/api/history` | `GET` | Lists recent snapshots (`?limit=48`) or returns station time-series (`?station=442027&hours=720&lead_day=0` or `lead_day=all`) for model calculations |
 
 ---
 

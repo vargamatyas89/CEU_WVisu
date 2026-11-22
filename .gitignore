@@ -1,0 +1,12 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Runtime SQLite 30-day history database
+data/*.sqlite
+data/*.sqlite-wal
+data/*.sqlite-shm
+
+# macOS metadata
+.DS_Store
