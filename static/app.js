@@ -1,5 +1,5 @@
 /**
- * WVis — Magyarország és Románia Interaktív Víztérképe és 1–7 Napos Vízállás-Előrejelzése
+ * Fluvio — Közép-Európa, Duna-medence és Kárpátalja Interaktív Víztérképe
  * Client-side Interactive Cartography, Real-Time Forecast Slider & Hydrograph Engine
  */
 
@@ -9,8 +9,8 @@
   // Application State
   const savedLang = (() => {
     try {
-      const stored = localStorage.getItem("wvis_lang");
-      return stored && window.WVIS_I18N && window.WVIS_I18N[stored] ? stored : "hu";
+      const stored = localStorage.getItem("fluvio_lang") || localStorage.getItem("wvis_lang");
+      return stored && window.FLUVIO_I18N && window.FLUVIO_I18N[stored] ? stored : "hu";
     } catch {
       return "hu";
     }
@@ -37,7 +37,7 @@
   };
 
   function t() {
-    return (window.WVIS_I18N && window.WVIS_I18N[state.lang]) || (window.WVIS_I18N && window.WVIS_I18N.hu) || {};
+    return (window.FLUVIO_I18N && window.FLUVIO_I18N[state.lang]) || (window.FLUVIO_I18N && window.FLUVIO_I18N.hu) || {};
   }
 
   // Geographic Bounds for Quick Zoom
@@ -1052,12 +1052,12 @@
 
   // Apply Selected UI Language Across All Static Labels, Selects, Chips, KPIs & Cards
   function applyLanguage(langCode) {
-    if (!window.WVIS_I18N || !window.WVIS_I18N[langCode]) {
+    if (!window.FLUVIO_I18N || !window.FLUVIO_I18N[langCode]) {
       langCode = "hu";
     }
     state.lang = langCode;
     try {
-      localStorage.setItem("wvis_lang", langCode);
+      localStorage.setItem("fluvio_lang", langCode);
     } catch {
       // Ignore storage restrictions
     }

@@ -1,4 +1,4 @@
-# WVis — Central European & Danube Basin Interactive Hydrological Map
+# Fluvio — Central European & Danube Basin Interactive Hydrological Map
 
 Interactive web application for visualizing real-time water levels and 1–7 day weather-coupled water level forecasts across **7 Central European & Danube Basin countries plus Kárpátalja / Zakarpattia Oblast (Ukraine)** (**Hungary, Romania, Slovakia, Austria, Croatia, Serbia, Slovenia, and Zakarpattia / UA**), covering **424 gauging stations** across **40 catchments** (268 major river/lake gauges and 156 smaller creeks, streams, canals, and reservoirs).
 
@@ -121,18 +121,18 @@ cd CEU_WVisu
 python3 server.py
 ```
 
-By default, the server pre-warms the live hydrological & meteorological cache, saves the snapshot to `data/wvis_history.sqlite` (30-day rolling retention), starts an hourly background refresh thread, and listens on **`http://localhost:8080`**. You can configure runtime options via environment variables:
+By default, the server pre-warms the live hydrological & meteorological cache, saves the snapshot to `data/fluvio_history.sqlite` (30-day rolling retention), starts an hourly background refresh thread, and listens on **`http://localhost:8080`**. You can configure runtime options via environment variables:
 
 ```bash
-PORT=8090 REFRESH_INTERVAL_SECONDS=3600 WVIS_RETENTION_DAYS=30 python3 server.py
+PORT=8090 REFRESH_INTERVAL_SECONDS=3600 FLUVIO_RETENTION_DAYS=30 python3 server.py
 ```
 
 | Environment Variable | Default | Description |
 | :--- | :---: | :--- |
 | `PORT` | `8080` | HTTP server port |
 | `REFRESH_INTERVAL_SECONDS` | `3600` | Background thread refresh interval (seconds) & cache TTL |
-| `WVIS_DB_PATH` | `data/wvis_history.sqlite` | Path to the SQLite time-series database |
-| `WVIS_RETENTION_DAYS` | `30` | Rolling retention window in days (~325 MiB full 8-day archive for 30 days) |
+| `FLUVIO_DB_PATH` | `data/fluvio_history.sqlite` | Path to the SQLite time-series database |
+| `FLUVIO_RETENTION_DAYS` | `30` | Rolling retention window in days (~325 MiB full 8-day archive for 30 days) |
 
 ---
 

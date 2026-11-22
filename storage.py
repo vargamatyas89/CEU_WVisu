@@ -1,5 +1,5 @@
 """
-WVis — 30-Day Rolling SQLite Time-Series Persistence Layer (Standard Library Python 3)
+Fluvio — 30-Day Rolling SQLite Time-Series Persistence Layer (Standard Library Python 3)
 
 Stores hourly hydrological & meteorological snapshots across all registered countries
 (400 stations x 8 lead days + 37 catchments x 8 forecast days per snapshot) in a
@@ -16,10 +16,10 @@ import time
 DEFAULT_DB_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "data",
-    "wvis_history.sqlite",
+    "fluvio_history.sqlite",
 )
-DB_PATH = os.environ.get("WVIS_DB_PATH", DEFAULT_DB_PATH)
-RETENTION_DAYS = int(os.environ.get("WVIS_RETENTION_DAYS", 30))
+DB_PATH = os.environ.get("FLUVIO_DB_PATH") or os.environ.get("WVIS_DB_PATH", DEFAULT_DB_PATH)
+RETENTION_DAYS = int(os.environ.get("FLUVIO_RETENTION_DAYS") or os.environ.get("WVIS_RETENTION_DAYS", 30))
 
 _DB_LOCK = threading.Lock()
 

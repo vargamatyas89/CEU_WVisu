@@ -1,14 +1,14 @@
 /**
- * WVis — Multi-Language UI Dictionary (i18n)
+ * Fluvio — Multi-Language UI Dictionary (i18n)
  * Supported languages: Hungarian (hu), English (en), Romanian (ro),
  * Slovak (sk), German / Austria (de), Croatian (hr), Serbian (sr), Slovenian (sl), Ukrainian (uk)
  */
 
-window.WVIS_I18N = {
+window.FLUVIO_I18N = {
   hu: {
     locale: "hu-HU",
-    pageTitle: "WVis — Közép-Európa és Duna-medence (HU • RO • SK • AT • HR • RS • SI • UA-Kárpátalja) Interaktív Víztérképe és 1–7 Napos Vízállás-Előrejelzése",
-    brandTitle: "Közép-Európa, Duna-medence és Kárpátalja Interaktív Víztérképe",
+    pageTitle: "Fluvio — Közép-Európa és Duna-medence (HU • RO • SK • AT • HR • RS • SI • UA-Kárpátalja) Interaktív Víztérképe és 1–7 Napos Vízállás-Előrejelzése",
+    brandTitle: "Fluvio — Közép-Európa, Duna-medence és Kárpátalja Víztérképe",
     metaDefault: "OVF, INHGA, SHMÚ, eHYD, DHMZ, RHMZ & ARSO • Open-Meteo & GloFAS v4 Modell",
     metaLoaded: (m) => `OVF, INHGA, SHMÚ, eHYD, DHMZ, RHMZ & ARSO (HU: ${m.hu_stations}, RO: ${m.ro_stations}, SK: ${m.sk_stations}, AT: ${m.at_stations}, HR: ${m.hr_stations}, RS: ${m.rs_stations}, SI: ${m.si_stations}, UA-ZK: ${m.ua_stations} • ${m.minor_stations} kisvízfolyás/csatorna, észlelés: ${m.observation_date}) & GloFAS v4`,
     metaError: "Hiba az adatok betöltésekor — ellenőrizze a szervert.",
@@ -137,8 +137,8 @@ window.WVIS_I18N = {
 
   en: {
     locale: "en-GB",
-    pageTitle: "WVis — Central Europe & Danube Basin (HU • RO • SK • AT • HR • RS • SI • UA-ZK) Interactive Water Level Map & 1–7 Day Forecast",
-    brandTitle: "Central Europe, Danube Basin & Zakarpattia Interactive Hydrological Map",
+    pageTitle: "Fluvio — Central Europe & Danube Basin (HU • RO • SK • AT • HR • RS • SI • UA-ZK) Interactive Water Level Map & 1–7 Day Forecast",
+    brandTitle: "Fluvio — Central Europe, Danube Basin & Zakarpattia Hydrological Map",
     metaDefault: "OVF, INHGA, SHMÚ, eHYD, DHMZ, RHMZ & ARSO • Open-Meteo & GloFAS v4 Model",
     metaLoaded: (m) => `OVF, INHGA, SHMÚ, eHYD, DHMZ, RHMZ & ARSO (HU: ${m.hu_stations}, RO: ${m.ro_stations}, SK: ${m.sk_stations}, AT: ${m.at_stations}, HR: ${m.hr_stations}, RS: ${m.rs_stations}, SI: ${m.si_stations}, UA-ZK: ${m.ua_stations} • ${m.minor_stations} creeks/canals, obs: ${m.observation_date}) & GloFAS v4`,
     metaError: "Error loading hydrological data — please check the server.",
@@ -267,8 +267,8 @@ window.WVIS_I18N = {
 
   ro: {
     locale: "ro-RO",
-    pageTitle: "WVis — Harta Hidrologică Interactivă a Europei Centrale și Bazinului Dunării (HU • RO • SK • AT • HR • RS • SI • UA-ZK)",
-    brandTitle: "Harta Hidrologică Interactivă: Ungaria, România, Slovacia, Austria, Croația, Serbia și Slovenia",
+    pageTitle: "Fluvio — Harta Hidrologică Interactivă a Europei Centrale și Bazinului Dunării (HU • RO • SK • AT • HR • RS • SI • UA-ZK)",
+    brandTitle: "Fluvio — Harta Hidrologică Interactivă a Europei Centrale și Dunării",
     metaDefault: "OVF, INHGA, SHMÚ, eHYD, DHMZ, RHMZ & ARSO • Model Open-Meteo & GloFAS v4",
     metaLoaded: (m) => `OVF, INHGA, SHMÚ, eHYD, DHMZ, RHMZ & ARSO (HU: ${m.hu_stations}, RO: ${m.ro_stations}, SK: ${m.sk_stations}, AT: ${m.at_stations}, HR: ${m.hr_stations}, RS: ${m.rs_stations}, SI: ${m.si_stations}, UA-ZK: ${m.ua_stations} • ${m.minor_stations} râuri mici/canale, obs: ${m.observation_date}) & GloFAS v4`,
     metaError: "Eroare la încărcarea datelor — verificați serverul.",
@@ -397,8 +397,8 @@ window.WVIS_I18N = {
 
   sk: {
     locale: "sk-SK",
-    pageTitle: "WVis — Interaktívna hydrologická mapa Strednej Európy a povodia Dunaja (HU • RO • SK • AT • HR • RS • SI • UA-ZK)",
-    brandTitle: "Interaktívna vodohospodárska mapa: Maďarsko, Rumunsko, Slovensko, Rakúsko, Chorvátsko, Srbsko a Slovinsko",
+    pageTitle: "Fluvio — Interaktívna hydrologická mapa Strednej Európy a povodia Dunaja (HU • RO • SK • AT • HR • RS • SI • UA-ZK)",
+    brandTitle: "Fluvio — Interaktívna vodohospodárska mapa Strednej Európy a Dunaja",
     metaDefault: "OVF, INHGA, SHMÚ, eHYD, DHMZ, RHMZ & ARSO • Model Open-Meteo & GloFAS v4",
     metaLoaded: (m) => `OVF, INHGA, SHMÚ, eHYD, DHMZ, RHMZ & ARSO (HU: ${m.hu_stations}, RO: ${m.ro_stations}, SK: ${m.sk_stations}, AT: ${m.at_stations}, HR: ${m.hr_stations}, RS: ${m.rs_stations}, SI: ${m.si_stations}, UA-ZK: ${m.ua_stations} • ${m.minor_stations} menších tokov, meranie: ${m.observation_date}) & GloFAS v4`,
     metaError: "Chyba pri načítaní údajov — skontrolujte server.",
@@ -527,8 +527,8 @@ window.WVIS_I18N = {
 
   de: {
     locale: "de-AT",
-    pageTitle: "WVis — Interaktive Gewässer- & Pegelkarte Mitteleuropa / Donauraum (HU • RO • SK • AT • HR • RS • SI • UA-ZK)",
-    brandTitle: "Interaktive Gewässer- & Pegelkarte: Ungarn, Rumänien, Slowakei, Österreich, Kroatien, Serbien & Slowenien",
+    pageTitle: "Fluvio — Interaktive Gewässer- & Pegelkarte Mitteleuropa / Donauraum (HU • RO • SK • AT • HR • RS • SI • UA-ZK)",
+    brandTitle: "Fluvio — Interaktive Gewässer- & Pegelkarte Mitteleuropa & Donauraum",
     metaDefault: "OVF, INHGA, SHMÚ, eHYD, DHMZ, RHMZ & ARSO • Open-Meteo & GloFAS v4 Modell",
     metaLoaded: (m) => `OVF, INHGA, SHMÚ, eHYD, DHMZ, RHMZ & ARSO (HU: ${m.hu_stations}, RO: ${m.ro_stations}, SK: ${m.sk_stations}, AT: ${m.at_stations}, HR: ${m.hr_stations}, RS: ${m.rs_stations}, SI: ${m.si_stations}, UA-ZK: ${m.ua_stations} • ${m.minor_stations} Nebengewässer, Stand: ${m.observation_date}) & GloFAS v4`,
     metaError: "Fehler beim Laden der Pegeldaten — bitte Server prüfen.",
@@ -657,8 +657,8 @@ window.WVIS_I18N = {
 
   hr: {
     locale: "hr-HR",
-    pageTitle: "WVis — Interaktivna hidrološka karta Srednje Europe i Podunavlja (HU • RO • SK • AT • HR • RS • SI • UA-ZK)",
-    brandTitle: "Interaktivna karta vodostaja: Mađarska, Rumunjska, Slovačka, Austrija, Hrvatska, Srbija i Slovenija",
+    pageTitle: "Fluvio — Interaktivna hidrološka karta Srednje Europe i Podunavlja (HU • RO • SK • AT • HR • RS • SI • UA-ZK)",
+    brandTitle: "Fluvio — Interaktivna karta vodostaja Srednje Europe i Podunavlja",
     metaDefault: "OVF, INHGA, SHMÚ, eHYD, DHMZ, RHMZ & ARSO • Open-Meteo & GloFAS v4 model",
     metaLoaded: (m) => `OVF, INHGA, SHMÚ, eHYD, DHMZ, RHMZ & ARSO (HU: ${m.hu_stations}, RO: ${m.ro_stations}, SK: ${m.sk_stations}, AT: ${m.at_stations}, HR: ${m.hr_stations}, RS: ${m.rs_stations}, SI: ${m.si_stations}, UA-ZK: ${m.ua_stations} • ${m.minor_stations} manjih vodotoka, mjerenje: ${m.observation_date}) & GloFAS v4`,
     metaError: "Greška pri učitavanju podataka — provjerite poslužitelj.",
@@ -787,8 +787,8 @@ window.WVIS_I18N = {
 
   sr: {
     locale: "sr-Latn-RS",
-    pageTitle: "WVis — Interaktivna hidrološka karta Srednje Evrope i Podunavlja (HU • RO • SK • AT • HR • RS • SI • UA-ZK)",
-    brandTitle: "Interaktivna karta vodostaja: Mađarska, Rumunija, Slovačka, Austrija, Hrvatska, Srbija i Slovenija",
+    pageTitle: "Fluvio — Interaktivna hidrološka karta Srednje Evrope i Podunavlja (HU • RO • SK • AT • HR • RS • SI • UA-ZK)",
+    brandTitle: "Fluvio — Interaktivna karta vodostaja Srednje Evrope i Podunavlja",
     metaDefault: "OVF, INHGA, SHMÚ, eHYD, DHMZ, RHMZ & ARSO • Open-Meteo & GloFAS v4 model",
     metaLoaded: (m) => `OVF, INHGA, SHMÚ, eHYD, DHMZ, RHMZ & ARSO (HU: ${m.hu_stations}, RO: ${m.ro_stations}, SK: ${m.sk_stations}, AT: ${m.at_stations}, HR: ${m.hr_stations}, RS: ${m.rs_stations}, SI: ${m.si_stations}, UA-ZK: ${m.ua_stations} • ${m.minor_stations} manjih vodotoka, merenje: ${m.observation_date}) & GloFAS v4`,
     metaError: "Greška pri učitavanju podataka — proverite server.",
@@ -917,8 +917,8 @@ window.WVIS_I18N = {
 
   sl: {
     locale: "sl-SI",
-    pageTitle: "WVis — Interaktivni hidrološki zemljevid Srednje Evrope in Podonavja (HU • RO • SK • AT • HR • RS • SI • UA-ZK)",
-    brandTitle: "Interaktivni zemljevid vodostajev: Slovenija, Madžarska, Romunija, Slovaška, Avstrija, Hrvaška in Srbija",
+    pageTitle: "Fluvio — Interaktivni hidrološki zemljevid Srednje Evrope in Podonavja (HU • RO • SK • AT • HR • RS • SI • UA-ZK)",
+    brandTitle: "Fluvio — Interaktivni zemljevid vodostajev Srednje Evrope in Podonavja",
     metaDefault: "ARSO, OVF, INHGA, SHMÚ, eHYD, DHMZ & RHMZ • Model Open-Meteo & GloFAS v4",
     metaLoaded: (m) => `ARSO, OVF, INHGA, SHMÚ, eHYD, DHMZ & RHMZ (HU: ${m.hu_stations}, RO: ${m.ro_stations}, SK: ${m.sk_stations}, AT: ${m.at_stations}, HR: ${m.hr_stations}, RS: ${m.rs_stations}, SI: ${m.si_stations}, UA-ZK: ${m.ua_stations} • ${m.minor_stations} manjših vodotokov, meritev: ${m.observation_date}) & GloFAS v4`,
     metaError: "Napaka pri nalaganju podatkov — preverite strežnik.",
@@ -1047,8 +1047,8 @@ window.WVIS_I18N = {
 
   uk: {
     locale: "uk-UA",
-    pageTitle: "WVis — Інтерактивна гідрологічна карта Центральної Європи, Дунаю та Закарпаття (HU • RO • SK • AT • HR • RS • SI • UA)",
-    brandTitle: "Інтерактивна гідрологічна карта: Закарпаття (UA), Угорщина, Румунія, Словаччина, Австрія, Хорватія, Сербія та Словенія",
+    pageTitle: "Fluvio — Інтерактивна гідрологічна карта Центральної Європи, Дунаю та Закарпаття (HU • RO • SK • AT • HR • RS • SI • UA)",
+    brandTitle: "Fluvio — Інтерактивна гідрологічна карта Центральної Європи, Дунаю та Закарпаття",
     metaDefault: "OVF, INHGA, SHMÚ, eHYD, DHMZ, RHMZ, ARSO & GloFAS v4 (Закарпаття) • Open-Meteo",
     metaLoaded: (m) => `OVF, INHGA, SHMÚ, eHYD, DHMZ, RHMZ, ARSO & GloFAS (HU: ${m.hu_stations}, RO: ${m.ro_stations}, SK: ${m.sk_stations}, AT: ${m.at_stations}, HR: ${m.hr_stations}, RS: ${m.rs_stations}, SI: ${m.si_stations}, UA: ${m.ua_stations} • ${m.minor_stations} малих річок, станом на: ${m.observation_date})`,
     metaError: "Помилка завантаження гідрологічних даних — перевірте сервер.",

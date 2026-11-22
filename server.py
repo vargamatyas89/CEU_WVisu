@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-WVis - Magyarország és Románia Interaktív Vízügyi Térképe és 1-7 Napos Hidrometeorológiai Előrejelző Rendszere
+Fluvio — Közép-Európa, Duna-medence és Kárpátalja Interaktív Vízügyi Térképe és 1–7 Napos Előrejelző Rendszere
 Backend API & Static File Server (Standard Library Python 3)
 
 Modular Country Architecture & Multi-Source Live Telemetry:
@@ -86,7 +86,7 @@ def fetch_hydroinfo_observations():
 
     for kind, url in urls:
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (WVis HydroMap)"})
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Fluvio HydroMap)"})
             with urllib.request.urlopen(req, timeout=7) as resp:
                 text = resp.read().decode("iso-8859-2", errors="replace")
                 if not obs_date_str:
@@ -139,7 +139,7 @@ def fetch_vizugy_operative_observations():
     """Fetches live hourly telemetry for 272 Hungarian stations (including smaller streams, creeks, canals, reservoirs) from vizugy.hu."""
     vizugy_by_id = {}
     try:
-        req = urllib.request.Request("https://www.vizugy.hu/", headers={"User-Agent": "Mozilla/5.0 (WVis HydroMap)"})
+        req = urllib.request.Request("https://www.vizugy.hu/", headers={"User-Agent": "Mozilla/5.0 (Fluvio HydroMap)"})
         with urllib.request.urlopen(req, timeout=8) as resp:
             text = resp.read().decode("utf-8", errors="replace")
             arrays = dict(re.findall(r"([A-Za-z0-9_]+)\s*=\s*new\s+Array\((.*?)\);", text, re.S))
@@ -195,7 +195,7 @@ def fetch_dhmz_croatia_observations():
     try:
         req = urllib.request.Request(
             "https://hidro.dhz.hr/hidroweb/skripte/hidrobazahtml.py?funkc=podaciautomatskih",
-            headers={"User-Agent": "Mozilla/5.0 (WVis HydroMap)"},
+            headers={"User-Agent": "Mozilla/5.0 (Fluvio HydroMap)"},
         )
         with urllib.request.urlopen(req, timeout=8) as resp:
             text = resp.read().decode("utf-8", errors="replace")
@@ -225,7 +225,7 @@ def fetch_rhmz_serbia_observations():
     try:
         req = urllib.request.Request(
             "https://www.hidmet.gov.rs/latin/osmotreni/stanje_voda.php",
-            headers={"User-Agent": "Mozilla/5.0 (WVis HydroMap)"},
+            headers={"User-Agent": "Mozilla/5.0 (Fluvio HydroMap)"},
         )
         with urllib.request.urlopen(req, timeout=8) as resp:
             text = resp.read().decode("utf-8", errors="replace")
@@ -265,7 +265,7 @@ def fetch_arso_slovenia_observations():
     try:
         req = urllib.request.Request(
             "https://www.arso.gov.si/xml/vode/hidro_podatki_zadnji.xml",
-            headers={"User-Agent": "Mozilla/5.0 (WVis HydroMap)"},
+            headers={"User-Agent": "Mozilla/5.0 (Fluvio HydroMap)"},
         )
         with urllib.request.urlopen(req, timeout=8) as resp:
             root = ET.fromstring(resp.read())
@@ -304,7 +304,7 @@ def fetch_hydroinfo_official_forecasts():
 
     for url in urls:
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (WVis HydroMap)"})
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Fluvio HydroMap)"})
             with urllib.request.urlopen(req, timeout=7) as resp:
                 text = resp.read().decode("iso-8859-2", errors="replace")
                 flat = re.sub(
@@ -358,7 +358,7 @@ def fetch_all_catchments_weather():
             f"&daily=precipitation_sum,temperature_2m_max,temperature_2m_min,et0_fao_evapotranspiration,wind_speed_10m_max"
             f"&timezone=Europe%2FBudapest&forecast_days=8"
         )
-        req = urllib.request.Request(w_url, headers={"User-Agent": "WVis-HydroMap/1.0"})
+        req = urllib.request.Request(w_url, headers={"User-Agent": "Fluvio-HydroMap/1.0"})
         with urllib.request.urlopen(req, timeout=8) as resp:
             wdata_list = json.loads(resp.read().decode("utf-8"))
             if isinstance(wdata_list, dict):
@@ -391,7 +391,7 @@ def fetch_all_catchments_weather():
             f"https://flood-api.open-meteo.com/v1/flood?latitude={lats}&longitude={lons}"
             f"&daily=river_discharge&forecast_days=8"
         )
-        req = urllib.request.Request(f_url, headers={"User-Agent": "WVis-HydroMap/1.0"})
+        req = urllib.request.Request(f_url, headers={"User-Agent": "Fluvio-HydroMap/1.0"})
         with urllib.request.urlopen(req, timeout=8) as resp:
             fdata_list = json.loads(resp.read().decode("utf-8"))
             if isinstance(fdata_list, dict):
@@ -766,7 +766,7 @@ def start_hourly_refresh_worker(stop_event: threading.Event, interval_seconds: i
                 elapsed = time.time() - started
                 meta = refreshed["meta"]
                 print(
-                    f"[WVis] Hourly background refresh complete in {elapsed:.2f}s "
+                    f"[Fluvio] Hourly background refresh complete in {elapsed:.2f}s "
                     f"({meta['total_stations']} stations, {meta['live_hydroinfo_matched']} live measurements, "
                     f"next at {meta['next_refresh_at']}).",
                     flush=True,
@@ -774,7 +774,7 @@ def start_hourly_refresh_worker(stop_event: threading.Event, interval_seconds: i
             except Exception as exc:
                 print(f"[WARN] Hourly background refresh failed: {exc}", flush=True)
 
-    thread = threading.Thread(target=_worker, name="wvis-hourly-refresh", daemon=True)
+    thread = threading.Thread(target=_worker, name="fluvio-hourly-refresh", daemon=True)
     thread.start()
     return thread
 
@@ -849,12 +849,12 @@ class HydroRequestHandler(http.server.SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     storage.init_db()
-    print(f"[WVis] Pre-warming live hydrological & meteorological cache (Modular countries: {', '.join(COUNTRIES_META.keys())})...")
+    print(f"[Fluvio] Pre-warming live hydrological & meteorological cache (Modular countries: {', '.join(COUNTRIES_META.keys())})...")
     payload = build_hydro_payload(force_refresh=True)
     meta = payload["meta"]
     st_info = meta.get("storage", {})
     print(
-        f"[WVis] Loaded {meta['total_stations']} stations "
+        f"[Fluvio] Loaded {meta['total_stations']} stations "
         f"(HU: {meta['hu_stations']}, RO: {meta['ro_stations']}, SK: {meta['sk_stations']}, "
         f"AT: {meta['at_stations']}, HR: {meta['hr_stations']}, RS: {meta['rs_stations']}, "
         f"SI: {meta['si_stations']}, UA-ZK: {meta['ua_stations']} | "
@@ -863,18 +863,18 @@ if __name__ == "__main__":
     )
     if st_info:
         print(
-            f"[WVis] SQLite 30-day archive ready at {st_info.get('db_path')} "
+            f"[Fluvio] SQLite 30-day archive ready at {st_info.get('db_path')} "
             f"({st_info.get('snapshots_count')} snapshots, {st_info.get('station_rows')} station rows, "
             f"{st_info.get('db_size_bytes', 0) / 1024:.1f} KiB, retention={st_info.get('retention_days')}d)."
         )
     stop_event = threading.Event()
     start_hourly_refresh_worker(stop_event, REFRESH_INTERVAL_SECONDS)
-    print(f"[WVis] Background refresh thread active (every {REFRESH_INTERVAL_SECONDS}s, next at {meta['next_refresh_at']}).")
+    print(f"[Fluvio] Background refresh thread active (every {REFRESH_INTERVAL_SECONDS}s, next at {meta['next_refresh_at']}).")
     socketserver.TCPServer.allow_reuse_address = True
     try:
         with socketserver.ThreadingTCPServer(("127.0.0.1", PORT), HydroRequestHandler) as httpd:
-            print(f"[WVis] Server listening at http://localhost:{PORT}")
+            print(f"[Fluvio] Server listening at http://localhost:{PORT}")
             httpd.serve_forever()
     except KeyboardInterrupt:
         stop_event.set()
-        print("\n[WVis] Shutting down cleanly.")
+        print("\n[Fluvio] Shutting down cleanly.")

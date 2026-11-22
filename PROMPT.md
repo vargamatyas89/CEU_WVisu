@@ -1,4 +1,4 @@
-# Master Prompt: Interactive Central Europe, Danube Basin & Zakarpattia (HU, RO, SK, AT, HR, RS, SI, UA-ZK) Hydrological Map & 7-Day Weather-Coupled Water Level Forecast Application
+# Fluvio — Master Prompt: Interactive Central Europe, Danube Basin & Zakarpattia (HU, RO, SK, AT, HR, RS, SI, UA-ZK) Hydrological Map & 7-Day Weather-Coupled Water Level Forecast Application
 
 You can copy and use the prompt below with any coding LLM or AI agent to generate or extend this full-stack application.
 
