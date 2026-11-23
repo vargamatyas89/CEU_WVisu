@@ -1,6 +1,6 @@
 """
-Ausztria (AT) — Vízgyűjtők és Hivatalos Vízügyi Mérőállomások (eHYD / OVF hydroinfo.hu 24xxxx & Copernicus GloFAS v4)
-Különálló ország-forrásfájl (41 ausztriai vízmérce: Duna-főág, alpesi főfolyók, tavak és mellékvízfolyások)
+Austria (AT) — Catchments and Official Hydrological Gauging Stations (eHYD / OVF hydroinfo.hu 24xxxx & Copernicus GloFAS v4)
+Standalone country source file (41 Austrian gauges: Danube main stem, Alpine main rivers, lakes and tributaries)
 """
 
 COUNTRY_META = {
@@ -20,9 +20,9 @@ CATCHMENTS = {
 
 STATIONS = [
     # =========================================================================
-    # 1. FŐFOLYÓK ÉS ALPESI TAVAK (26 állomás — élő 24xxxx hydroinfo.hu & eHYD/GloFAS)
+    # 1. MAIN RIVERS AND ALPINE LAKES (26 stations — live 24xxxx hydroinfo.hu & eHYD/GloFAS)
     # =========================================================================
-    # --- OSZTRÁK DUNA FŐÁG (9 élő 242xxx állomás) ---
+    # --- AUSTRIAN DANUBE MAIN STEM (9 live 242xxx stations) ---
     {
         "code": "242006", "country": "AT", "name": "Engelhartszell", "river": "Duna", "basin": "duna", "catchment": "at_upper_danube_inn",
         "reach_name": "Duna (Donau) – Passau – Engelhartszell felső-ausztriai belépő szakasz", "lat": 48.502, "lon": 13.732, "fkm": 2201.7,
@@ -78,7 +78,7 @@ STATIONS = [
         "default_level": 120, "default_diff24h": 12, "default_discharge": 971, "default_temp": 7.5, "downstream_order": 9
     },
 
-    # --- ALPESI FŐFOLYÓK (Inn, Salzach, Traun, Enns, Dráva, Mura, Rába, Morva — 13 állomás) ---
+    # --- ALPINE MAIN RIVERS (Inn, Salzach, Traun, Enns, Drava, Mur, Rába, Morava — 13 stations) ---
     {
         "code": "249001", "country": "AT", "name": "Innsbruck", "river": "Inn", "basin": "duna", "catchment": "at_carinthia_tyrol_drau",
         "reach_name": "Inn – Felső- és Közép-Inn (Landeck – Innsbruck – Schwaz)", "lat": 47.268, "lon": 11.392, "fkm": 296.0,
@@ -158,7 +158,7 @@ STATIONS = [
         "default_level": 138, "default_diff24h": 8, "default_discharge": 66.0, "default_temp": 7.3, "downstream_order": 1
     },
 
-    # --- OSZTRÁK ALPESI TAVAK (4 állomás) ---
+    # --- AUSTRIAN ALPINE LAKES (4 stations) ---
     {
         "code": "249010", "country": "AT", "name": "Kammer (Attersee)", "river": "Attersee", "basin": "tavak", "catchment": "at_upper_danube_inn",
         "reach_name": "Attersee (Salzkammergut – Kammer – Weyregg)", "lat": 47.925, "lon": 13.552, "fkm": 0.0,
@@ -185,7 +185,7 @@ STATIONS = [
     },
 
     # =========================================================================
-    # 2. KISVÍZFOLYÁSOK, ALPESI PATAKOK ÉS MELLÉKFOLYÓK (15 állomás — eHYD & GloFAS v4)
+    # 2. SMALLER WATERS, ALPINE STREAMS AND TRIBUTARIES (15 stations — eHYD & GloFAS v4)
     # =========================================================================
     {
         "code": "249101", "water_category": "minor", "country": "AT",

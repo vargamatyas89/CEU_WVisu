@@ -1,9 +1,10 @@
 """
-Ország- és régió-modulok regisztrációja és összesítése (Minden ország/régió külön forrásfájlban:
-hungary.py, romania.py, slovakia.py, austria.py, croatia.py, serbia.py, slovenia.py, zakarpattia.py, germany_danube.py)
+Registration and aggregation of the country/region modules (each country/region lives in its own source file:
+hungary.py, romania.py, slovakia.py, austria.py, croatia.py, serbia.py, slovenia.py, zakarpattia.py, germany_danube.py, bulgaria.py)
 """
 
 from . import austria
+from . import bulgaria
 from . import croatia
 from . import germany_danube
 from . import hungary
@@ -23,6 +24,7 @@ REGISTERED_COUNTRY_MODULES = [
     slovenia,
     zakarpattia,
     germany_danube,
+    bulgaria,
 ]
 
 COUNTRIES_META = {

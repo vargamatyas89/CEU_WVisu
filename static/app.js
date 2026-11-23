@@ -1,5 +1,5 @@
 /**
- * Fluvio — Közép-Európa, Duna-medence és Kárpátalja Interaktív Víztérképe
+ * RiverRadar — Interactive Water Map of Central Europe, the Danube Basin and Zakarpattia
  * Client-side Interactive Cartography, Real-Time Forecast Slider & Hydrograph Engine
  */
 
@@ -9,8 +9,8 @@
   // Application State
   const savedLang = (() => {
     try {
-      const stored = localStorage.getItem("fluvio_lang") || localStorage.getItem("wvis_lang");
-      return stored && window.FLUVIO_I18N && window.FLUVIO_I18N[stored] ? stored : "hu";
+      const stored = localStorage.getItem("riverradar_lang");
+      return stored && window.RIVERRADAR_I18N && window.RIVERRADAR_I18N[stored] ? stored : "hu";
     } catch {
       return "hu";
     }
@@ -22,7 +22,7 @@
     stationsByCode: new Map(),
     activeDay: 0,
     scenario: "live", // 'live' | 'rain50' | 'rain120' | 'drought'
-    countryFilter: "all", // 'all' | 'HU' | 'RO' | 'SK' | 'AT' | 'HR' | 'RS' | 'SI' | 'UA' | 'DE'
+    countryFilter: "all", // 'all' | 'HU' | 'RO' | 'SK' | 'AT' | 'DE' | 'HR' | 'RS' | 'SI' | 'UA' | 'BG'
     basinFilter: "all",
     searchQuery: "",
     hoveredCode: null,
@@ -37,13 +37,13 @@
   };
 
   function t() {
-    return (window.FLUVIO_I18N && window.FLUVIO_I18N[state.lang]) || (window.FLUVIO_I18N && window.FLUVIO_I18N.hu) || {};
+    return (window.RIVERRADAR_I18N && window.RIVERRADAR_I18N[state.lang]) || (window.RIVERRADAR_I18N && window.RIVERRADAR_I18N.hu) || {};
   }
 
   // Geographic Bounds for Quick Zoom
   const REGION_BOUNDS = {
     all: [
-      [42.20, 8.15],
+      [41.20, 8.15],
       [49.95, 29.75],
     ],
     HU: [
@@ -81,6 +81,10 @@
     DE: [
       [47.27, 8.15],
       [49.95, 13.85],
+    ],
+    BG: [
+      [41.23, 22.34],
+      [44.23, 28.61],
     ],
   };
 
@@ -159,23 +163,23 @@
   function classifyAlert(levelCm, thresholds) {
     const labels = t().alertLabels || {};
     if (levelCm >= thresholds.deg3) {
-      return { code: "deg3", label: labels.deg3 || "III. fokú árvízi készültség" };
+      return { code: "deg3", label: labels.deg3 || "Flood alert level III" };
     }
     if (levelCm >= thresholds.deg2) {
-      return { code: "deg2", label: labels.deg2 || "II. fokú árvízi készültség" };
+      return { code: "deg2", label: labels.deg2 || "Flood alert level II" };
     }
     if (levelCm >= thresholds.deg1) {
-      return { code: "deg1", label: labels.deg1 || "I. fokú árvízi készültség" };
+      return { code: "deg1", label: labels.deg1 || "Flood alert level I" };
     }
     const elevatedCutoff =
       thresholds.deg1 - Math.max(60, Math.round((thresholds.deg1 - thresholds.low) * 0.25));
     if (levelCm >= elevatedCutoff) {
-      return { code: "elevated", label: labels.elevated || "Emelkedett vízszint" };
+      return { code: "elevated", label: labels.elevated || "Elevated water level" };
     }
     if (levelCm <= thresholds.low) {
-      return { code: "low", label: labels.low || "Kisvíz / Alacsony vízállás" };
+      return { code: "low", label: labels.low || "Low water" };
     }
-    return { code: "normal", label: labels.normal || "Normál vízjárás" };
+    return { code: "normal", label: labels.normal || "Normal water level" };
   }
 
   // Get Scenario-Adjusted Timeline Entry for a Station and Day Index (0..7)
@@ -249,10 +253,10 @@
   // Initialize Leaflet Map and 100% Free Open-Source Cartographic Layers
   function initMap() {
     map = L.map("map", {
-      center: [46.6, 18.8],
-      zoom: 6.0,
+      center: [46.1, 19.2],
+      zoom: 5.75,
       zoomSnap: 0.25,
-      minZoom: 5.0,
+      minZoom: 4.75,
       maxZoom: 13,
       zoomControl: true,
     });
@@ -264,7 +268,7 @@
       "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
       {
         attribution:
-          'Alaptérkép: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> (ODbL), SRTM | Stílus: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)',
+          'Basemap: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> (ODbL), SRTM | Style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)',
         subdomains: "abc",
         maxZoom: 17,
       }
@@ -275,7 +279,7 @@
       "https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png",
       {
         attribution:
-          'Alaptérkép: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="https://github.com/cyclosm/cyclosm-cartocss-style">CyclOSM</a> (OSM France)',
+          'Basemap: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="https://github.com/cyclosm/cyclosm-cartocss-style">CyclOSM</a> (OSM France)',
         subdomains: "abc",
         maxZoom: 19,
       }
@@ -286,7 +290,7 @@
       "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
       {
         attribution:
-          'Alaptérkép: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> közreműködők, HOT (OSM France)',
+          'Basemap: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, HOT (OSM France)',
         subdomains: "abc",
         maxZoom: 19,
       }
@@ -297,7 +301,7 @@
       "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
       {
         attribution:
-          'Alaptérkép: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> közreműködők (ODbL)',
+          'Basemap: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors (ODbL)',
         maxZoom: 19,
       }
     );
@@ -316,6 +320,9 @@
     map.on("zoomend moveend", () => {
       renderStationMarkers();
     });
+
+    window.__RIVERRADAR_MAP__ = map;
+    window.dispatchEvent(new CustomEvent("riverradar:map-ready", { detail: { map } }));
   }
 
   function updateBasemapTheme() {
@@ -351,8 +358,10 @@
       [-85, 180],
     ];
     const maskRings = [worldRing];
+    // Render HU last so Hungary's prominent border always sits cleanly on top of neighboring borders
+    const orderedModules = [...countryModules].sort((a, b) => (a.code === "HU" ? 1 : b.code === "HU" ? -1 : 0));
 
-    for (const cMod of countryModules) {
+    for (const cMod of orderedModules) {
       if (cMod.bounds && cMod.code) {
         REGION_BOUNDS[cMod.code] = cMod.bounds;
       }
@@ -361,23 +370,56 @@
         maskRings.push(borderLatLngs);
         const borderColor = cMod.border_color || "#fbbf24";
 
-        // Country National Border outer glow + crisp boundary line
-        L.polyline(borderLatLngs, {
-          pane: "borderPane",
-          color: borderColor,
-          weight: 6,
-          opacity: 0.22,
-          interactive: false,
-        }).addTo(map);
+        if (cMod.code === "HU") {
+          // Prominent, thick, high-contrast Hungarian national border (clearly visible even when zoomed out)
+          L.polyline(borderLatLngs, {
+            pane: "borderPane",
+            color: borderColor,
+            weight: 11,
+            opacity: 0.34,
+            lineJoin: "round",
+            lineCap: "round",
+            interactive: false,
+          }).addTo(map);
 
-        L.polyline(borderLatLngs, {
-          pane: "borderPane",
-          color: borderColor,
-          weight: 2.2,
-          opacity: 0.88,
-          dashArray: "7 4",
-          interactive: false,
-        }).addTo(map);
+          L.polyline(borderLatLngs, {
+            pane: "borderPane",
+            color: "#0f172a",
+            weight: 6.4,
+            opacity: 0.78,
+            lineJoin: "round",
+            lineCap: "round",
+            interactive: false,
+          }).addTo(map);
+
+          L.polyline(borderLatLngs, {
+            pane: "borderPane",
+            color: borderColor,
+            weight: 4.2,
+            opacity: 1.0,
+            lineJoin: "round",
+            lineCap: "round",
+            interactive: false,
+          }).addTo(map);
+        } else {
+          // Neighboring country / basin border outer glow + crisp dashed boundary line
+          L.polyline(borderLatLngs, {
+            pane: "borderPane",
+            color: borderColor,
+            weight: 6,
+            opacity: 0.22,
+            interactive: false,
+          }).addTo(map);
+
+          L.polyline(borderLatLngs, {
+            pane: "borderPane",
+            color: borderColor,
+            weight: 2.2,
+            opacity: 0.88,
+            dashArray: "7 4",
+            interactive: false,
+          }).addTo(map);
+        }
       }
 
       // Render Country's Major Lakes
@@ -758,9 +800,9 @@
 
     let threshLines = "";
     const checkThresholds = [
-      { val: station.thresholds.deg1, color: "#f59e0b", label: dict.threshDeg1 || "I. fok" },
-      { val: station.thresholds.deg2, color: "#f97316", label: dict.threshDeg2 || "II. fok" },
-      { val: station.thresholds.low, color: "#06b6d4", label: dict.threshLow || "Kisvíz" },
+      { val: station.thresholds.deg1, color: "#f59e0b", label: dict.threshDeg1 || "Level I" },
+      { val: station.thresholds.deg2, color: "#f97316", label: dict.threshDeg2 || "Level II" },
+      { val: station.thresholds.low, color: "#06b6d4", label: dict.threshLow || "Low water" },
     ];
     for (const th of checkThresholds) {
       if (th.val >= minVal && th.val <= maxVal) {
@@ -780,7 +822,7 @@
     const dayTicks = days
       .map((d, i) => {
         const tx = xFor(i).toFixed(1);
-        const lbl = i === 0 ? (dict.tickToday || "Ma") : dict.tickDayShort ? dict.tickDayShort(i) : `+${i}n`;
+        const lbl = i === 0 ? (dict.tickToday || "Today") : dict.tickDayShort ? dict.tickDayShort(i) : `+${i}d`;
         const weight = i === activeDayIdx ? "700" : "400";
         const fill = i === activeDayIdx ? activeColor : "#94a3b8";
         return `<text x="${tx}" y="${height - 3}" fill="${fill}" font-size="9" font-weight="${weight}" text-anchor="middle">${lbl}</text>`;
@@ -812,13 +854,13 @@
     const dailySign = dayData.daily_change_cm > 0 ? "+" : "";
 
     let trendClass = "trend-flat";
-    let trendIcon = dict.trendFlat || "▬ Stagnáló";
+    let trendIcon = dict.trendFlat || "▬ Steady";
     if (dayData.daily_change_cm >= 3) {
       trendClass = "trend-up";
-      trendIcon = dict.trendUp || "▲ Áradó";
+      trendIcon = dict.trendUp || "▲ Rising";
     } else if (dayData.daily_change_cm <= -3) {
       trendClass = "trend-down";
-      trendIcon = dict.trendDown || "▼ Apadó";
+      trendIcon = dict.trendDown || "▼ Falling";
     }
 
     const th = station.thresholds;
@@ -827,7 +869,7 @@
 
     const uncText =
       state.activeDay === 0
-        ? dict.officialReading || "Hivatalos mérés"
+        ? dict.officialReading || "Official reading"
         : dict.uncBand
         ? dict.uncBand(dayData.uncertainty_cm)
         : `±${dayData.uncertainty_cm} cm`;
@@ -840,7 +882,7 @@
       <div class="hover-header">
         <div>
           <span class="hover-river-badge">
-            <span class="country-tag country-${countryCode}">${countryCode}</span>${station.river}${fkmText} • ${dict.codeLabel || "Kód"}: ${station.code}
+            <span class="country-tag country-${countryCode}">${countryCode}</span>${station.river}${fkmText} • ${dict.codeLabel || "Code"}: ${station.code}
           </span>
           <h3 class="hover-station-title">${station.name}</h3>
           <div class="hover-reach-sub">${station.reach_name}</div>
@@ -850,30 +892,30 @@
 
       <div class="hover-metrics-grid">
         <div class="metric-box">
-          <span class="metric-box-label">${dict.waterLevelLabel ? dict.waterLevelLabel(dayData.label) : `${dayData.label} vízállás`}</span>
+          <span class="metric-box-label">${dict.waterLevelLabel ? dict.waterLevelLabel(dayData.label) : `${dayData.label} stage`}</span>
           <strong class="metric-box-val">${dayData.level_cm} cm</strong>
           <span class="metric-box-label">${uncText}</span>
         </div>
         <div class="metric-box">
-          <span class="metric-box-label">${dict.change24hLabel || "24 órás változás"}</span>
+          <span class="metric-box-label">${dict.change24hLabel || "24h change"}</span>
           <strong class="metric-box-val ${trendClass}">${dailySign}${dayData.daily_change_cm} cm</strong>
           <span class="metric-box-label ${trendClass}">${trendIcon}</span>
         </div>
         <div class="metric-box">
-          <span class="metric-box-label">${state.activeDay === 0 ? (dict.dischargeTempLabel || "Vízhozam & Hőfok") : (dict.deltaTodayLabel || "Eltérés a maitól")}</span>
+          <span class="metric-box-label">${state.activeDay === 0 ? (dict.dischargeTempLabel || "Discharge & temp.") : (dict.deltaTodayLabel || "Change vs today")}</span>
           <strong class="metric-box-val">${
             state.activeDay === 0
               ? `${dayData.discharge_m3s} m³/s`
               : `${deltaSign}${dayData.delta_from_today_cm} cm`
           }</strong>
-          <span class="metric-box-label">${dict.waterTempLabel ? dict.waterTempLabel(station.water_temp_c) : `Vízhőfok: ${station.water_temp_c} °C`}</span>
+          <span class="metric-box-label">${dict.waterTempLabel ? dict.waterTempLabel(station.water_temp_c) : `Water temp.: ${station.water_temp_c} °C`}</span>
         </div>
       </div>
 
       <div class="threshold-gauge">
         <div class="threshold-labels">
           <span>${dict.threshLkv || "LKV"}: ${th.lkv} cm</span>
-          <span>${dict.threshDeg1 || "I. fok"}: ${th.deg1} cm</span>
+          <span>${dict.threshDeg1 || "Level I"}: ${th.deg1} cm</span>
           <span>${dict.threshDeg3 || "III. fok"}: ${th.deg3} cm</span>
           <span>${dict.threshLnv || "LNV"}: ${th.lnv} cm</span>
         </div>
@@ -884,13 +926,13 @@
 
       <div class="sparkline-container">
         <div class="sparkline-title">
-          <span><strong>${dict.sparklineTitle || "7 napos vízállás-görbe"}</strong> (${formatHuDate(dayData.date)})</span>
-          <span>${dict.precipShort || "Csapadék"}: <strong>${dayData.precip_mm} mm</strong> (Σ ${dayData.cum_precip_mm} mm) • ${dayData.temp_max_c}°C</span>
+          <span><strong>${dict.sparklineTitle || "7-day hydrograph"}</strong> (${formatHuDate(dayData.date)})</span>
+          <span>${dict.precipShort || "Precip."}: <strong>${dayData.precip_mm} mm</strong> (Σ ${dayData.cum_precip_mm} mm) • ${dayData.temp_max_c}°C</span>
         </div>
         ${buildSparklineSVG(station, state.activeDay, isPinnedView ? 345 : 310, 82)}
         <div class="threshold-labels" style="margin-top: 2px; margin-bottom: 0;">
-          <span>${dict.sourceLabel || "Forrás"}: ${dayData.source}</span>
-          <span>${dict.todayShort || "Ma"}: ${todayData.level_cm} cm → ${day7Short}: ${getStationDayData(station, 7).level_cm} cm</span>
+          <span>${dict.sourceLabel || "Source"}: ${dayData.source}</span>
+          <span>${dict.todayShort || "Today"}: ${todayData.level_cm} cm → ${day7Short}: ${getStationDayData(station, 7).level_cm} cm</span>
         </div>
       </div>
     `;
@@ -1067,10 +1109,10 @@
 
     kpiActiveDay.textContent =
       state.activeDay === 0
-        ? dict.kpiToday || "Ma (Aktuális)"
+        ? dict.kpiToday || "Today (Live)"
         : dict.kpiForecastDay
         ? dict.kpiForecastDay(state.activeDay)
-        : `+${state.activeDay} nap`;
+        : `+${state.activeDay} day`;
     kpiActiveDate.textContent = fmtDate;
 
     kpiRisingCount.textContent = `${risingCount} / ${stations.length}`;
@@ -1080,7 +1122,7 @@
         ? dict.kpiMaxRise
           ? dict.kpiMaxRise(riseSign, maxRise, maxRiseStation)
           : `Max: ${riseSign}${maxRise} cm (${maxRiseStation})`
-        : dict.kpiStagnant || "Stagnáló";
+        : dict.kpiStagnant || "Steady";
 
     kpiAlertCount.textContent = String(alertOrElevatedCount);
     kpiAlertDetail.textContent =
@@ -1101,7 +1143,7 @@
       state.activeDay === 0
         ? dict.dayTitleToday
           ? dict.dayTitleToday(fmtDate)
-          : `Ma (${fmtDate})`
+          : `Today (${fmtDate})`
         : dict.dayTitleForecast
         ? dict.dayTitleForecast(state.activeDay, fmtDate)
         : `+${state.activeDay} (${fmtDate})`;
@@ -1127,7 +1169,7 @@
 
     ticksContainer.innerHTML = refTimeline
       .map((item, idx) => {
-        const lbl = idx === 0 ? (dict.chipToday || "Ma (0.)") : dict.chipDay ? dict.chipDay(idx) : `+${idx}`;
+        const lbl = idx === 0 ? (dict.chipToday || "Today (0)") : dict.chipDay ? dict.chipDay(idx) : `+${idx}`;
         return `
           <div class="slider-tick ${idx === state.activeDay ? "active" : ""}" data-day="${idx}">
             <span>${lbl}</span>
@@ -1146,12 +1188,12 @@
 
   // Apply Selected UI Language Across All Static Labels, Selects, Chips, KPIs & Cards
   function applyLanguage(langCode) {
-    if (!window.FLUVIO_I18N || !window.FLUVIO_I18N[langCode]) {
+    if (!window.RIVERRADAR_I18N || !window.RIVERRADAR_I18N[langCode]) {
       langCode = "hu";
     }
     state.lang = langCode;
     try {
-      localStorage.setItem("fluvio_lang", langCode);
+      localStorage.setItem("riverradar_lang", langCode);
     } catch {
       // Ignore storage restrictions
     }
@@ -1256,7 +1298,7 @@
     const dict = t();
     try {
       refreshBtn.disabled = true;
-      refreshBtn.textContent = dict.btnRefreshing || "⟳ Betöltés...";
+      refreshBtn.textContent = dict.btnRefreshing || "⟳ Loading...";
       const endpoint = forceRefresh ? "/api/refresh" : "/api/hydro-data";
       const resp = await fetch(endpoint);
       const data = await resp.json();

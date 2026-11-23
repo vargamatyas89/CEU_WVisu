@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Fluvio — Közép-Európa és Duna-medence Interaktív Vízügyi Térképe
+   RiverRadar — Interactive Hydrological Map of Central Europe and the Danube Basin
    Modern CSS Architecture (color-scheme, light-dark(), brand-consistent-forms, slider)
    ========================================================================== */
 
@@ -62,6 +62,7 @@
   --si-border-color: #2dd4bf;
   --ua-border-color: #e879f9;
   --de-border-color: #34d399;
+  --bg-border-color: #fb923c;
 
   /* MANDATORY fallback for browsers without light-dark() support */
   @media (prefers-color-scheme: dark) {
@@ -450,7 +451,7 @@ body {
 .swatch-deg1 { background: var(--alert-deg1); height: 8px; }
 .swatch-deg2 { background: var(--alert-deg2); height: 9px; }
 .swatch-deg3 { background: var(--alert-deg3); height: 10px; box-shadow: 0 0 6px var(--alert-deg3); }
-.swatch-border { background: transparent; border: 2px dashed var(--hu-border-color); height: 8px; }
+.swatch-border { background: transparent; border: 3px solid var(--hu-border-color); box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.45); height: 9px; }
 .swatch-ro-border { background: transparent; border: 2px dashed var(--ro-border-color); height: 8px; }
 .swatch-sk-border { background: transparent; border: 2px dashed var(--sk-border-color); height: 8px; }
 .swatch-at-border { background: transparent; border: 2px dashed var(--at-border-color); height: 8px; }
@@ -459,6 +460,7 @@ body {
 .swatch-si-border { background: transparent; border: 2px dashed var(--si-border-color); height: 8px; }
 .swatch-ua-border { background: transparent; border: 2px dashed var(--ua-border-color); height: 8px; }
 .swatch-de-border { background: transparent; border: 2px dashed var(--de-border-color); height: 8px; }
+.swatch-bg-border { background: transparent; border: 2px dashed var(--bg-border-color); height: 8px; }
 
 .country-tag {
   display: inline-block;
@@ -522,6 +524,12 @@ body {
   background: rgba(52, 211, 153, 0.22);
   color: #34d399;
   border: 1px solid rgba(52, 211, 153, 0.5);
+}
+
+.country-tag.country-BG {
+  background: rgba(251, 146, 60, 0.22);
+  color: #fb923c;
+  border: 1px solid rgba(251, 146, 60, 0.5);
 }
 
 .layer-toggles {

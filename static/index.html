@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- MANDATORY: Declare support for both light and dark themes early to prevent FOUC -->
   <meta name="color-scheme" content="light dark">
-  <title>Fluvio — Közép-Európa és Duna-medence (HU • RO • SK • AT • HR • RS • SI • UA-Kárpátalja) Interaktív Víztérképe és 1–7 Napos Vízállás-Előrejelzése</title>
+  <title>RiverRadar — Central Europe & Danube Basin (DE • AT • SK • HU • SI • HR • RS • RO • BG • UA-ZK) Interactive Water Level Map & 1–7 Day Forecast</title>
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
@@ -24,10 +24,10 @@
           </svg>
         </div>
         <div>
-          <h1 class="brand-title" data-i18n="brandTitle">Fluvio — Közép-Európa, Duna-medence és Kárpátalja Víztérképe</h1>
+          <h1 class="brand-title" data-i18n="brandTitle">RiverRadar — Central Europe, Danube Basin & Zakarpattia Hydrological Map</h1>
           <p class="brand-subtitle">
             <span class="live-dot" aria-hidden="true"></span>
-            <span id="meta-source-label">OVF, INHGA, SHMÚ, eHYD, DHMZ, RHMZ &amp; ARSO • Open-Meteo &amp; GloFAS v4 Modell</span>
+            <span id="meta-source-label">OVF, INHGA, SHMÚ, eHYD, DHMZ, RHMZ, ARSO, HND &amp; HVZ • Open-Meteo &amp; GloFAS v4 Modell</span>
           </p>
         </div>
       </div>
@@ -35,7 +35,7 @@
       <!-- Filter, Language & Scenario Controls -->
       <div class="header-controls">
         <div class="control-group">
-          <label for="language-select" class="control-label" data-i18n="lblLanguage">Nyelv</label>
+          <label for="language-select" class="control-label" data-i18n="lblLanguage">Language</label>
           <select id="language-select" name="language" class="select-control brand-select lang-select">
             <button>
               <selectedcontent></selectedcontent>
@@ -49,59 +49,62 @@
             <option value="sr">🇷🇸 Srpski</option>
             <option value="sl">🇸🇮 Slovenščina</option>
             <option value="uk">🇺🇦 Українська</option>
+            <option value="bg">🇧🇬 Български</option>
           </select>
         </div>
 
         <div class="control-group">
-          <label for="country-filter" class="control-label" data-i18n="lblCountry">Ország / Régió</label>
+          <label for="country-filter" class="control-label" data-i18n="lblCountry">Country / Region</label>
           <select id="country-filter" name="country" class="select-control">
-            <option value="all">🇭🇺 + 🇷🇴 + 🇸🇰 + 🇦🇹 + 🇩🇪 + 🇭🇷 + 🇷🇸 + 🇸🇮 + 🇺🇦 Teljes régió (469 szakasz)</option>
-            <option value="HU">🇭🇺 Magyarország (108 szakasz)</option>
-            <option value="RO">🇷🇴 Románia (78 szakasz)</option>
-            <option value="SK">🇸🇰 Szlovákia (45 szakasz)</option>
-            <option value="AT">🇦🇹 Ausztria (41 szakasz)</option>
-            <option value="DE">🇩🇪 Német Duna-vízgyűjtő (45 szakasz)</option>
-            <option value="HR">🇭🇷 Horvátország (45 szakasz)</option>
-            <option value="RS">🇷🇸 Szerbia (46 szakasz)</option>
-            <option value="SI">🇸🇮 Szlovénia (37 szakasz)</option>
-            <option value="UA">🇺🇦 Kárpátalja / UA (24 szakasz)</option>
+            <option value="all">🇭🇺 + 🇷🇴 + 🇸🇰 + 🇦🇹 + 🇩🇪 + 🇭🇷 + 🇷🇸 + 🇸🇮 + 🇧🇬 + 🇺🇦 Full Region (511 reaches)</option>
+            <option value="HU">🇭🇺 Hungary (108 reaches)</option>
+            <option value="RO">🇷🇴 Romania (78 reaches)</option>
+            <option value="SK">🇸🇰 Slovakia (45 reaches)</option>
+            <option value="AT">🇦🇹 Austria (41 reaches)</option>
+            <option value="DE">🇩🇪 German Danube Basin (45 reaches)</option>
+            <option value="HR">🇭🇷 Croatia (45 reaches)</option>
+            <option value="RS">🇷🇸 Serbia (46 reaches)</option>
+            <option value="SI">🇸🇮 Slovenia (37 reaches)</option>
+            <option value="BG">🇧🇬 Bulgaria (42 reaches)</option>
+            <option value="UA">🇺🇦 Zakarpattia / UA (24 reaches)</option>
           </select>
         </div>
 
         <div class="control-group">
-          <label for="basin-filter" class="control-label" data-i18n="lblBasin">Vízgyűjtő / Víztípus</label>
+          <label for="basin-filter" class="control-label" data-i18n="lblBasin">Basin / Water Type</label>
           <select id="basin-filter" name="basin" class="select-control">
-            <option value="all">Összes vízgyűjtő és kisvízfolyás (469)</option>
-            <option value="minor_only">★ Csak kisvízfolyások, patakok és főcsatornák (173)</option>
-            <option value="duna">Duna főág (DE–AT–SK–HU–HR–RS–RO), Inn, Isar, Száva és mellékvizek</option>
-            <option value="tisza">Tisza (Kárpátalja–RO–HU–RS), Latorca, Ung, Felvidék, Erdély és Vajdaság</option>
-            <option value="olt_siret">Olt, Zsil, Argeș, Szeret és Prut vízrendszer (RO)</option>
-            <option value="drava">Dráva, Mura, Soča és Adriai-karsztfolyók (AT–SI–HU–HR)</option>
-            <option value="tavak">Tavak és tározók (Balaton, Chiemsee, Starnberger, Fertő, Bled, Plitvice, Vaskapu)</option>
+            <option value="all">All basins &amp; smaller waters (511)</option>
+            <option value="minor_only">★ Smaller streams, creeks &amp; main canals only (187)</option>
+            <option value="duna">Danube main stem (AT–SK–HU–HR–RS–RO), Sava (SI–HR–RS), Morava &amp; tributaries</option>
+            <option value="tisza">Tisza (RO–HU–RS), Slovakia, Transylvania &amp; Vojvodina (DTD, Bega, Timiș)</option>
+            <option value="olt_siret">Olt, Jiu, Argeș, Siret &amp; Prut river systems (RO)</option>
+            <option value="drava">Drava, Mura, Soča &amp; Adriatic karst rivers (AT–SI–HU–HR)</option>
+            <option value="marica_bg">Maritsa, Tundzha, Arda, Struma, Mesta &amp; Kamchiya (BG)</option>
+            <option value="tavak">Lakes &amp; reservoirs (Balaton, Bled, Bohinj, Plitvice, Iron Gate, Constance, Razim)</option>
           </select>
         </div>
 
         <div class="control-group">
-          <label for="weather-scenario" class="control-label" data-i18n="lblScenario">Időjárási szcenárió (1–7. nap)</label>
+          <label for="weather-scenario" class="control-label" data-i18n="lblScenario">Weather Scenario (Days 1–7)</label>
           <select id="weather-scenario" name="scenario" class="select-control">
-            <option value="live">Valós Open-Meteo &amp; OVF előrejelzés (Alap)</option>
-            <option value="rain50">+50 mm Intenzív vízgyűjtő csapadék</option>
-            <option value="rain120">+120 mm Extrém ciklon / Árhullám</option>
-            <option value="drought">Tartós szárazság / Apadási szcenárió</option>
+            <option value="live">Live Open-Meteo &amp; Official Forecast (Baseline)</option>
+            <option value="rain50">+50 mm Intense Catchment Rainfall</option>
+            <option value="rain120">+120 mm Extreme Cyclone / Flood Wave</option>
+            <option value="drought">Prolonged Drought / Recession Scenario</option>
           </select>
         </div>
 
         <div class="control-group search-group">
-          <label for="station-search" class="control-label" data-i18n="lblSearch">Vízmérce / Folyó keresése</label>
-          <input type="search" id="station-search" class="search-control" placeholder="Pl. Budapest, Bécs, Pozsony, Zágráb, Belgrád, Maros...">
+          <label for="station-search" class="control-label" data-i18n="lblSearch">Search Gauge / River</label>
+          <input type="search" id="station-search" class="search-control" placeholder="e.g. Budapest, Vienna, Ljubljana, Bratislava, Zagreb, Belgrade...">
         </div>
 
         <div class="action-buttons">
-          <button type="button" id="btn-refresh" class="btn-secondary" title="Élő adatok frissítése a hivatalos vízügyi és Open-Meteo szerverekről">
-            ⟳ Élő frissítés
+          <button type="button" id="btn-refresh" class="btn-secondary" title="Refresh live readings from official hydrological services and Open-Meteo">
+            ⟳ Live Refresh
           </button>
-          <button type="button" id="btn-theme-toggle" class="btn-secondary" title="Térkép színséma váltása (Sötét / Világos)">
-            ◐ Téma
+          <button type="button" id="btn-theme-toggle" class="btn-secondary" title="Switch map color theme (Dark / Light)">
+            ◐ Theme
           </button>
         </div>
       </div>
@@ -116,24 +119,24 @@
         <!-- Top-Left Floating KPI Summary Ribbon -->
         <div class="map-overlay-top-left">
           <div class="kpi-card">
-            <span class="kpi-label" data-i18n="kpiTimeframe">Kiválasztott idősík</span>
-            <strong class="kpi-value highlight-blue" id="kpi-active-day">Ma (Aktuális)</strong>
-            <span class="kpi-sub" id="kpi-active-date">Betöltés...</span>
+            <span class="kpi-label" data-i18n="kpiTimeframe">Selected Timeframe</span>
+            <strong class="kpi-value highlight-blue" id="kpi-active-day">Today (Live)</strong>
+            <span class="kpi-sub" id="kpi-active-date">Loading...</span>
           </div>
           <div class="kpi-card">
-            <span class="kpi-label" data-i18n="kpiRising">Áradó szakaszok</span>
+            <span class="kpi-label" data-i18n="kpiRising">Rising Reaches</span>
             <strong class="kpi-value" id="kpi-rising-count">0</strong>
             <span class="kpi-sub" id="kpi-max-rise">Max: +0 cm</span>
           </div>
           <div class="kpi-card">
-            <span class="kpi-label" data-i18n="kpiAlert">Készültségi / Emelkedett</span>
+            <span class="kpi-label" data-i18n="kpiAlert">Alert / Elevated</span>
             <strong class="kpi-value" id="kpi-alert-count">0</strong>
-            <span class="kpi-sub" id="kpi-alert-detail">Minden szakasz normál</span>
+            <span class="kpi-sub" id="kpi-alert-detail">All reaches normal</span>
           </div>
           <div class="kpi-card">
-            <span class="kpi-label" data-i18n="kpiPrecip">Vízgyűjtő csapadék</span>
+            <span class="kpi-label" data-i18n="kpiPrecip">Catchment Rainfall</span>
             <strong class="kpi-value" id="kpi-precip-avg">0.0 mm</strong>
-            <span class="kpi-sub" id="kpi-temp-avg">Átlag: -- °C</span>
+            <span class="kpi-sub" id="kpi-temp-avg">Avg max: -- °C</span>
           </div>
         </div>
 
@@ -141,55 +144,60 @@
         <div class="map-overlay-top-right">
           <div class="legend-panel">
             <div class="legend-header">
-              <span class="legend-title" data-i18n="legendTitle">Vízállás és Készültségi Színkódok</span>
+              <span class="legend-title" data-i18n="legendTitle">Water Level & Flood Alert Legend</span>
             </div>
             <ul class="legend-list">
-              <li><span class="swatch swatch-low"></span> <span data-i18n="legendLow">Kisvíz / Alacsony vízállás</span></li>
-              <li><span class="swatch swatch-normal"></span> <span data-i18n="legendNormal">Normál üzemi vízjárás</span></li>
-              <li><span class="swatch swatch-elevated"></span> <span data-i18n="legendElevated">Emelkedett vízszint / Árhullám</span></li>
-              <li><span class="swatch swatch-deg1"></span> <span data-i18n="legendDeg1">I. fokú árvízi készültség</span></li>
-              <li><span class="swatch swatch-deg2"></span> <span data-i18n="legendDeg2">II. fokú árvízi készültség</span></li>
-              <li><span class="swatch swatch-deg3"></span> <span data-i18n="legendDeg3">III. fokú árvízi készültség</span></li>
-              <li><span class="swatch swatch-border"></span> <span data-i18n="borderHU">Magyarország államhatára</span></li>
-              <li><span class="swatch swatch-ro-border"></span> <span data-i18n="borderRO">Románia államhatára</span></li>
-              <li><span class="swatch swatch-sk-border"></span> <span data-i18n="borderSK">Szlovákia államhatára</span></li>
-              <li><span class="swatch swatch-at-border"></span> <span data-i18n="borderAT">Ausztria államhatára</span></li>
-              <li><span class="swatch swatch-hr-border"></span> <span data-i18n="borderHR">Horvátország államhatára</span></li>
-              <li><span class="swatch swatch-rs-border"></span> <span data-i18n="borderRS">Szerbia államhatára</span></li>
-              <li><span class="swatch swatch-si-border"></span> <span data-i18n="borderSI">Szlovénia államhatára</span></li>
-              <li><span class="swatch swatch-ua-border"></span> <span data-i18n="borderUA">Kárpátalja (UA) határa</span></li>
-              <li><span class="swatch swatch-de-border"></span> <span data-i18n="borderDE">Német Duna-vízgyűjtő (DE)</span></li>
+              <li><span class="swatch swatch-low"></span> <span data-i18n="legendLow">Low water / Drought stage</span></li>
+              <li><span class="swatch swatch-normal"></span> <span data-i18n="legendNormal">Normal hydrological stage</span></li>
+              <li><span class="swatch swatch-elevated"></span> <span data-i18n="legendElevated">Elevated stage / High water</span></li>
+              <li><span class="swatch swatch-deg1"></span> <span data-i18n="legendDeg1">1st-degree flood alert</span></li>
+              <li><span class="swatch swatch-deg2"></span> <span data-i18n="legendDeg2">2nd-degree flood alert</span></li>
+              <li><span class="swatch swatch-deg3"></span> <span data-i18n="legendDeg3">3rd-degree flood alert</span></li>
+              <li><span class="swatch swatch-border"></span> <span data-i18n="borderHU">Hungary national border</span></li>
+              <li><span class="swatch swatch-ro-border"></span> <span data-i18n="borderRO">Romania national border</span></li>
+              <li><span class="swatch swatch-sk-border"></span> <span data-i18n="borderSK">Slovakia national border</span></li>
+              <li><span class="swatch swatch-at-border"></span> <span data-i18n="borderAT">Austria national border</span></li>
+              <li><span class="swatch swatch-hr-border"></span> <span data-i18n="borderHR">Croatia national border</span></li>
+              <li><span class="swatch swatch-rs-border"></span> <span data-i18n="borderRS">Serbia national border</span></li>
+              <li><span class="swatch swatch-si-border"></span> <span data-i18n="borderSI">Slovenia national border</span></li>
+              <li><span class="swatch swatch-ua-border"></span> <span data-i18n="borderUA">Zakarpattia (UA) border</span></li>
+              <li><span class="swatch swatch-de-border"></span> <span data-i18n="borderDE">German Danube Basin (DE)</span></li>
+              <li><span class="swatch swatch-bg-border"></span> <span data-i18n="borderBG">Bulgaria national border</span></li>
             </ul>
             <div class="layer-toggles">
               <div class="basemap-select-wrap">
-                <label for="basemap-source" class="control-label" data-i18n="lblBasemap">Nyílt forráskódú alaptérkép</label>
+                <label for="basemap-source" class="control-label" data-i18n="lblBasemap">Open-Source Basemap</label>
                 <select id="basemap-source" name="basemap" class="select-control" style="width: 100%; margin-top: 0.2rem;">
-                  <option value="opentopomap" selected>OpenTopoMap (Valódi SRTM domborzat)</option>
-                  <option value="cyclosm">OSM France / CyclOSM (Domborzati)</option>
-                  <option value="osm_hot">OpenStreetMap HOT (Letisztult)</option>
+                  <option value="opentopomap" selected>OpenTopoMap (Real SRTM Relief)</option>
+                  <option value="cyclosm">OSM France / CyclOSM (Topographic)</option>
+                  <option value="osm_hot">OpenStreetMap HOT (Clean)</option>
                   <option value="osm_standard">OpenStreetMap Standard (ODbL)</option>
-                  <option value="none">Kikapcsolva (100% vektoros mód)</option>
+                  <option value="none">Disabled (100% Vector Mode)</option>
                 </select>
               </div>
               <div class="basemap-select-wrap">
-                <label for="label-mode-select" class="control-label" data-i18n="lblLabelMode">Állomás-címkék</label>
+                <label for="label-mode-select" class="control-label" data-i18n="lblLabelMode">Station Labels</label>
                 <select id="label-mode-select" name="label_mode" class="select-control" style="width: 100%; margin-top: 0.2rem;">
-                  <option value="off" selected>Kikapcsolva (Tiszta térkép)</option>
-                  <option value="smart">Okos (Zoom + Riasztás)</option>
-                  <option value="all">Mind megjelenítése</option>
+                  <option value="off" selected>Off (Clean Map)</option>
+                  <option value="smart">Smart (Zoom + Alerts)</option>
+                  <option value="all">Show All</option>
                 </select>
               </div>
+              <label for="toggle-retention-plans">
+                <input type="checkbox" id="toggle-retention-plans" class="visually-hidden-fallback" checked>
+                <span>💧 Top 10 Vízmegtartási Terv (HU)</span>
+              </label>
               <label for="toggle-minor-waters">
                 <input type="checkbox" id="toggle-minor-waters" class="visually-hidden-fallback" checked>
-                <span data-i18n="toggleMinor">Kisvízfolyások, patakok, csatornák (173)</span>
+                <span data-i18n="toggleMinor">Smaller streams, creeks, canals (187)</span>
               </label>
               <label for="toggle-stations">
                 <input type="checkbox" id="toggle-stations" class="visually-hidden-fallback" checked>
-                <span data-i18n="toggleStations">Mérőállomás pontok</span>
+                <span data-i18n="toggleStations">Gauging station markers</span>
               </label>
               <label for="toggle-basemap">
                 <input type="checkbox" id="toggle-basemap" class="visually-hidden-fallback" checked>
-                <span data-i18n="toggleBasemap">Domborzati alaptérkép mutatása</span>
+                <span data-i18n="toggleBasemap">Show topographic basemap</span>
               </label>
             </div>
           </div>
@@ -200,27 +208,27 @@
           <div class="timeline-header">
             <div class="timeline-title-block">
               <button type="button" id="btn-play-timeline" class="btn-play" aria-label="Idősor animáció lejátszása">
-                ▶ Lejátszás
+                ▶ Play
               </button>
               <div>
                 <label for="forecast-day-slider" class="timeline-label" data-i18n="timelineLabel">
-                  Vízállás-előrejelzési időcsúszka (Időjárás és hivatalos hidrológiai modellek alapján):
+                  Water Level Forecast Timeline Slider (Weather & Official Hydrological Models):
                 </label>
                 <div class="timeline-status-line">
-                  <strong id="slider-day-badge" class="day-badge">Ma — Aktuális hivatalos mérés</strong>
-                  <span id="slider-weather-summary" class="weather-pill">Csapadék: 0.0 mm • Hőmérséklet: -- °C</span>
+                  <strong id="slider-day-badge" class="day-badge">Today (Live)</strong>
+                  <span id="slider-weather-summary" class="weather-pill">Catchment rain: 0.0 mm • Temp: -- °C</span>
                 </div>
               </div>
             </div>
             <div class="timeline-quick-steps">
-              <button type="button" class="step-chip active" data-day="0">Ma (0.)</button>
-              <button type="button" class="step-chip" data-day="1">+1 nap</button>
-              <button type="button" class="step-chip" data-day="2">+2 nap</button>
-              <button type="button" class="step-chip" data-day="3">+3 nap</button>
-              <button type="button" class="step-chip" data-day="4">+4 nap</button>
-              <button type="button" class="step-chip" data-day="5">+5 nap</button>
-              <button type="button" class="step-chip" data-day="6">+6 nap</button>
-              <button type="button" class="step-chip" data-day="7">+7 nap</button>
+              <button type="button" class="step-chip active" data-day="0">Today (0)</button>
+              <button type="button" class="step-chip" data-day="1">+1 d</button>
+              <button type="button" class="step-chip" data-day="2">+2 d</button>
+              <button type="button" class="step-chip" data-day="3">+3 d</button>
+              <button type="button" class="step-chip" data-day="4">+4 d</button>
+              <button type="button" class="step-chip" data-day="5">+5 d</button>
+              <button type="button" class="step-chip" data-day="6">+6 d</button>
+              <button type="button" class="step-chip" data-day="7">+7 d</button>
             </div>
           </div>
 
@@ -232,7 +240,7 @@
               max="7"
               step="1"
               value="0"
-              aria-valuetext="Ma (Aktuális mért vízállás)"
+              aria-valuetext="Today (Live)"
             >
             <div class="slider-ticks" id="slider-ticks-container" aria-hidden="true">
               <!-- Populated dynamically with dates & day names -->
@@ -252,7 +260,7 @@
         <div class="inspector-card" id="pinned-station-panel">
           <div class="inspector-empty">
             <p class="inspector-hint" id="inspector-empty-hint">
-              Vigye az egeret bármely <strong>folyószakasz, tó vagy mérőállomás</strong> fölé a térképen az azonnali vízállás-adatlaphoz, vagy kattintson rá a részletes elemzés rögzítéséhez!
+              Hover over any <strong>river reach, lake, or gauging station</strong> on the map for instant water level details, or click to pin it here.
             </p>
           </div>
         </div>
@@ -260,8 +268,8 @@
         <!-- Scrollable Table of Gauging Stations across HU, RO, SK, AT, HR & RS -->
         <div class="station-list-container">
           <div class="station-list-header">
-            <h2><span data-i18n="stationListTitle">Hivatalos Vízügyi Mérési Pontok</span> (<span id="station-count-badge">469</span>)</h2>
-            <span class="sort-hint">DE • AT • SK • HU • SI • HR • RS • RO • UA</span>
+            <h2><span data-i18n="stationListTitle">Official Hydrological Gauges</span> (<span id="station-count-badge">511</span>)</h2>
+            <span class="sort-hint">DE • AT • SK • HU • SI • HR • RS • RO • BG • UA</span>
           </div>
           <div class="station-list-scroller" id="station-list">
             <!-- Populated dynamically -->
@@ -283,6 +291,8 @@
   <script src="/countries/slovenia_geo.js"></script>
   <script src="/countries/zakarpattia_geo.js"></script>
   <script src="/countries/germany_danube_geo.js"></script>
+  <script src="/countries/bulgaria_geo.js"></script>
   <script src="/app.js"></script>
+  <script src="/retention_plans.js"></script>
 </body>
 </html>

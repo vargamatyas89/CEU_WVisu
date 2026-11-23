@@ -1,6 +1,6 @@
 """
-Horvátország (HR) — Vízgyűjtők és Hivatalos Vízügyi Mérőállomások (DHMZ hidro.dhz.hr / OVF hydroinfo.hu 54xxxx & GloFAS v4)
-Különálló ország-forrásfájl (45 horvátországi vízmérce: főfolyók, karszttavak és szlavóniai/karszt kisvízfolyások)
+Croatia (HR) — Catchments and Official Hydrological Gauging Stations (DHMZ hidro.dhz.hr / OVF hydroinfo.hu 54xxxx & GloFAS v4)
+Standalone country source file (45 Croatian gauges: main rivers, karst lakes and Slavonian/karst smaller waters)
 """
 
 COUNTRY_META = {
@@ -20,9 +20,9 @@ CATCHMENTS = {
 
 STATIONS = [
     # =========================================================================
-    # 1. FŐFOLYÓK ÉS NAGY TAVAK (27 állomás — élő DHMZ hidro.dhz.hr & hydroinfo.hu)
+    # 1. MAIN RIVERS AND LARGE LAKES (27 stations — live DHMZ hidro.dhz.hr & hydroinfo.hu)
     # =========================================================================
-    # --- DUNA, MURA ÉS DRÁVA (12 állomás) ---
+    # --- DANUBE, MURA AND DRAVA (12 stations) ---
     {
         "code": "DHMZ_5170", "dhmz_id": "5170", "country": "HR", "name": "Kiskőszeg (Batina)", "river": "Duna", "basin": "duna", "catchment": "hr_danube_drava_mura",
         "reach_name": "Duna – Drávaszögi felső szakasz (Kiskőszeg / Batina)", "lat": 45.845, "lon": 18.852, "fkm": 1424.8,
@@ -96,7 +96,7 @@ STATIONS = [
         "default_level": -175, "default_diff24h": -5, "default_discharge": 455.0, "default_temp": 9.0, "downstream_order": 6
     },
 
-    # --- SZÁVA, KULPA, UNA ÉS ADRIAI FŐFOLYÓK (12 állomás) ---
+    # --- SAVA, KUPA, UNA AND ADRIATIC MAIN RIVERS (12 stations) ---
     {
         "code": "DHMZ_3121", "dhmz_id": "3121", "country": "HR", "name": "Zágráb (Zagreb)", "river": "Száva", "basin": "duna", "catchment": "hr_sava_posavina",
         "reach_name": "Száva (Sava) – Zágrábi fővárosi szakasz (Podsused – Zagreb – Rugvica)", "lat": 45.785, "lon": 15.965, "fkm": 700.0,
@@ -170,7 +170,7 @@ STATIONS = [
         "default_level": 174, "default_diff24h": 6, "default_discharge": 285.0, "default_temp": 10.8, "downstream_order": 1
     },
 
-    # --- HORVÁTORSZÁGI NAGY TAVAK (3 állomás) ---
+    # --- CROATIAN LARGE LAKES (3 stations) ---
     {
         "code": "DHMZ_4109", "dhmz_id": "4109", "country": "HR", "name": "Plitvicei-tavak (Kozjak-tó)", "river": "Plitvicei-tavak (Kozjak-tó)", "basin": "tavak", "catchment": "hr_kupa_una_karst",
         "reach_name": "Plitvicei-tavak – Kozjak-tó és Prošćansko-tó (Plitvička jezera)", "lat": 44.882, "lon": 15.608, "fkm": 0.0,
@@ -191,7 +191,7 @@ STATIONS = [
     },
 
     # =========================================================================
-    # 2. KISVÍZFOLYÁSOK, PATAKOK ÉS MELLÉKÁGAK (18 állomás — élő DHMZ hidro.dhz.hr)
+    # 2. SMALLER WATERS, STREAMS AND TRIBUTARIES (18 stations — live DHMZ hidro.dhz.hr)
     # =========================================================================
     {
         "code": "DHMZ_5089", "dhmz_id": "5089", "country": "HR", "water_category": "minor", "name": "Ludbreg", "river": "Bednja", "basin": "drava", "catchment": "hr_danube_drava_mura",

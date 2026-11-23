@@ -10,3 +10,8 @@ data/*.sqlite-shm
 
 # macOS metadata
 .DS_Store
+
+# Claude Code (local agent config)
+CLAUDE.md
+CLAUDE.local.md
+.claude/

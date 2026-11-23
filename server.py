@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Fluvio — Közép-Európa, Duna-medence és Kárpátalja Interaktív Vízügyi Térképe és 1–7 Napos Előrejelző Rendszere
+RiverRadar — Interactive Hydrological Map and 1–7 Day Forecast System for Central Europe, the Danube Basin and Zakarpattia
 Backend API & Static File Server (Standard Library Python 3)
 
 Modular Country Architecture & Multi-Source Live Telemetry:
-1. countries/hungary.py (Magyarország - 101 vízmérce: 64 főfolyó/nagy tó + 37 kisvízfolyás, patak, főcsatorna, tározó)
-2. countries/romania.py (Románia - 78 vízmérce: 56 főfolyó/nagy tó + 22 kisvízfolyás, hegyi patak, mellékág)
+1. countries/<country>.py — one module per country/region (10 modules, 511 gauges; registered in countries/__init__.py)
+2. storage.py — hourly SQLite snapshots with 30-day rolling retention
 3. Live Data Sources:
    - hydroinfo.hu (dunhif_a.html, tishif_a.html, tohid.html, dunelotH.html, tiselotH.html)
-   - vizugy.hu (OperativVizallas - 272 élő órás vízmérce kisvízfolyásokra, patakokra és csatornákra)
-   - Open-Meteo Weather & Copernicus GloFAS v4 (5 km felbontású) Flood API
+   - vizugy.hu (OperativVizallas - 272 live hourly gauges on smaller waters, streams and canals)
+   - Open-Meteo Weather & Copernicus GloFAS v4 (5 km resolution) Flood API
 """
 
 import concurrent.futures
@@ -87,7 +87,7 @@ def fetch_hydroinfo_observations():
 
     for kind, url in urls:
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Fluvio HydroMap)"})
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (RiverRadar HydroMap)"})
             with urllib.request.urlopen(req, timeout=7) as resp:
                 text = resp.read().decode("iso-8859-2", errors="replace")
                 if not obs_date_str:
@@ -140,7 +140,7 @@ def fetch_vizugy_operative_observations():
     """Fetches live hourly telemetry for 272 Hungarian stations (including smaller streams, creeks, canals, reservoirs) from vizugy.hu."""
     vizugy_by_id = {}
     try:
-        req = urllib.request.Request("https://www.vizugy.hu/", headers={"User-Agent": "Mozilla/5.0 (Fluvio HydroMap)"})
+        req = urllib.request.Request("https://www.vizugy.hu/", headers={"User-Agent": "Mozilla/5.0 (RiverRadar HydroMap)"})
         with urllib.request.urlopen(req, timeout=8) as resp:
             text = resp.read().decode("utf-8", errors="replace")
             arrays = dict(re.findall(r"([A-Za-z0-9_]+)\s*=\s*new\s+Array\((.*?)\);", text, re.S))
@@ -196,7 +196,7 @@ def fetch_dhmz_croatia_observations():
     try:
         req = urllib.request.Request(
             "https://hidro.dhz.hr/hidroweb/skripte/hidrobazahtml.py?funkc=podaciautomatskih",
-            headers={"User-Agent": "Mozilla/5.0 (Fluvio HydroMap)"},
+            headers={"User-Agent": "Mozilla/5.0 (RiverRadar HydroMap)"},
         )
         with urllib.request.urlopen(req, timeout=8) as resp:
             text = resp.read().decode("utf-8", errors="replace")
@@ -226,7 +226,7 @@ def fetch_rhmz_serbia_observations():
     try:
         req = urllib.request.Request(
             "https://www.hidmet.gov.rs/latin/osmotreni/stanje_voda.php",
-            headers={"User-Agent": "Mozilla/5.0 (Fluvio HydroMap)"},
+            headers={"User-Agent": "Mozilla/5.0 (RiverRadar HydroMap)"},
         )
         with urllib.request.urlopen(req, timeout=8) as resp:
             text = resp.read().decode("utf-8", errors="replace")
@@ -266,7 +266,7 @@ def fetch_arso_slovenia_observations():
     try:
         req = urllib.request.Request(
             "https://www.arso.gov.si/xml/vode/hidro_podatki_zadnji.xml",
-            headers={"User-Agent": "Mozilla/5.0 (Fluvio HydroMap)"},
+            headers={"User-Agent": "Mozilla/5.0 (RiverRadar HydroMap)"},
         )
         with urllib.request.urlopen(req, timeout=8) as resp:
             root = ET.fromstring(resp.read())
@@ -310,7 +310,7 @@ def fetch_hnd_bayern_observations():
     def _fetch_one(url):
         rows_out = {}
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Fluvio HydroMap)"})
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (RiverRadar HydroMap)"})
             with urllib.request.urlopen(req, timeout=8) as resp:
                 page = resp.read().decode("utf-8", errors="replace")
             for tr in re.findall(r"<tr\b[^>]*>(.*?)</tr>", page, re.S | re.I):
@@ -360,7 +360,7 @@ def fetch_hvz_bw_observations():
     hvz_by_id = {}
     url = "https://www.hvz.baden-wuerttemberg.de/js/hvz_peg_stmn.js"
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Fluvio HydroMap)"})
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (RiverRadar HydroMap)"})
         with urllib.request.urlopen(req, timeout=8) as resp:
             text = resp.read().decode("utf-8", errors="replace")
         # Rows look like: ['00151','Donaueschingen (Add.)','Donau',6,'117','cm','22.11.2026 13:00 MEZ','--','','...',...]
@@ -387,6 +387,85 @@ def fetch_hvz_bw_observations():
     return hvz_by_id
 
 
+def fetch_appd_bulgaria_observations():
+    """Fetches live official Bulgarian Danube telemetry from IAPPD / APPD (appd-bg.org)."""
+    appd_by_key = {}
+    url = "https://www.appd-bg.org/site/"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (RiverRadar HydroMap)"})
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            page = resp.read().decode("utf-8", errors="replace")
+        for tr in re.findall(r"<tr\b[^>]*>(.*?)</tr>", page, re.S | re.I):
+            cells = [
+                re.sub(r"\s+", " ", _clean_html(c)).strip()
+                for c in re.findall(r"<t[dh]\b[^>]*>(.*?)</t[dh]>", tr, re.S | re.I)
+            ]
+            if len(cells) < 3:
+                continue
+            key = cells[0].lower()
+            if not key or "мост" in key or "," in key:
+                continue
+            m_lvl = re.match(r"^(-?\d{1,4})\b", cells[2])
+            if not m_lvl:
+                continue
+            lvl = int(m_lvl.group(1))
+            q_val = _parse_float(cells[3]) if len(cells) >= 4 else None
+            t_val = _parse_float(cells[5]) if len(cells) >= 6 else (
+                _parse_float(cells[4]) if len(cells) >= 5 else None
+            )
+            # Keep the primary official row (with discharge) if already present; fill missing temp/level otherwise
+            existing = appd_by_key.get(key)
+            if not existing or (existing["discharge_m3s"] is None and q_val is not None):
+                appd_by_key[key] = {
+                    "name": cells[0],
+                    "current_level_cm": lvl,
+                    "discharge_m3s": q_val,
+                    "water_temp_c": t_val,
+                    "origin": "appd-bg.org (ИАППД)",
+                }
+            elif existing and existing["water_temp_c"] is None and t_val is not None:
+                existing["water_temp_c"] = t_val
+    except Exception as exc:
+        print(f"[WARN] Failed to fetch APPD Bulgaria telemetry: {exc}")
+
+    return appd_by_key
+
+
+def fetch_nimh_bulgaria_observations():
+    """Fetches live official Bulgarian inland river telemetry from NIMH (hydro.bg)."""
+    nimh_by_id = {}
+    url = "https://hydro.bg/bg/t1.php?ime=&gr=data/&gn=tablRekiB2017"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (RiverRadar HydroMap)"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            page = resp.read().decode("utf-8", errors="replace")
+        for tr in re.findall(r"<tr\b[^>]*>(.*?)</tr>", page, re.S | re.I):
+            cells = [
+                re.sub(r"\s+", " ", _clean_html(c)).strip()
+                for c in re.findall(r"<t[dh]\b[^>]*>(.*?)</t[dh]>", tr, re.S | re.I)
+            ]
+            if len(cells) < 8 or not re.match(r"^\d{4,6}$", cells[0]):
+                continue
+            sid = cells[0]
+            lvl = _parse_int(cells[6])
+            if lvl is None:
+                continue
+            q_val = _parse_float(cells[7].replace(" ", ""))
+            diff_24h = _parse_int(cells[8], 0) if len(cells) >= 9 else 0
+            nimh_by_id[sid] = {
+                "river": cells[1],
+                "name": cells[2],
+                "current_level_cm": lvl,
+                "discharge_m3s": q_val,
+                "diff_24h_cm": diff_24h,
+                "origin": "hydro.bg (НИМХ)",
+            }
+    except Exception as exc:
+        print(f"[WARN] Failed to fetch NIMH Bulgaria telemetry: {exc}")
+
+    return nimh_by_id
+
+
 def fetch_hydroinfo_official_forecasts():
     """Fetches official 6-day water level predictions from hydroinfo.hu (dunelotH.html, tiselotH.html)."""
     forecasts_by_key = {}
@@ -397,7 +476,7 @@ def fetch_hydroinfo_official_forecasts():
 
     for url in urls:
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Fluvio HydroMap)"})
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (RiverRadar HydroMap)"})
             with urllib.request.urlopen(req, timeout=7) as resp:
                 text = resp.read().decode("iso-8859-2", errors="replace")
                 flat = re.sub(
@@ -451,7 +530,7 @@ def fetch_all_catchments_weather():
             f"&daily=precipitation_sum,temperature_2m_max,temperature_2m_min,et0_fao_evapotranspiration,wind_speed_10m_max"
             f"&timezone=Europe%2FBudapest&forecast_days=8"
         )
-        req = urllib.request.Request(w_url, headers={"User-Agent": "Fluvio-HydroMap/1.0"})
+        req = urllib.request.Request(w_url, headers={"User-Agent": "RiverRadar-HydroMap/1.0"})
         with urllib.request.urlopen(req, timeout=8) as resp:
             wdata_list = json.loads(resp.read().decode("utf-8"))
             if isinstance(wdata_list, dict):
@@ -484,7 +563,7 @@ def fetch_all_catchments_weather():
             f"https://flood-api.open-meteo.com/v1/flood?latitude={lats}&longitude={lons}"
             f"&daily=river_discharge&forecast_days=8"
         )
-        req = urllib.request.Request(f_url, headers={"User-Agent": "Fluvio-HydroMap/1.0"})
+        req = urllib.request.Request(f_url, headers={"User-Agent": "RiverRadar-HydroMap/1.0"})
         with urllib.request.urlopen(req, timeout=8) as resp:
             fdata_list = json.loads(resp.read().decode("utf-8"))
             if isinstance(fdata_list, dict):
@@ -524,17 +603,17 @@ def fetch_all_catchments_weather():
 
 def classify_alert(level_cm: int, thresholds: dict):
     if level_cm >= thresholds["deg3"]:
-        return "deg3", "III. fokú árvízi készültség"
+        return "deg3", "Flood alert level III"
     if level_cm >= thresholds["deg2"]:
-        return "deg2", "II. fokú árvízi készültség"
+        return "deg2", "Flood alert level II"
     if level_cm >= thresholds["deg1"]:
-        return "deg1", "I. fokú árvízi készültség"
+        return "deg1", "Flood alert level I"
     elevated_cutoff = thresholds["deg1"] - max(60, int((thresholds["deg1"] - thresholds["low"]) * 0.25))
     if level_cm >= elevated_cutoff:
-        return "elevated", "Emelkedett vízszint"
+        return "elevated", "Elevated water level"
     if level_cm <= thresholds["low"]:
-        return "low", "Kisvíz / Alacsony vízállás"
-    return "normal", "Normál vízjárás"
+        return "low", "Low water"
+    return "normal", "Normal water level"
 
 
 def build_hydro_payload(force_refresh=False):
@@ -560,6 +639,8 @@ def _fetch_and_build_payload(now: float):
     arso_map = fetch_arso_slovenia_observations()
     hnd_map = fetch_hnd_bayern_observations()
     hvz_map = fetch_hvz_bw_observations()
+    appd_map = fetch_appd_bulgaria_observations()
+    nimh_map = fetch_nimh_bulgaria_observations()
     ovf_forecasts = fetch_hydroinfo_official_forecasts()
     catchment_weather = fetch_all_catchments_weather()
 
@@ -576,6 +657,8 @@ def _fetch_and_build_payload(now: float):
         arso_id = st.get("arso_id") or (code.replace("ARSO_", "") if code.startswith("ARSO_") else None)
         hnd_id = st.get("hnd_id") or (code.replace("DE_BY_", "") if code.startswith("DE_BY_") else None)
         hvz_id = st.get("hvz_id") or (code.replace("DE_BW_", "") if code.startswith("DE_BW_") else None)
+        appd_key = st.get("appd_key")
+        nimh_id = st.get("nimh_id") or (code.replace("BG_NIMH_", "") if code.startswith("BG_NIMH_") else None)
         obs = obs_map.get(code)
         v_obs = vizugy_map.get(vizugy_id) if vizugy_id else None
         d_obs = dhmz_map.get(dhmz_id) if dhmz_id else None
@@ -583,6 +666,8 @@ def _fetch_and_build_payload(now: float):
         a_obs = arso_map.get(arso_id) if arso_id else None
         hnd_obs = hnd_map.get(hnd_id) if hnd_id else None
         hvz_obs = hvz_map.get(hvz_id) if hvz_id else None
+        appd_obs = appd_map.get(appd_key) if appd_key else None
+        nimh_obs = nimh_map.get(nimh_id) if nimh_id else None
 
         if obs:
             live_obs_count += 1
@@ -592,15 +677,19 @@ def _fetch_and_build_payload(now: float):
                 obs["discharge_m3s"]
                 if obs["discharge_m3s"] is not None
                 else (
-                    hnd_obs["discharge_m3s"]
-                    if hnd_obs and hnd_obs["discharge_m3s"]
+                    appd_obs["discharge_m3s"]
+                    if appd_obs and appd_obs["discharge_m3s"]
                     else (
-                        v_obs["discharge_m3s"]
-                        if v_obs and v_obs["discharge_m3s"]
+                        hnd_obs["discharge_m3s"]
+                        if hnd_obs and hnd_obs["discharge_m3s"]
                         else (
-                            r_obs["discharge_m3s"]
-                            if r_obs and r_obs["discharge_m3s"]
-                            else (a_obs["discharge_m3s"] if a_obs and a_obs["discharge_m3s"] else st["default_discharge"])
+                            v_obs["discharge_m3s"]
+                            if v_obs and v_obs["discharge_m3s"]
+                            else (
+                                r_obs["discharge_m3s"]
+                                if r_obs and r_obs["discharge_m3s"]
+                                else (a_obs["discharge_m3s"] if a_obs and a_obs["discharge_m3s"] else st["default_discharge"])
+                            )
                         )
                     )
                 )
@@ -608,10 +697,14 @@ def _fetch_and_build_payload(now: float):
             water_temp = (
                 obs["water_temp_c"]
                 if obs["water_temp_c"] is not None
-                else (a_obs["water_temp_c"] if a_obs and a_obs["water_temp_c"] is not None else st["default_temp"])
+                else (
+                    appd_obs["water_temp_c"]
+                    if appd_obs and appd_obs["water_temp_c"] is not None
+                    else (a_obs["water_temp_c"] if a_obs and a_obs["water_temp_c"] is not None else st["default_temp"])
+                )
             )
             ice_status = obs["ice_status"]
-            day0_source = "OVF / INHGA / SHMÚ / eHYD / ARSO / HND Hivatalos élő mérés (hydroinfo.hu)"
+            day0_source = "OVF / INHGA / SHMÚ / eHYD / ARSO / HND / APPD official live reading (hydroinfo.hu)"
         elif v_obs:
             live_obs_count += 1
             live_vizugy_count += 1
@@ -620,7 +713,7 @@ def _fetch_and_build_payload(now: float):
             discharge_0 = v_obs["discharge_m3s"] if v_obs["discharge_m3s"] is not None else st["default_discharge"]
             water_temp = v_obs["water_temp_c"] if v_obs["water_temp_c"] is not None else st["default_temp"]
             ice_status = "jégmentes"
-            day0_source = f"OVF Operatív Vízállás élő mérés (vizugy.hu • {v_obs['measured_at']})"
+            day0_source = f"OVF Operational Water Level live reading (vizugy.hu • {v_obs['measured_at']})"
         elif d_obs:
             live_obs_count += 1
             curr_level = d_obs["current_level_cm"]
@@ -628,7 +721,7 @@ def _fetch_and_build_payload(now: float):
             discharge_0 = st["default_discharge"]
             water_temp = st["default_temp"]
             ice_status = "jégmentes"
-            day0_source = f"DHMZ Horvátország élő mérés (hidro.dhz.hr • {d_obs['measured_at']})"
+            day0_source = f"DHMZ Croatia live reading (hidro.dhz.hr • {d_obs['measured_at']})"
         elif r_obs:
             live_obs_count += 1
             curr_level = r_obs["current_level_cm"]
@@ -636,7 +729,7 @@ def _fetch_and_build_payload(now: float):
             discharge_0 = r_obs["discharge_m3s"] if r_obs["discharge_m3s"] is not None else st["default_discharge"]
             water_temp = r_obs["water_temp_c"] if r_obs["water_temp_c"] is not None else st["default_temp"]
             ice_status = "jégmentes"
-            day0_source = "RHMZ Szerbia Hivatalos élő mérés (hidmet.gov.rs)"
+            day0_source = "RHMZ Serbia official live reading (hidmet.gov.rs)"
         elif a_obs:
             live_obs_count += 1
             curr_level = a_obs["current_level_cm"]
@@ -644,7 +737,7 @@ def _fetch_and_build_payload(now: float):
             discharge_0 = a_obs["discharge_m3s"] if a_obs["discharge_m3s"] is not None else st["default_discharge"]
             water_temp = a_obs["water_temp_c"] if a_obs["water_temp_c"] is not None else st["default_temp"]
             ice_status = "jégmentes"
-            day0_source = f"ARSO Szlovénia élő mérés (arso.gov.si • {a_obs['measured_at']})"
+            day0_source = f"ARSO Slovenia live reading (arso.gov.si • {a_obs['measured_at']})"
         elif hnd_obs and (hnd_obs["current_level_cm"] is not None or (hnd_obs["level_raw_m"] is not None and st.get("zero_m_nhn"))):
             live_obs_count += 1
             if hnd_obs["level_raw_m"] is not None and st.get("zero_m_nhn"):
@@ -655,7 +748,7 @@ def _fetch_and_build_payload(now: float):
             discharge_0 = hnd_obs["discharge_m3s"] if hnd_obs["discharge_m3s"] is not None else st["default_discharge"]
             water_temp = st["default_temp"]
             ice_status = "jégmentes"
-            day0_source = f"HND Bayern hivatalos élő mérés (hnd.bayern.de • {hnd_obs['measured_at']})"
+            day0_source = f"HND Bayern official live reading (hnd.bayern.de • {hnd_obs['measured_at']})"
         elif hvz_obs:
             live_obs_count += 1
             curr_level = hvz_obs["current_level_cm"]
@@ -663,7 +756,23 @@ def _fetch_and_build_payload(now: float):
             discharge_0 = hvz_obs["discharge_m3s"] if hvz_obs["discharge_m3s"] is not None else st["default_discharge"]
             water_temp = st["default_temp"]
             ice_status = "jégmentes"
-            day0_source = f"HVZ Baden-Württemberg élő mérés (hvz.baden-wuerttemberg.de • {hvz_obs['measured_at']})"
+            day0_source = f"HVZ Baden-Württemberg live reading (hvz.baden-wuerttemberg.de • {hvz_obs['measured_at']})"
+        elif appd_obs:
+            live_obs_count += 1
+            curr_level = appd_obs["current_level_cm"]
+            diff_24h = st["default_diff24h"]
+            discharge_0 = appd_obs["discharge_m3s"] if appd_obs["discharge_m3s"] is not None else st["default_discharge"]
+            water_temp = appd_obs["water_temp_c"] if appd_obs["water_temp_c"] is not None else st["default_temp"]
+            ice_status = "jégmentes"
+            day0_source = "ИАППД Bulgaria Danube live reading (appd-bg.org)"
+        elif nimh_obs:
+            live_obs_count += 1
+            curr_level = nimh_obs["current_level_cm"]
+            diff_24h = nimh_obs["diff_24h_cm"]
+            discharge_0 = nimh_obs["discharge_m3s"] if nimh_obs["discharge_m3s"] is not None else st["default_discharge"]
+            water_temp = st["default_temp"]
+            ice_status = "jégmentes"
+            day0_source = "НИМХ Bulgaria official live reading (hydro.bg)"
         else:
             anchor_code = st.get("transboundary_anchor")
             anchor_obs = obs_map.get(anchor_code) if anchor_code else None
@@ -683,21 +792,21 @@ def _fetch_and_build_payload(now: float):
                         else st["default_temp"]
                     )
                     ice_status = anchor_obs.get("ice_status", "jégmentes")
-                    day0_source = f"Copernicus GloFAS v4 (5km) & Határ menti kalibráció ({anchor_st['name']})"
+                    day0_source = f"Copernicus GloFAS v4 (5km) & cross-border calibration ({anchor_st['name']})"
                 else:
                     curr_level = st["default_level"]
                     diff_24h = st["default_diff24h"]
                     discharge_0 = st["default_discharge"]
                     water_temp = st["default_temp"]
                     ice_status = "jégmentes"
-                    day0_source = "Copernicus GloFAS v4 (5km) & Regionális Referencia"
+                    day0_source = "Copernicus GloFAS v4 (5km) & regional reference"
             else:
                 curr_level = st["default_level"]
                 diff_24h = st["default_diff24h"]
                 discharge_0 = st["default_discharge"]
                 water_temp = st["default_temp"]
                 ice_status = "jégmentes"
-                day0_source = "Copernicus GloFAS v4 (5km) & Regionális Referencia"
+                day0_source = "Copernicus GloFAS v4 (5km) & regional reference"
 
         lookup_key = _norm_hu(f"{st['river']} {st['name']}")
         ovf_fc = ovf_forecasts.get(lookup_key)
@@ -753,7 +862,7 @@ def _fetch_and_build_payload(now: float):
                 rain_push = net_rain * resp_factor * 0.85
                 lvl = int(round(d6_lvl + momentum + rain_push))
                 unc = int(round(ovf_fc["days"][5]["uncertainty_cm"] * 1.15 + 4))
-                src = "OVF Extrapoláció + Open-Meteo GloFAS (7. nap)"
+                src = "OVF extrapolation + Open-Meteo GloFAS (day 7)"
                 daily_chg = lvl - prev_level
             else:
                 decay = (0.45 if water_category == "minor" else 0.55) ** d
@@ -774,7 +883,7 @@ def _fetch_and_build_payload(now: float):
                 step_delta = momentum_step + rain_step + glofas_step + reversion
                 lvl = int(round(prev_level + step_delta))
                 unc = int(round((3 if st["basin"] == "tavak" else 5) + d * (1.8 if st["basin"] == "tavak" else 3.8)))
-                src = "Open-Meteo + GloFAS v4 (5km) Kisvízgyűjtő Lefolyásmodell" if water_category == "minor" else "Open-Meteo + GloFAS Hidrológiai Lefolyásmodell"
+                src = "Open-Meteo + GloFAS v4 (5km) small-catchment runoff model" if water_category == "minor" else "Open-Meteo + GloFAS hydrological runoff model"
                 daily_chg = lvl - prev_level
 
             level_span = max(80, st["thresholds"]["deg1"] - st["thresholds"]["low"])
@@ -786,7 +895,7 @@ def _fetch_and_build_payload(now: float):
             timeline.append({
                 "day": d,
                 "date": w_day["date"],
-                "label": "Ma (Aktuális)" if d == 0 else f"+{d} nap",
+                "label": "Today (Live)" if d == 0 else f"+{d} day",
                 "level_cm": lvl,
                 "uncertainty_cm": unc,
                 "delta_from_today_cm": lvl - curr_level,
@@ -820,7 +929,7 @@ def _fetch_and_build_payload(now: float):
             "water_temp_c": water_temp,
             "ice_status": ice_status,
             "has_official_ovf_forecast": bool(ovf_fc),
-            "ovf_issued_at": ovf_fc["issued_at"] if ovf_fc else (obs_date or "Frissítve"),
+            "ovf_issued_at": ovf_fc["issued_at"] if ovf_fc else (obs_date or "Updated"),
             "response_factor": resp_factor,
             "lag_days": lag_days,
             "timeline": timeline,
@@ -844,6 +953,7 @@ def _fetch_and_build_payload(now: float):
             "si_stations": sum(1 for s in stations_out if s["country"] == "SI"),
             "ua_stations": sum(1 for s in stations_out if s["country"] == "UA"),
             "de_stations": sum(1 for s in stations_out if s["country"] == "DE"),
+            "bg_stations": sum(1 for s in stations_out if s["country"] == "BG"),
             "major_stations": sum(1 for s in stations_out if s["water_category"] == "major"),
             "minor_stations": sum(1 for s in stations_out if s["water_category"] == "minor"),
             "countries": COUNTRIES_META,
@@ -851,11 +961,12 @@ def _fetch_and_build_payload(now: float):
             "live_vizugy_matched": live_vizugy_count,
             "official_ovf_forecast_stations": live_ovf_forecast_count,
             "sources": [
-                "Országos Vízjelző Szolgálat (OVF / hydroinfo.hu & vizugy.hu)",
-                "INHGA Románia (74xxxx), SHMÚ Szlovákia (14xxxx) & eHYD Ausztria (24xxxx)",
-                "DHMZ Horvátország (hidro.dhz.hr), RHMZ Szerbia (hidmet.gov.rs) & ARSO Szlovénia (arso.gov.si)",
+                "Hungarian National Hydrological Forecasting Service (OVF / hydroinfo.hu & vizugy.hu)",
+                "INHGA Romania (74xxxx), SHMÚ Slovakia (14xxxx) & eHYD Austria (24xxxx)",
+                "DHMZ Croatia (hidro.dhz.hr), RHMZ Serbia (hidmet.gov.rs) & ARSO Slovenia (arso.gov.si)",
                 "HND Bayern (hnd.bayern.de) & HVZ Baden-Württemberg (hvz.baden-wuerttemberg.de)",
-                "Copernicus GloFAS v4 (5 km-es felbontású vízhozam modell) & Open-Meteo IFS",
+                "ИАППД Bulgaria (appd-bg.org) & НИМХ Bulgaria (hydro.bg)",
+                "Copernicus GloFAS v4 (5 km resolution discharge model) & Open-Meteo IFS",
             ],
         },
         "catchments": {
@@ -890,7 +1001,7 @@ def start_hourly_refresh_worker(stop_event: threading.Event, interval_seconds: i
                 elapsed = time.time() - started
                 meta = refreshed["meta"]
                 print(
-                    f"[Fluvio] Hourly background refresh complete in {elapsed:.2f}s "
+                    f"[RiverRadar] Hourly background refresh complete in {elapsed:.2f}s "
                     f"({meta['total_stations']} stations, {meta['live_hydroinfo_matched']} live measurements, "
                     f"next at {meta['next_refresh_at']}).",
                     flush=True,
@@ -898,7 +1009,7 @@ def start_hourly_refresh_worker(stop_event: threading.Event, interval_seconds: i
             except Exception as exc:
                 print(f"[WARN] Hourly background refresh failed: {exc}", flush=True)
 
-    thread = threading.Thread(target=_worker, name="fluvio-hourly-refresh", daemon=True)
+    thread = threading.Thread(target=_worker, name="riverradar-hourly-refresh", daemon=True)
     thread.start()
     return thread
 
@@ -973,32 +1084,32 @@ class HydroRequestHandler(http.server.SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     storage.init_db()
-    print(f"[Fluvio] Pre-warming live hydrological & meteorological cache (Modular countries: {', '.join(COUNTRIES_META.keys())})...")
+    print(f"[RiverRadar] Pre-warming live hydrological & meteorological cache (Modular countries: {', '.join(COUNTRIES_META.keys())})...")
     payload = build_hydro_payload(force_refresh=True)
     meta = payload["meta"]
     st_info = meta.get("storage", {})
     print(
-        f"[Fluvio] Loaded {meta['total_stations']} stations "
+        f"[RiverRadar] Loaded {meta['total_stations']} stations "
         f"(HU: {meta['hu_stations']}, RO: {meta['ro_stations']}, SK: {meta['sk_stations']}, "
         f"AT: {meta['at_stations']}, HR: {meta['hr_stations']}, RS: {meta['rs_stations']}, "
-        f"SI: {meta['si_stations']}, UA-ZK: {meta['ua_stations']}, DE-Danube: {meta['de_stations']} | "
+        f"SI: {meta['si_stations']}, UA-ZK: {meta['ua_stations']}, DE-Danube: {meta['de_stations']}, BG: {meta['bg_stations']} | "
         f"Major: {meta['major_stations']}, Minor waters: {meta['minor_stations']} | "
         f"{meta['live_hydroinfo_matched']} live measurements, {meta['official_ovf_forecast_stations']} official 6-day OVF forecasts)."
     )
     if st_info:
         print(
-            f"[Fluvio] SQLite 30-day archive ready at {st_info.get('db_path')} "
+            f"[RiverRadar] SQLite 30-day archive ready at {st_info.get('db_path')} "
             f"({st_info.get('snapshots_count')} snapshots, {st_info.get('station_rows')} station rows, "
             f"{st_info.get('db_size_bytes', 0) / 1024:.1f} KiB, retention={st_info.get('retention_days')}d)."
         )
     stop_event = threading.Event()
     start_hourly_refresh_worker(stop_event, REFRESH_INTERVAL_SECONDS)
-    print(f"[Fluvio] Background refresh thread active (every {REFRESH_INTERVAL_SECONDS}s, next at {meta['next_refresh_at']}).")
+    print(f"[RiverRadar] Background refresh thread active (every {REFRESH_INTERVAL_SECONDS}s, next at {meta['next_refresh_at']}).")
     socketserver.TCPServer.allow_reuse_address = True
     try:
         with socketserver.ThreadingTCPServer(("127.0.0.1", PORT), HydroRequestHandler) as httpd:
-            print(f"[Fluvio] Server listening at http://localhost:{PORT}")
+            print(f"[RiverRadar] Server listening at http://localhost:{PORT}")
             httpd.serve_forever()
     except KeyboardInterrupt:
         stop_event.set()
-        print("\n[Fluvio] Shutting down cleanly.")
+        print("\n[RiverRadar] Shutting down cleanly.")

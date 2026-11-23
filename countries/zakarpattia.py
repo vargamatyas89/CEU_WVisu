@@ -1,7 +1,7 @@
 """
-Kárpátalja / Zakarpattia (UA) — Vízgyűjtők és Hidrológiai Referencia-Mérőállomások
-(Copernicus GloFAS v4 5 km + Open-Meteo IFS + határ menti élő OVF/SHMÚ/INHGA kalibráció)
-Különálló régió-forrásfájl (24 kárpátaljai állomás: Felső-Tisza forrásvidéke, Latorca, Ung, Borzsa, Nagyág, Szinevéri-tó és kisvízfolyások)
+Kárpátalja / Zakarpattia (UA) — Catchments and Hydrological Reference Stations
+(Copernicus GloFAS v4 5 km + Open-Meteo IFS + live cross-border OVF/SHMÚ/INHGA calibration)
+Standalone region source file (24 Zakarpattia stations: Upper Tisza headwaters, Latorytsia, Uzh, Borzhava, Rika, Lake Synevyr and smaller waters)
 """
 
 COUNTRY_META = {
@@ -20,9 +20,9 @@ CATCHMENTS = {
 
 STATIONS = [
     # =========================================================================
-    # 1. FŐFOLYÓK ÉS KÁRPÁTI TÓ (15 állomás — GloFAS v4 + határ menti élő kalibráció)
+    # 1. MAIN RIVERS AND CARPATHIAN LAKE (15 stations — GloFAS v4 + live cross-border calibration)
     # =========================================================================
-    # --- FEKETE-TISZA, FEHÉR-TISZA ÉS FELSŐ-TISZA (7 állomás) ---
+    # --- BLACK TISZA, WHITE TISZA AND UPPER TISZA (7 stations) ---
     {
         "code": "UA_94001", "country": "UA", "name": "Kőrösmező (Ясіня)", "river": "Fekete-Tisza", "basin": "tisza", "catchment": "ua_upper_tisza_rakhiv",
         "reach_name": "Fekete-Tisza (Чорна Тиса) – Tatár-hágó – Kőrösmező (Yasinia) – Rahó", "lat": 48.268, "lon": 24.358, "fkm": 958.0,
@@ -73,7 +73,7 @@ STATIONS = [
         "transboundary_anchor": "444510", "downstream_order": 5
     },
 
-    # --- LATORCA, UNG, BORZSA, NAGYÁG ÉS SZINEVÉRI-TÓ (8 állomás) ---
+    # --- LATORYTSIA, UZH, BORZHAVA, RIKA AND LAKE SYNEVYR (8 stations) ---
     {
         "code": "UA_94008", "country": "UA", "name": "Szolyva (Свалява)", "river": "Latorca", "basin": "tisza", "catchment": "ua_latorca_ung_bereg",
         "reach_name": "Latorca (Латориця) – Vereckei-hágó – Szolyva (Svaliava)", "lat": 48.548, "lon": 22.988, "fkm": 134.0,
@@ -132,7 +132,7 @@ STATIONS = [
     },
 
     # =========================================================================
-    # 2. KISVÍZFOLYÁSOK, KÁRPÁTI PATAKOK ÉS BEREGI CSATORNÁK (9 állomás)
+    # 2. SMALLER WATERS, CARPATHIAN STREAMS AND BEREG CANALS (9 stations)
     # =========================================================================
     {
         "code": "UA_94101", "country": "UA", "water_category": "minor", "name": "Dombó / Taracköz (Тересва)", "river": "Tarac (Teresva)", "basin": "tisza", "catchment": "ua_upper_tisza_rakhiv",
