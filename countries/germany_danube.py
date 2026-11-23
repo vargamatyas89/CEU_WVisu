@@ -1,7 +1,7 @@
 """
-Német Duna-vízgyűjtő / Bayern & Baden-Württemberg (DE) — Vízgyűjtők és Hidrológiai Mérőállomások
-(OVF / hydroinfo.hu 34xxxx + HND Bayern élő vízállások + HVZ Baden-Württemberg élő vízállások + GloFAS v4)
-Különálló régió-forrásfájl (45 német Duna-vízgyűjtői állomás: 28 főfolyó/alpesi tó + 17 kisebb mellékfolyó)
+German Danube Basin / Bavaria & Baden-Württemberg (DE) — Catchments and Hydrological Gauging Stations
+(OVF / hydroinfo.hu 34xxxx + HND Bayern live water levels + HVZ Baden-Württemberg live water levels + GloFAS v4)
+Standalone region source file (45 German Danube Basin stations: 28 main rivers/Alpine lakes + 17 smaller tributaries)
 """
 
 COUNTRY_META = {
@@ -45,9 +45,9 @@ CATCHMENTS = {
 
 STATIONS = [
     # =========================================================================
-    # 1. FŐFOLYÓK ÉS BAJOR ALPESI TAVAK (28 állomás — 100% élő hivatalos telemetria)
+    # 1. MAIN RIVERS AND BAVARIAN ALPINE LAKES (28 stations — 100% live official telemetry)
     # =========================================================================
-    # --- DUNA / DONAU FŐÁG: FORRÁSTÓL PASSAUIG (15 állomás) ---
+    # --- DANUBE / DONAU MAIN STEM: SOURCE TO PASSAU (15 stations) ---
     {
         "code": "DE_BW_00151", "hvz_id": "00151", "country": "DE", "name": "Donaueschingen", "river": "Duna", "basin": "duna", "catchment": "de_donau_swabia",
         "reach_name": "Duna (Donau) – Fekete-erdő – Donaueschingen (Brigach–Breg összefolyás)", "lat": 47.953, "lon": 8.524, "fkm": 2778.0,
@@ -154,7 +154,7 @@ STATIONS = [
         "downstream_order": 15
     },
 
-    # --- ALPESI FŐ MELLÉKFOLYÓK: ILLER, LECH, ISAR, INN, SALZACH (10 állomás) ---
+    # --- MAJOR ALPINE TRIBUTARIES: ILLER, LECH, ISAR, INN, SALZACH (10 stations) ---
     {
         "code": "DE_BY_11402001", "hnd_id": "11402001", "country": "DE", "name": "Kempten", "river": "Iller", "basin": "duna", "catchment": "de_alps_iller_lech_isar",
         "reach_name": "Iller – Oberstdorf – Immenstadt – Kempten – Ulm (Duna-torkolat)", "lat": 47.726, "lon": 10.319, "fkm": 102.0,
@@ -226,7 +226,7 @@ STATIONS = [
         "downstream_order": 1
     },
 
-    # --- BAJOR ALPESI TAVAK (3 állomás — HND Bayern élő vízszint m ü. NHN -> relatív cm) ---
+    # --- BAVARIAN ALPINE LAKES (3 stations — HND Bayern live level m ü. NHN -> relative cm) ---
     {
         "code": "DE_BY_18400503", "hnd_id": "18400503", "zero_m_nhn": 517.0, "country": "DE", "name": "Chiemsee (Stock)", "river": "Chiemsee", "basin": "tavak", "catchment": "de_inn_salzach_bavaria",
         "reach_name": "Chiemsee – Bajor-tenger (Prien / Stock – Seebruck, Alz lefolyás)", "lat": 47.855, "lon": 12.362, "fkm": 0.0,
@@ -250,7 +250,7 @@ STATIONS = [
     },
 
     # =========================================================================
-    # 2. KISEBB FOLYÓK ÉS REGIONÁLIS MELLÉKVIZEK (17 állomás — water_category="minor")
+    # 2. SMALLER RIVERS AND REGIONAL TRIBUTARIES (17 stations — water_category="minor")
     # =========================================================================
     {
         "code": "DE_BW_00121", "hvz_id": "00121", "country": "DE", "water_category": "minor", "name": "Donaueschingen (Breg)", "river": "Breg", "basin": "duna", "catchment": "de_donau_swabia",

@@ -1,6 +1,6 @@
 """
-Románia (RO) — Vízgyűjtők és Hivatalos Vízügyi Mérőállomások (INHGA / OVF hydroinfo.hu 74xxxx & Copernicus GloFAS v4 5km)
-Különálló ország-forrásfájl (78 romániai vízmérce: 56 főfolyó/nagy tó + 22 kisvízfolyás, hegyi folyó és mellékág)
+Romania (RO) — Catchments and Official Hydrological Gauging Stations (INHGA / OVF hydroinfo.hu 74xxxx & Copernicus GloFAS v4 5km)
+Standalone country source file (78 Romanian gauges: 56 main rivers/large lakes + 22 smaller waters, mountain rivers and tributaries)
 """
 
 COUNTRY_META = {
@@ -22,9 +22,9 @@ CATCHMENTS = {
 
 STATIONS = [
     # =========================================================================
-    # 1. FŐFOLYÓK ÉS NAGY TAVAK (56 állomás)
+    # 1. MAIN RIVERS AND LARGE LAKES (56 stations)
     # =========================================================================
-    # --- ERDÉLY, MÁRAMAROS, SZATMÁR, PARTIUM (Tisza-vízgyűjtő Romániában - 18 élő állomás) ---
+    # --- TRANSYLVANIA, MARAMUREȘ, SATU MARE, PARTIUM (Tisza basin in Romania - 18 live stations) ---
     {
         "code": "744102", "country": "RO", "name": "Máramarossziget", "river": "Tisza", "basin": "tisza", "catchment": "upper_tisza",
         "reach_name": "Tisza – Máramarosi felső szakasz (Máramarossziget / Sighetu Marmației)", "lat": 47.935, "lon": 23.888, "fkm": 804.0,
@@ -134,7 +134,7 @@ STATIONS = [
         "default_level": 432, "default_diff24h": 213, "default_discharge": 47.0, "default_temp": 7.7, "downstream_order": 2
     },
 
-    # --- MAROS, KÜKÜLLŐ ÉS SZTRIGY (Erdélyi-medence - 8 állomás) ---
+    # --- MUREȘ, TÂRNAVA AND STREI (Transylvanian Basin - 8 stations) ---
     {
         "code": "749001", "country": "RO", "name": "Marosvásárhely", "river": "Maros", "basin": "tisza", "catchment": "transylvania_maros",
         "reach_name": "Maros (Mureș) – Felső-Maros (Szászrégen – Marosvásárhely / Târgu Mureș)", "lat": 46.545, "lon": 24.558, "fkm": 535.0,
@@ -184,7 +184,7 @@ STATIONS = [
         "default_level": 5, "default_diff24h": -29, "default_discharge": 125.0, "default_temp": 8.1, "downstream_order": 6
     },
 
-    # --- BÁNSÁG (Béga és Temes - 2 állomás) ---
+    # --- BANAT (Bega and Timiș - 2 stations) ---
     {
         "code": "749003", "country": "RO", "name": "Temesvár", "river": "Béga", "basin": "tisza", "catchment": "banat_temes",
         "reach_name": "Béga (Bega) – Facsád – Temesvár (Timișoara) – Ótelek", "lat": 45.748, "lon": 21.228, "fkm": 114.0,
@@ -198,7 +198,7 @@ STATIONS = [
         "default_level": 78, "default_diff24h": 11, "default_discharge": 42.0, "default_temp": 8.0, "downstream_order": 1
     },
 
-    # --- AL-DUNA ÉS DUNA-DELTA (Romániai Duna-főág - 14 élő 742xxx állomás) ---
+    # --- LOWER DANUBE AND DANUBE DELTA (Romanian Danube main stem - 14 live 742xxx stations) ---
     {
         "code": "742001", "country": "RO", "name": "Báziás", "river": "Duna", "basin": "duna", "catchment": "banat_temes",
         "reach_name": "Al-Duna (Dunărea) – Báziás (Baziaș) – Néra-torkolat", "lat": 44.812, "lon": 21.392, "fkm": 1072.4,
@@ -284,7 +284,7 @@ STATIONS = [
         "default_level": 60, "default_diff24h": 5, "default_discharge": 5100, "default_temp": 9.8, "downstream_order": 29
     },
 
-    # --- OLT, ZSIL, ARGEȘ, IALOMIȚA, BODZA (Kárpátokon túli déli vízgyűjtők - 7 állomás) ---
+    # --- OLT, JIU, ARGEȘ, IALOMIȚA, BUZĂU (southern basins beyond the Carpathians - 7 stations) ---
     {
         "code": "749005", "country": "RO", "name": "Sepsiszentgyörgy", "river": "Olt", "basin": "olt_siret", "catchment": "olt_basin",
         "reach_name": "Olt – Csíki- és Háromszéki-medence (Csíkszereda – Sepsiszentgyörgy – Fogaras)", "lat": 45.862, "lon": 25.795, "fkm": 540.0,
@@ -328,7 +328,7 @@ STATIONS = [
         "default_level": 72, "default_diff24h": 7, "default_discharge": 29.0, "default_temp": 7.9, "downstream_order": 1
     },
 
-    # --- MOLDVA (Szeret / Siret, Beszterce / Bistrița, Prut - 4 állomás) ---
+    # --- MOLDAVIA (Siret, Bistrița, Prut - 4 stations) ---
     {
         "code": "749012", "country": "RO", "name": "Roman", "river": "Szeret", "basin": "olt_siret", "catchment": "moldova_siret_prut",
         "reach_name": "Szeret (Siret) – Felső- és Közép-Szeret (Suceava – Pașcani – Roman – Bákó)", "lat": 46.918, "lon": 26.928, "fkm": 295.0,
@@ -354,7 +354,7 @@ STATIONS = [
         "default_level": 116, "default_diff24h": 9, "default_discharge": 92.0, "default_temp": 7.3, "downstream_order": 1
     },
 
-    # --- ROMÁNIAI NAGY TAVAK (3 állomás) ---
+    # --- ROMANIAN LARGE LAKES (3 stations) ---
     {
         "code": "749016", "country": "RO", "name": "Jurilovca", "river": "Razim-tó", "basin": "tavak", "catchment": "lower_danube_delta",
         "reach_name": "Razim–Sinoe-tórendszer (Lacul Razim / Razelm – Babadag – Jurilovca)", "lat": 44.765, "lon": 28.915, "fkm": 0.0,
@@ -375,7 +375,7 @@ STATIONS = [
     },
 
     # =========================================================================
-    # 2. KISVÍZFOLYÁSOK, HEGYI PATAKOK ÉS MELLÉKFOLYÓK (OVF 74xxxx & GloFAS v4 5km — 22 állomás)
+    # 2. SMALLER WATERS, MOUNTAIN STREAMS AND TRIBUTARIES (OVF 74xxxx & GloFAS v4 5km — 22 stations)
     # =========================================================================
     {
         "code": "744390", "water_category": "minor", "country": "RO",

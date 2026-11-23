@@ -1,4 +1,4 @@
-# Fluvio — Master Prompt: Interactive Central Europe, Danube Basin & Zakarpattia (DE-Danube, AT, SK, HU, SI, HR, RS, RO, UA-ZK) Hydrological Map & 7-Day Weather-Coupled Water Level Forecast Application
+# RiverRadar — Master Prompt: Interactive Central Europe, Danube Basin & Zakarpattia (DE-Danube, AT, SK, HU, SI, HR, RS, RO, UA-ZK) Hydrological Map & 7-Day Weather-Coupled Water Level Forecast Application
 
 You can copy and use the prompt below with any coding LLM or AI agent to generate or extend this full-stack application.
 
@@ -28,7 +28,8 @@ Because official Danube Basin hydrological endpoints (`hydroinfo.hu` / `vizugy.h
        - `countries/slovenia.py` (37 stations: 22 major river/lake gauges + 15 smaller Alpine/Karst streams, linked to live ARSO `arso.gov.si/xml/vode/hidro_podatki_zadnji.xml` `arso_id` and `546102`)
        - `countries/zakarpattia.py` (24 stations: 15 major Upper Tisza/Latorca/Ung/Borzsa/Nagyág/Synevyr stations + 9 smaller Carpathian streams and Bereg canals, driven by GloFAS v4 + Open-Meteo and calibrated against live cross-border OVF/SHMÚ/INHGA gauges)
        - `countries/germany_danube.py` (45 stations: 28 major Upper Danube/Iller/Lech/Isar/Inn/Salzach/Bavarian lakes + 17 smaller tributaries, 100% live via HND Bayern, HVZ Baden-Württemberg, and `hydroinfo.hu` `34xxxx`)
-       - Aggregated by `countries/__init__.py` (469 stations total across 44 catchments).
+       - `countries/bulgaria.py` (42 stations: 28 major Danube/Iskar/Yantra/Osam/Vit/Ogosta/Maritsa/Tundzha/Arda/Struma/Mesta/Kamchiya/lakes + 14 smaller tributaries, 40/42 live via APPD `appd-bg.org`, NIMH `hydro.bg`, and `hydroinfo.hu` `84xxxx`)
+       - Aggregated by `countries/__init__.py` (511 stations total across 48 catchments).
      - Frontend vector geometry modules:
        - `static/countries/hungary_geo.js` (`window.COUNTRY_GEO_MODULES["HU"]`)
        - `static/countries/romania_geo.js` (`window.COUNTRY_GEO_MODULES["RO"]`)
@@ -39,6 +40,7 @@ Because official Danube Basin hydrological endpoints (`hydroinfo.hu` / `vizugy.h
        - `static/countries/slovenia_geo.js` (`window.COUNTRY_GEO_MODULES["SI"]`)
        - `static/countries/zakarpattia_geo.js` (`window.COUNTRY_GEO_MODULES["UA"]`)
        - `static/countries/germany_danube_geo.js` (`window.COUNTRY_GEO_MODULES["DE"]`)
+       - `static/countries/bulgaria_geo.js` (`window.COUNTRY_GEO_MODULES["BG"]`)
    - Serves the frontend static assets (`index.html`, `styles.css`, `app.js`, `countries/*_geo.js`) and exposes a JSON REST API (`/api/hydro-data` and `/api/refresh`).
    - Scrapes and parses live official hydrological observations from TWO official Hungarian portals plus Copernicus GloFAS v4:
      - **OVF `hydroinfo.hu`** (`dunhif_a.html`, `tishif_a.html`, `tohid.html`, `dunelotH.html`, `tiselotH.html`) for primary Hungarian (`44xxxx`) and Romanian (`74xxxx`) river gauges and 6-day official forecasts.
@@ -67,9 +69,9 @@ Because official Danube Basin hydrological endpoints (`hydroinfo.hu` / `vizugy.h
      - **OpenStreetMap Standard** (`https://tile.openstreetmap.org/{z}/{x}/{y}.png`): Official OSM Foundation tiles.
      - **100% Offline Vector Mode**: Option to turn off external raster tiles completely and display only the embedded GeoJSON borders, lakes, and river reaches.
 
-1. **Hungary & Romania National Borders (`Magyarország és Románia államhatára`)**:
+1. **Hungary & Romania National Borders (national border outlines)**:
    - Render high-resolution GeoJSON polygons of both Hungary's national borders (`#fbbf24` gold) and Romania's national borders (`#c084fc` violet) with glowing boundary strokes and a dual-cutout exterior dim mask outside Hungary and Romania.
-   - Provide a Country / Region selector (`🇭🇺 + 🇷🇴 Magyarország és Románia`, `🇭🇺 Magyarország`, `🇷🇴 Románia`) that filters stations and smoothly flies/zooms the map to the selected country or the combined region.
+   - Provide a Country / Region selector (`🇭🇺 + 🇷🇴 Hungary & Romania`, `🇭🇺 Hungary`, `🇷🇴 Romania`) that filters stations and smoothly flies/zooms the map to the selected country or the combined region.
 2. **Hydrographic Network (112 River Reaches & 8 Lake Basins across HU & RO)**:
    - Include high-precision vector geometries clipped to Hungary and Romania for:
      - **Hungary & Transboundary Rivers**: Duna, Tisza, Dráva, Mura, Rába, Mosoni-Duna, Lajta, Ráckevei-Soroksári Duna, Zala, Sió, Kapos, Ipoly, Zagyva, Tarna, Sajó, Bódva, Hernád, Bodrog, Szamos, Kraszna, Túr, Berettyó, Sebes-Körös, Fekete-Körös, Fehér-Körös, Kettős-Körös, Hármas-Körös, Hortobágy-Berettyó, Maros.
@@ -77,21 +79,21 @@ Because official Danube Basin hydrological endpoints (`hydroinfo.hu` / `vizugy.h
      - **Major Lakes**: Balaton (East & West basins), Velencei-tó, Tisza-tó, Fertő-tó, Razim–Sinoe-tó, Békási-tó (Lacul Bicaz), Vidraru-tó.
 3. **Dynamic Visual Encoding (Color & Stroke Thickness)**:
    - Dynamically color and scale the thickness of each river reach, lake polygon, and station marker based on its water level status at the selected forecast day:
-     - **Kisvíz / Aszályos szint** (`#06b6d4`)
-     - **Normál vízjárás** (`#38bdf8`)
-     - **Emelkedett vízszint** (`#10b981`)
-     - **I. fokú árvízi készültség** (`#f59e0b`)
-     - **II. fokú árvízi készültség** (`#f97316`)
-     - **III. fokú árvízi készültség** (`#ef4444`)
+     - **Low water / Drought level** (`#06b6d4`)
+     - **Normal water level** (`#38bdf8`)
+     - **Elevated water level** (`#10b981`)
+     - **Flood alert level I** (`#f59e0b`)
+     - **Flood alert level II** (`#f97316`)
+     - **Flood alert level III** (`#ef4444`)
 
 ---
 
 ### 3. Interactive Hover Tooltip Card & 0–7 Day Real-Time Slider
 
 1. Hovering over any river reach, lake, or station marker displays a floating Hungarian hydrological card showing:
-   - Country tag (`HU` / `RO`), water body name, reach name, official station name, station code (`Állomáskód`), and river kilometer (`fkm`).
-   - Water level (`cm`) for the active slider day (`Ma` or `+1..+7 nap`), confidence interval (`± cm`), change relative to today (`Δ cm`), 24-hour trend badge (`Áradó ▲`, `Apadó ▼`, `Stagnáló ▬`), discharge (`m³/s`), and morning water temperature (`°C`).
-   - Official flood threshold progress bar (`LKV`, `I. fok`, `II. fok`, `III. fok`, `LNV`).
+   - Country tag (`HU` / `RO`), water body name, reach name, official station name, station code, and river kilometer (`fkm`).
+   - Water level (`cm`) for the active slider day (`Today` or `+1..+7 days`), confidence interval (`± cm`), change relative to today (`Δ cm`), 24-hour trend badge (`Rising ▲`, `Falling ▼`, `Steady ▬`), discharge (`m³/s`), and morning water temperature (`°C`).
+   - Official flood threshold progress bar (`LKV` record low, alert levels `I`, `II`, `III`, `LNV` record high).
    - Catchment weather forecast (`mm` precipitation, `°C` temperature) and an embedded 7-day SVG sparkline hydrograph with shaded `± cm` confidence cone.
-2. Provide a native `<input type="range" min="0" max="7" step="1">` timeline slider with calendar date ticks and an Auto-Play (`Lejátszás / Szünet`) animation button that updates all 120 reaches across Hungary and Romania in real time.
+2. Provide a native `<input type="range" min="0" max="7" step="1">` timeline slider with calendar date ticks and an Auto-Play (`Play / Pause`) animation button that updates all 120 reaches across Hungary and Romania in real time.
 ```

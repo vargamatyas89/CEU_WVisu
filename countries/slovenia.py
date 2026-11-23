@@ -1,6 +1,6 @@
 """
-Szlovénia (SI) — Vízgyűjtők és Hivatalos Vízügyi Mérőállomások (ARSO hidro_podatki_zadnji.xml / hydroinfo.hu 546102 & GloFAS v4)
-Különálló ország-forrásfájl (37 szlovéniai vízmérce: főfolyók, alpesi/karszt tavak és kisvízfolyások — 100% élő ARSO XML telemetriával)
+Slovenia (SI) — Catchments and Official Hydrological Gauging Stations (ARSO hidro_podatki_zadnji.xml / hydroinfo.hu 546102 & GloFAS v4)
+Standalone country source file (37 Slovenian gauges: main rivers, Alpine/karst lakes and smaller waters — 100% live ARSO XML telemetry)
 """
 
 COUNTRY_META = {
@@ -20,9 +20,9 @@ CATCHMENTS = {
 
 STATIONS = [
     # =========================================================================
-    # 1. FŐFOLYÓK ÉS ALPESI / KARSZT TAVAK (22 állomás — élő ARSO XML & hydroinfo.hu)
+    # 1. MAIN RIVERS AND ALPINE / KARST LAKES (22 stations — live ARSO XML & hydroinfo.hu)
     # =========================================================================
-    # --- SZÁVA (6 állomás) ---
+    # --- SAVA (6 stations) ---
     {
         "code": "ARSO_3420", "arso_id": "3420", "country": "SI", "name": "Radovljica", "river": "Száva", "basin": "duna", "catchment": "si_sava_ljubljana",
         "reach_name": "Száva (Sava) – Sava Dolinka és Sava Bohinjka összefolyás – Radovljica", "lat": 46.340, "lon": 14.165, "fkm": 862.0,
@@ -60,7 +60,7 @@ STATIONS = [
         "default_level": 195, "default_diff24h": 7, "default_discharge": 448.0, "default_temp": 10.3, "downstream_order": 6
     },
 
-    # --- DRÁVA ÉS MURA (5 állomás) ---
+    # --- DRAVA AND MURA (5 stations) ---
     {
         "code": "ARSO_2005", "arso_id": "2005", "country": "SI", "name": "Črneče (Dravograd)", "river": "Dráva", "basin": "drava", "catchment": "si_drava_mura_pomurje",
         "reach_name": "Dráva (Drava) – Karintiai belépő szakasz (Črneče – Dravograd)", "lat": 46.598, "lon": 14.984, "fkm": 415.0,
@@ -92,7 +92,7 @@ STATIONS = [
         "default_level": 94, "default_diff24h": -1, "default_discharge": 55.1, "default_temp": 6.9, "downstream_order": 2
     },
 
-    # --- LJUBLJANICA, SAVINJA, KRKA, KOLPA ÉS SOČA (8 állomás) ---
+    # --- LJUBLJANICA, SAVINJA, KRKA, KOLPA AND SOČA (8 stations) ---
     {
         "code": "ARSO_5078", "arso_id": "5078", "country": "SI", "name": "Ljubljana (Moste)", "river": "Ljubljanica", "basin": "duna", "catchment": "si_sava_ljubljana",
         "reach_name": "Ljubljanica – Vrhnika – Ljubljanai-láp – Ljubljana (Moste)", "lat": 46.055, "lon": 14.544, "fkm": 11.0,
@@ -142,7 +142,7 @@ STATIONS = [
         "default_level": 313, "default_diff24h": 8, "default_discharge": 139.0, "default_temp": 9.4, "downstream_order": 2
     },
 
-    # --- SZLOVÉNIAI NAGY TAVAK (3 állomás) ---
+    # --- SLOVENIAN LARGE LAKES (3 stations) ---
     {
         "code": "ARSO_3350", "arso_id": "3350", "country": "SI", "name": "Bledi-tó (Mlino)", "river": "Bledi-tó (Blejsko jezero)", "basin": "tavak", "catchment": "si_sava_ljubljana",
         "reach_name": "Bledi-tó (Blejsko jezero – Mlino / Bled)", "lat": 46.360, "lon": 14.099, "fkm": 0.0,
@@ -163,7 +163,7 @@ STATIONS = [
     },
 
     # =========================================================================
-    # 2. KISVÍZFOLYÁSOK, ALPESI ÉS KARSZT PATAKOK (15 állomás — élő ARSO XML)
+    # 2. SMALLER WATERS, ALPINE AND KARST STREAMS (15 stations — live ARSO XML)
     # =========================================================================
     {
         "code": "ARSO_3060", "arso_id": "3060", "country": "SI", "water_category": "minor", "name": "Jesenice", "river": "Sava Dolinka", "basin": "duna", "catchment": "si_sava_ljubljana",

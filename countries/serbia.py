@@ -1,6 +1,6 @@
 """
-Szerbia (RS) — Vízgyűjtők és Hivatalos Vízügyi Mérőállomások (RHMZ hidmet.gov.rs / OVF hydroinfo.hu 54xxxx & GloFAS v4)
-Különálló ország-forrásfájl (46 szerbiai vízmérce: főfolyók, víztározók/tavak és vajdasági/közép-szerbiai kisvízfolyások, csatornák)
+Serbia (RS) — Catchments and Official Hydrological Gauging Stations (RHMZ hidmet.gov.rs / OVF hydroinfo.hu 54xxxx & GloFAS v4)
+Standalone country source file (46 Serbian gauges: main rivers, reservoirs/lakes and Vojvodina/Central Serbian smaller waters and canals)
 """
 
 COUNTRY_META = {
@@ -20,9 +20,9 @@ CATCHMENTS = {
 
 STATIONS = [
     # =========================================================================
-    # 1. FŐFOLYÓK ÉS NAGY TAVAK (31 állomás — élő RHMZ hidmet.gov.rs & hydroinfo.hu)
+    # 1. MAIN RIVERS AND LARGE LAKES (31 stations — live RHMZ hidmet.gov.rs & hydroinfo.hu)
     # =========================================================================
-    # --- DUNA ÉS TISZA (15 állomás) ---
+    # --- DANUBE AND TISZA (15 stations) ---
     {
         "code": "542010", "rhmz_id": "42010", "country": "RS", "name": "Bezdán (Bezdan)", "river": "Duna", "basin": "duna", "catchment": "rs_vojvodina_danube_tisa",
         "reach_name": "Duna – Bácskai felső szakasz (Bezdán / Bezdan – Ferenc-csatorna zsilip)", "lat": 45.855, "lon": 18.865, "fkm": 1425.5,
@@ -114,7 +114,7 @@ STATIONS = [
         "default_level": 138, "default_diff24h": 5, "default_discharge": 495.0, "default_temp": 9.4, "downstream_order": 4
     },
 
-    # --- SZÁVA, DRINA, LIM, MORAVA ÉS IBAR (13 állomás) ---
+    # --- SAVA, DRINA, LIM, MORAVA AND IBAR (13 stations) ---
     {
         "code": "RHMZ_45084", "rhmz_id": "45084", "country": "RS", "name": "Jamena", "river": "Száva", "basin": "duna", "catchment": "rs_sava_drina_kolubara",
         "reach_name": "Száva (Sava) – Jamena – Szerémségi belépő szakasz", "lat": 44.878, "lon": 19.075, "fkm": 195.0,
@@ -194,7 +194,7 @@ STATIONS = [
         "default_level": -66, "default_diff24h": 26, "default_discharge": 50.4, "default_temp": 11.0, "downstream_order": 1
     },
 
-    # --- SZERBIAI NAGY TAVAK ÉS VÍZTÁROZÓK (3 állomás) ---
+    # --- SERBIAN LARGE LAKES AND RESERVOIRS (3 stations) ---
     {
         "code": "RHMZ_42070", "rhmz_id": "42070", "country": "RS", "name": "Galambóc / Vaskapu-tó (Golubac)", "river": "Vaskapu-víztározó (Đerdap)", "basin": "tavak", "catchment": "rs_juzna_morava_timok",
         "reach_name": "Vaskapu-víztározó (Đerdapsko jezero – Galambóc / Golubac – Donji Milanovac – Kladovo)", "lat": 44.655, "lon": 21.635, "fkm": 1042.0,
@@ -215,7 +215,7 @@ STATIONS = [
     },
 
     # =========================================================================
-    # 2. KISVÍZFOLYÁSOK, CSATORNÁK ÉS MELLÉKFOLYÓK (15 állomás — élő RHMZ hidmet.gov.rs)
+    # 2. SMALLER WATERS, CANALS AND TRIBUTARIES (15 stations — live RHMZ hidmet.gov.rs)
     # =========================================================================
     {
         "code": "RHMZ_42401", "rhmz_id": "42401", "country": "RS", "water_category": "minor", "name": "Módos (Jaša Tomić)", "river": "Temes", "basin": "tisza", "catchment": "rs_vojvodina_danube_tisa",

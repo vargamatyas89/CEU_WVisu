@@ -1,6 +1,6 @@
-# Fluvio — Central European & Danube Basin Interactive Hydrological Map
+# RiverRadar — Central European & Danube Basin Interactive Hydrological Map
 
-Interactive web application for visualizing real-time water levels and 1–7 day weather-coupled water level forecasts across **7 Central European & Danube Basin countries plus Kárpátalja / Zakarpattia Oblast (Ukraine) and the German Danube Basin (Bayern & Baden-Württemberg)** (**Germany-Danube, Austria, Slovakia, Hungary, Slovenia, Croatia, Serbia, Romania, and Zakarpattia / UA**), covering **469 gauging stations** across **44 catchments** (296 major river/lake gauges and 173 smaller creeks, streams, canals, and reservoirs).
+Interactive web application for visualizing real-time water levels and 1–7 day weather-coupled water level forecasts across **8 Central & Southeast European Danube Basin countries plus Kárpátalja / Zakarpattia Oblast (Ukraine) and the German Danube Basin (Bayern & Baden-Württemberg)** (**Germany-Danube, Austria, Slovakia, Hungary, Slovenia, Croatia, Serbia, Romania, Bulgaria, and Zakarpattia / UA**), covering **511 gauging stations** across **48 catchments** (324 major river/lake gauges and 187 smaller creeks, streams, canals, and reservoirs).
 
 Built with a **zero-dependency Python 3 standard-library backend** (`server.py`) and a **vanilla HTML5 / CSS3 / JavaScript + Leaflet frontend** with 100% free, open-source topographic basemaps and a modular per-country file architecture.
 
@@ -8,16 +8,16 @@ Built with a **zero-dependency Python 3 standard-library backend** (`server.py`)
 
 ## Features
 
-- **Interactive Danube Basin Hydrographic Map (`DE-Danube • AT • SK • HU • SI • HR • RS • RO • UA-ZK`)**:
-  - Distinct color-coded borders and an exterior dim mask framing all nine countries/regions (keeping focus on the full Danube & Carpathian Basin from the Black Forest to the Black Sea).
-  - High-resolution vector river reaches and lake polygons dynamically styled in color and stroke weight according to current or forecasted flood alert stages (*Kisvíz*, *Normál*, *Emelkedett*, *I. fok*, *II. fok*, *III. fok*).
+- **Interactive Danube Basin Hydrographic Map (`DE-Danube • AT • SK • HU • SI • HR • RS • RO • BG • UA-ZK`)**:
+  - Distinct color-coded borders (with a bold, dark-cased golden-amber stroke for Hungary rendered on top so it remains clearly visible even when zoomed out) and an exterior dim mask framing all ten countries/regions from the Black Forest to the Black Sea.
+  - High-resolution vector river reaches and lake polygons dynamically styled in color and stroke weight according to current or forecasted flood alert stages (*Low water*, *Normal*, *Elevated*, *Alert level I*, *Alert level II*, *Alert level III*).
   - Clean default map UX with rivers highlighted and permanent labels hidden by default, plus a 3-state **Station Labels** selector (*Off / Smart Zoom + Alerts with 2D collision avoidance / Show All*).
-  - Dedicated toggle and filter for **smaller waters** (*kisvízfolyások, patakok, főcsatornák, tározók*) alongside major rivers and lakes.
+  - Dedicated toggle and filter for **smaller waters** (*small watercourses, creeks, main canals, reservoirs*) alongside major rivers and lakes.
 - **Instant Hover Tooltip Cards & Pinned Inspector**:
-  - Hovering over any river reach, lake, or station marker displays a floating localized hydrological card with official water level (`cm`), 24-hour change (`cm`), trend indicator (*Áradó / Apadó / Stagnáló*), discharge (`m³/s`), water temperature (`°C`), flood threshold progress bar (`LKV`, `I.–III. fok`, `LNV`), catchment rainfall/temperature, and an embedded **7-day SVG sparkline hydrograph** with a shaded `± cm` uncertainty cone.
+  - Hovering over any river reach, lake, or station marker displays a floating localized hydrological card with official water level (`cm`), 24-hour change (`cm`), trend indicator (*Rising / Falling / Steady*), discharge (`m³/s`), water temperature (`°C`), flood threshold progress bar (`LKV` record low, alert levels `I.–III.`, `LNV` record high), catchment rainfall/temperature, and an embedded **7-day SVG sparkline hydrograph** with a shaded `± cm` uncertainty cone.
   - Clicking any reach, lake, or station pins its detailed card to the right-hand inspector sidebar.
 - **Real-Time 0–7 Day Forecast Timeline Slider & Weather Scenario Simulator**:
-  - Scrub seamlessly across **Ma (0.) to +7 nap** or press **▶ Lejátszás** to animate wave propagation across all 469 reaches in real time.
+  - Scrub seamlessly across **Today (day 0) to +7 days** or press **▶ Play** to animate wave propagation across all 511 reaches in real time.
   - Coupled hydrological forecasting combines official 6-day OVF predictions with **Open-Meteo** daily precipitation/evapotranspiration and **Copernicus GloFAS v4** (5 km grid) river discharge forecasts.
   - Interactive client-side weather scenarios: live baseline forecast, `+50 mm` intense catchment rainfall, `+120 mm` extreme cyclone/flood wave, and prolonged drought.
 - **100% Free & Open-Source Topographic Basemaps (No API Key Required)**:
@@ -26,10 +26,10 @@ Built with a **zero-dependency Python 3 standard-library backend** (`server.py`)
   - **OpenStreetMap HOT** (high-contrast humanitarian style)
   - **OpenStreetMap Standard** (ODbL)
   - **100% Offline Vector Mode** (disables raster tiles completely)
-- **Multi-Language UI Switcher (9 Languages)**:
-  - Live client-side localization via `static/i18n.js` supporting all represented countries'/regions' languages plus English: **Magyar (`hu`)**, **English (`en`)**, **Română (`ro`)**, **Slovenčina (`sk`)**, **Deutsch (`de`)**, **Hrvatski (`hr`)**, **Srpski (`sr`)**, **Slovenščina (`sl`)**, and **Українська (`uk`)**, persisted in `localStorage`.
+- **Multi-Language UI Switcher (10 Languages)**:
+  - Live client-side localization via `static/i18n.js` supporting all represented countries'/regions' languages plus English: **Magyar (`hu`)**, **English (`en`)**, **Română (`ro`)**, **Slovenčina (`sk`)**, **Deutsch (`de`)**, **Hrvatski (`hr`)**, **Srpski (`sr`)**, **Slovenščina (`sl`)**, **Українська (`uk`)**, and **Български (`bg`)**, persisted in `localStorage`.
 - **Adaptive Light & Dark Theme**:
-  - Honors OS `prefers-color-scheme` automatically with a manual **◐ Téma** toggle and adaptive tile shading.
+  - Honors OS `prefers-color-scheme` automatically with a manual **◐ Theme** toggle and adaptive tile shading.
 
 ---
 
@@ -39,16 +39,17 @@ Each country is isolated in its own backend telemetry/station module (`countries
 
 | Country | Code | Border Color | Catchments | Total Stations | Major Rivers / Lakes | Smaller Waters (Creeks / Canals) | Primary Live Telemetry Sources |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| 🇭🇺 **Hungary** (*Magyarország*) | `HU` | `#fbbf24` | 11 | **108** | 64 | 44 | OVF `hydroinfo.hu` (`44xxxx` + 6-day forecasts), OVF `vizugy.hu` (`OperativVizallas`), GloFAS v4 |
-| 🇷🇴 **Romania** (*Románia*) | `RO` | `#c084fc` | 6 | **78** | 56 | 22 | INHGA via `hydroinfo.hu` (`74xxxx`), Open-Meteo & GloFAS v4 |
-| 🇸🇰 **Slovakia** (*Szlovákia*) | `SK` | `#22d3ee` | 4 | **45** | 27 | 18 | SHMÚ via `hydroinfo.hu` (`14xxxx`), Open-Meteo & GloFAS v4 |
-| 🇦🇹 **Austria** (*Ausztria*) | `AT` | `#fb7185` | 4 | **41** | 26 | 15 | eHYD via `hydroinfo.hu` (`24xxxx`), Open-Meteo & GloFAS v4 |
-| 🇭🇷 **Croatia** (*Horvátország*) | `HR` | `#a3e635` | 4 | **45** | 27 | 18 | DHMZ `hidro.dhz.hr` (live automatic gauges), `hydroinfo.hu` (`54xxxx`), GloFAS v4 |
-| 🇷🇸 **Serbia** (*Szerbia*) | `RS` | `#818cf8` | 4 | **46** | 31 | 15 | RHMZ `hidmet.gov.rs` (`stanje_voda.php`), `hydroinfo.hu` (`54xxxx`), GloFAS v4 |
-| 🇸🇮 **Slovenia** (*Szlovénia*) | `SI` | `#2dd4bf` | 4 | **37** | 22 | 15 | ARSO `arso.gov.si` (`hidro_podatki_zadnji.xml`), `hydroinfo.hu` (`546102`), GloFAS v4 |
-| 🇺🇦 **Zakarpattia** (*Kárpátalja, UA*) | `UA` | `#e879f9` | 3 | **24** | 15 | 9 | Copernicus GloFAS v4 + Open-Meteo, calibrated against live cross-border OVF/SHMÚ/INHGA gauges |
-| 🇩🇪 **German Danube Basin** (*Német Duna-vízgyűjtő, DE*) | `DE` | `#34d399` | 4 | **45** | 28 | 17 | HND Bayern (`hnd.bayern.de`), HVZ Baden-Württemberg (`hvz.baden-wuerttemberg.de`), `hydroinfo.hu` (`34xxxx`), GloFAS v4 |
-| **Total** | **9** | — | **44** | **469** | **296** | **173** | **~374 live real-time gauges + 24 cross-border calibrated + 47 official 6-day OVF forecasts** |
+| 🇭🇺 **Hungary** | `HU` | `#fbbf24` | 11 | **108** | 64 | 44 | OVF `hydroinfo.hu` (`44xxxx` + 6-day forecasts), OVF `vizugy.hu` (`OperativVizallas`), GloFAS v4 |
+| 🇷🇴 **Romania** | `RO` | `#c084fc` | 6 | **78** | 56 | 22 | INHGA via `hydroinfo.hu` (`74xxxx`), Open-Meteo & GloFAS v4 |
+| 🇸🇰 **Slovakia** | `SK` | `#22d3ee` | 4 | **45** | 27 | 18 | SHMÚ via `hydroinfo.hu` (`14xxxx`), Open-Meteo & GloFAS v4 |
+| 🇦🇹 **Austria** | `AT` | `#fb7185` | 4 | **41** | 26 | 15 | eHYD via `hydroinfo.hu` (`24xxxx`), Open-Meteo & GloFAS v4 |
+| 🇭🇷 **Croatia** | `HR` | `#a3e635` | 4 | **45** | 27 | 18 | DHMZ `hidro.dhz.hr` (live automatic gauges), `hydroinfo.hu` (`54xxxx`), GloFAS v4 |
+| 🇷🇸 **Serbia** | `RS` | `#818cf8` | 4 | **46** | 31 | 15 | RHMZ `hidmet.gov.rs` (`stanje_voda.php`), `hydroinfo.hu` (`54xxxx`), GloFAS v4 |
+| 🇸🇮 **Slovenia** | `SI` | `#2dd4bf` | 4 | **37** | 22 | 15 | ARSO `arso.gov.si` (`hidro_podatki_zadnji.xml`), `hydroinfo.hu` (`546102`), GloFAS v4 |
+| 🇺🇦 **Zakarpattia** (UA) | `UA` | `#e879f9` | 3 | **24** | 15 | 9 | Copernicus GloFAS v4 + Open-Meteo, calibrated against live cross-border OVF/SHMÚ/INHGA gauges |
+| 🇩🇪 **German Danube Basin** (DE) | `DE` | `#34d399` | 4 | **45** | 28 | 17 | HND Bayern (`hnd.bayern.de`), HVZ Baden-Württemberg (`hvz.baden-wuerttemberg.de`), `hydroinfo.hu` (`34xxxx`), GloFAS v4 |
+| 🇧🇬 **Bulgaria** | `BG` | `#fb923c` | 4 | **42** | 28 | 14 | ИАППД (`appd-bg.org`), НИМХ (`hydro.bg`), `hydroinfo.hu` (`84xxxx`), GloFAS v4 |
+| **Total** | **10** | — | **48** | **511** | **324** | **187** | **~414 live real-time gauges + 26 cross-border calibrated + 47 official 6-day OVF forecasts** |
 
 ---
 
@@ -90,11 +91,12 @@ Because official national hydrological portals serve ISO-8859-2 / UTF-8 HTML tab
 │   ├── serbia.py                  # Serbia (RS) catchments & 46 stations
 │   ├── slovenia.py                # Slovenia (SI) catchments & 37 stations
 │   ├── zakarpattia.py             # Zakarpattia / Kárpátalja (UA) catchments & 24 stations
-│   └── germany_danube.py          # German Danube Basin (DE) catchments & 45 stations
+│   ├── germany_danube.py          # German Danube Basin (DE) catchments & 45 stations
+│   └── bulgaria.py                # Bulgaria (BG) catchments & 42 stations
 ├── static/
 │   ├── index.html                 # Application shell, controls, legend & timeline dock
 │   ├── styles.css                 # Responsive layout, light/dark theme tokens & slider styling
-│   ├── i18n.js                    # 9-language UI dictionary (hu, en, ro, sk, de, hr, sr, sl, uk)
+│   ├── i18n.js                    # 10-language UI dictionary (hu, en, ro, sk, de, hr, sr, sl, uk, bg)
 │   ├── app.js                     # Leaflet map engine, hover cards, SVG hydrograph & scenario logic
 │   └── countries/
 │       ├── hungary_geo.js         # Hungary border, river reaches & lake polygons
@@ -105,7 +107,8 @@ Because official national hydrological portals serve ISO-8859-2 / UTF-8 HTML tab
 │       ├── serbia_geo.js          # Serbia border, river reaches & lake polygons
 │       ├── slovenia_geo.js        # Slovenia border, river reaches & lake polygons
 │       ├── zakarpattia_geo.js     # Zakarpattia / Kárpátalja border, river reaches & Lake Synevyr
-│       └── germany_danube_geo.js  # German Danube Basin divide border, reaches & Bavarian lakes
+│       ├── germany_danube_geo.js  # German Danube Basin divide border, reaches & Bavarian lakes
+│       └── bulgaria_geo.js        # Bulgaria border, river reaches & reservoir/lake polygons
 ├── PROMPT.md                      # Master engineering prompt describing the full specification
 ├── LICENSE                        # Apache License 2.0
 └── README.md
@@ -127,18 +130,18 @@ cd CEU_WVisu
 python3 server.py
 ```
 
-By default, the server pre-warms the live hydrological & meteorological cache, saves the snapshot to `data/fluvio_history.sqlite` (30-day rolling retention), starts an hourly background refresh thread, and listens on **`http://localhost:8080`**. You can configure runtime options via environment variables:
+By default, the server pre-warms the live hydrological & meteorological cache, saves the snapshot to `data/riverradar_history.sqlite` (30-day rolling retention), starts an hourly background refresh thread, and listens on **`http://localhost:8080`**. You can configure runtime options via environment variables:
 
 ```bash
-PORT=8090 REFRESH_INTERVAL_SECONDS=3600 FLUVIO_RETENTION_DAYS=30 python3 server.py
+PORT=8090 REFRESH_INTERVAL_SECONDS=3600 RIVERRADAR_RETENTION_DAYS=30 python3 server.py
 ```
 
 | Environment Variable | Default | Description |
 | :--- | :---: | :--- |
 | `PORT` | `8080` | HTTP server port |
 | `REFRESH_INTERVAL_SECONDS` | `3600` | Background thread refresh interval (seconds) & cache TTL |
-| `FLUVIO_DB_PATH` | `data/fluvio_history.sqlite` | Path to the SQLite time-series database |
-| `FLUVIO_RETENTION_DAYS` | `30` | Rolling retention window in days (~325 MiB full 8-day archive for 30 days) |
+| `RIVERRADAR_DB_PATH` | `data/riverradar_history.sqlite` | Path to the SQLite time-series database |
+| `RIVERRADAR_RETENTION_DAYS` | `30` | Rolling retention window in days (~325 MiB full 8-day archive for 30 days) |
 
 ---
 

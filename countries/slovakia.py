@@ -1,6 +1,6 @@
 """
-Szlovákia (SK) — Vízgyűjtők és Hivatalos Vízügyi Mérőállomások (SHMÚ / OVF hydroinfo.hu 14xxxx & GloFAS v4)
-Különálló ország-forrásfájl (45 szlovákiai vízmérce: főfolyók, víztározók és kárpáti kisvízfolyások)
+Slovakia (SK) — Catchments and Official Hydrological Gauging Stations (SHMÚ / OVF hydroinfo.hu 14xxxx & GloFAS v4)
+Standalone country source file (45 Slovak gauges: main rivers, reservoirs and Carpathian smaller waters)
 """
 
 COUNTRY_META = {
@@ -20,9 +20,9 @@ CATCHMENTS = {
 
 STATIONS = [
     # =========================================================================
-    # 1. FŐFOLYÓK ÉS VÍZTÁROZÓK (27 állomás — élő 14xxxx SHMÚ / hydroinfo.hu)
+    # 1. MAIN RIVERS AND RESERVOIRS (27 stations — live 14xxxx SHMÚ / hydroinfo.hu)
     # =========================================================================
-    # --- DUNA ÉS MORVA (8 állomás) ---
+    # --- DANUBE AND MORAVA (8 stations) ---
     {
         "code": "142301", "country": "SK", "name": "Dévény (Devín)", "river": "Duna", "basin": "duna", "catchment": "sk_danube_morava",
         "reach_name": "Duna – Dévényi-kapu (Morva-torkolat – Dévény / Devín)", "lat": 48.173, "lon": 16.978, "fkm": 1879.8,
@@ -72,7 +72,7 @@ STATIONS = [
         "default_level": 62, "default_diff24h": 14, "default_discharge": 68.0, "default_temp": 7.3, "downstream_order": 2
     },
 
-    # --- VÁG, NYITRA, GARAM ÉS IPOLY (10 állomás) ---
+    # --- VÁH, NITRA, HRON AND IPEĽ (10 stations) ---
     {
         "code": "142406", "country": "SK", "name": "Liptószentmiklós", "river": "Vág", "basin": "duna", "catchment": "sk_vah_nitra",
         "reach_name": "Vág (Váh) – Liptói-medence (Liptóújvár – Liptószentmiklós / Liptovský Mikuláš)", "lat": 49.085, "lon": 19.612, "fkm": 342.0,
@@ -134,7 +134,7 @@ STATIONS = [
         "default_level": 84, "default_diff24h": 10, "default_discharge": 17.5, "default_temp": 7.0, "downstream_order": 1
     },
 
-    # --- KELET-SZLOVÁKIA (Tisza-vízgyűjtő: Hernád, Sajó, Bodrog, Latorca, Laborc, Ung — 6 állomás) ---
+    # --- EASTERN SLOVAKIA (Tisza basin: Hornád, Slaná, Bodrog, Latorica, Laborec, Uh — 6 stations) ---
     {
         "code": "144318", "country": "SK", "name": "Sároskőszeg (Kysak)", "river": "Hernád", "basin": "tisza", "catchment": "sk_east_bodrog_hornad",
         "reach_name": "Hernád (Hornád) – Igló – Sároskőszeg (Kysak) – Kassa (Košice) – Hernádzsadány", "lat": 48.852, "lon": 21.222, "fkm": 82.0,
@@ -172,7 +172,7 @@ STATIONS = [
         "default_level": 243, "default_diff24h": 43, "default_discharge": 39.0, "default_temp": 6.8, "downstream_order": 1
     },
 
-    # --- SZLOVÁKIAI NAGY VÍZTÁROZÓK / TAVAK (3 állomás) ---
+    # --- SLOVAK LARGE RESERVOIRS / LAKES (3 stations) ---
     {
         "code": "142427", "country": "SK", "name": "Turdossin (Tvrdošín)", "river": "Árvai-víztározó", "basin": "tavak", "catchment": "sk_vah_nitra",
         "reach_name": "Árvai-víztározó (Oravská priehrada – Námesztó – Turdossin)", "lat": 49.385, "lon": 19.545, "fkm": 0.0,
@@ -193,7 +193,7 @@ STATIONS = [
     },
 
     # =========================================================================
-    # 2. KISVÍZFOLYÁSOK, KÁRPÁTI PATAKOK ÉS MELLÉKFOLYÓK (18 élő 14xxxx állomás)
+    # 2. SMALLER WATERS, CARPATHIAN STREAMS AND TRIBUTARIES (18 live 14xxxx stations)
     # =========================================================================
     {
         "code": "142405", "water_category": "minor", "country": "SK",

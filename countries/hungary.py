@@ -1,6 +1,6 @@
 """
-Magyarország (HU) — Vízgyűjtők és Hivatalos Vízügyi Mérőállomások (OVF hydroinfo.hu & vizugy.hu OperativVizallas)
-Különálló ország-forrásfájl (101 magyarországi vízmérce: 64 főfolyó/nagy tó + 37 kisvízfolyás, patak, főcsatorna és tározó)
+Hungary (HU) — Catchments and Official Hydrological Gauging Stations (OVF hydroinfo.hu & vizugy.hu OperativVizallas)
+Standalone country source file (108 Hungarian gauges: 64 main rivers/large lakes + 44 smaller waters, streams, main canals and reservoirs)
 """
 
 COUNTRY_META = {
@@ -27,7 +27,7 @@ CATCHMENTS = {
 
 STATIONS = [
     # =========================================================================
-    # 1. FŐFOLYÓK ÉS NAGY TAVAK (64 állomás)
+    # 1. MAIN RIVERS AND LARGE LAKES (64 stations)
     # =========================================================================
     {
         "code": "442020", "country": "HU", "name": "Rajka", "river": "Duna", "basin": "duna", "catchment": "upper_duna",
@@ -120,7 +120,7 @@ STATIONS = [
         "default_level": 80, "default_diff24h": -12, "default_discharge": 1570, "default_temp": 8.5, "downstream_order": 15
     },
 
-    # --- DUNA MELLÉKFOLYÓK ÉS ÁGAK (13 állomás) ---
+    # --- DANUBE TRIBUTARIES AND BRANCHES (13 stations) ---
     {
         "code": "442601", "country": "HU", "name": "Bácsa", "river": "Mosoni-Duna", "basin": "duna", "catchment": "upper_duna",
         "reach_name": "Mosoni-Duna – Mosonmagyaróvár – Győr-Bácsa szakasz", "lat": 47.716, "lon": 17.674, "fkm": 14.2,
@@ -200,7 +200,7 @@ STATIONS = [
         "default_level": 60, "default_diff24h": 3, "default_discharge": 6, "default_temp": 7.5, "downstream_order": 1
     },
 
-    # --- DRÁVA ÉS MURA (4 állomás) ---
+    # --- DRAVA AND MURA (4 stations) ---
     {
         "code": "446501", "country": "HU", "name": "Letenye", "river": "Mura", "basin": "drava", "catchment": "drava_mura",
         "reach_name": "Mura – Murarátka – Letenye – Murakeresztúr", "lat": 46.418, "lon": 16.715, "fkm": 22.8,
@@ -226,7 +226,7 @@ STATIONS = [
         "default_level": -50, "default_diff24h": -3, "default_discharge": 455, "default_temp": 8.2, "downstream_order": 3
     },
 
-    # --- TISZA FŐÁG (10 magyarországi állomás) ---
+    # --- TISZA MAIN STEM (10 Hungarian stations) ---
     {
         "code": "444226", "country": "HU", "name": "Tiszabecs", "river": "Tisza", "basin": "tisza", "catchment": "upper_tisza",
         "reach_name": "Tisza – Felső-Tisza belépő szakasz (Tiszabecs – Tivadar)", "lat": 48.103, "lon": 22.828, "fkm": 744.2,
@@ -288,7 +288,7 @@ STATIONS = [
         "default_level": 143, "default_diff24h": 7, "default_discharge": 670, "default_temp": 8.3, "downstream_order": 11
     },
 
-    # --- TISZA MELLÉKFOLYÓK MAGYARORSZÁGON (18 állomás) ---
+    # --- TISZA TRIBUTARIES IN HUNGARY (18 stations) ---
     {
         "code": "444244", "country": "HU", "name": "Csenger", "river": "Szamos", "basin": "tisza", "catchment": "upper_tisza",
         "reach_name": "Szamos – Magyarországi alsó szakasz (Csenger – Olcsvaapáti)", "lat": 47.838, "lon": 22.685, "fkm": 48.2,
@@ -398,7 +398,7 @@ STATIONS = [
         "default_level": -24, "default_diff24h": -39, "default_discharge": 115, "default_temp": 8.1, "downstream_order": 7
     },
 
-    # --- MAGYARORSZÁGI NAGY TAVAK (4 állomás) ---
+    # --- HUNGARIAN LARGE LAKES (4 stations) ---
     {
         "code": "442550", "country": "HU", "name": "Siófok", "river": "Balaton", "basin": "tavak", "catchment": "lakes_balaton",
         "reach_name": "Balaton – Keleti-medence (Siófok – Balatonkenese)", "lat": 46.912, "lon": 18.042, "fkm": 0.0,
@@ -425,7 +425,7 @@ STATIONS = [
     },
 
     # =========================================================================
-    # 2. KISVÍZFOLYÁSOK, PATAKOK, FŐCSATORNÁK ÉS TÁROZÓK (vizugy.hu & OVF — 37 állomás)
+    # 2. SMALLER WATERS, STREAMS, MAIN CANALS AND RESERVOIRS (vizugy.hu & OVF — 44 stations)
     # =========================================================================
     {
         "code": "442609", "vizugy_id": "345", "water_category": "minor", "country": "HU",
