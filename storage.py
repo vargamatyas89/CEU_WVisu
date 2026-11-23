@@ -18,16 +18,8 @@ DEFAULT_DB_PATH = os.path.join(
     "data",
     "riverradar_history.sqlite",
 )
-DB_PATH = (
-    os.environ.get("RIVERRADAR_DB_PATH")
-    or os.environ.get("FLUVIO_DB_PATH")
-    or os.environ.get("WVIS_DB_PATH", DEFAULT_DB_PATH)
-)
-RETENTION_DAYS = int(
-    os.environ.get("RIVERRADAR_RETENTION_DAYS")
-    or os.environ.get("FLUVIO_RETENTION_DAYS")
-    or os.environ.get("WVIS_RETENTION_DAYS", 30)
-)
+DB_PATH = os.environ.get("RIVERRADAR_DB_PATH", DEFAULT_DB_PATH)
+RETENTION_DAYS = int(os.environ.get("RIVERRADAR_RETENTION_DAYS", 30))
 
 _DB_LOCK = threading.Lock()
 

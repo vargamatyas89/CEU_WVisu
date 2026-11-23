@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Fluvio — Interactive Hydrological Map and 1–7 Day Forecast System for Central Europe, the Danube Basin and Zakarpattia
+RiverRadar — Interactive Hydrological Map and 1–7 Day Forecast System for Central Europe, the Danube Basin and Zakarpattia
 Backend API & Static File Server (Standard Library Python 3)
 
 Modular Country Architecture & Multi-Source Live Telemetry:

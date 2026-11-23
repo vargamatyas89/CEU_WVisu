@@ -1,5 +1,5 @@
 /**
- * Fluvio — Interactive Water Map of Central Europe, the Danube Basin and Zakarpattia
+ * RiverRadar — Interactive Water Map of Central Europe, the Danube Basin and Zakarpattia
  * Client-side Interactive Cartography, Real-Time Forecast Slider & Hydrograph Engine
  */
 
@@ -9,7 +9,7 @@
   // Application State
   const savedLang = (() => {
     try {
-      const stored = localStorage.getItem("riverradar_lang") || localStorage.getItem("fluvio_lang") || localStorage.getItem("wvis_lang");
+      const stored = localStorage.getItem("riverradar_lang");
       return stored && window.RIVERRADAR_I18N && window.RIVERRADAR_I18N[stored] ? stored : "hu";
     } catch {
       return "hu";
