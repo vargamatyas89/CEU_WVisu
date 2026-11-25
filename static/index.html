@@ -7,8 +7,8 @@
   <meta name="color-scheme" content="light dark">
   <title>RiverRadar — Central Europe & Danube Basin (DE • AT • SK • HU • SI • HR • RS • RO • BG • UA-ZK) Interactive Water Level Map & 1–7 Day Forecast</title>
 
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <!-- Leaflet CSS (self-hosted locally — zero third-party CDN requests) -->
+  <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
@@ -105,6 +105,9 @@
           </button>
           <button type="button" id="btn-theme-toggle" class="btn-secondary" title="Switch map color theme (Dark / Light)">
             ◐ Theme
+          </button>
+          <button type="button" id="btn-cookie-settings" class="btn-secondary" data-i18n="btnPrivacy" title="Adatvédelmi és süti beállítások módosítása">
+            🍪 Adatvédelem
           </button>
         </div>
       </div>
@@ -279,9 +282,108 @@
     </main>
   </div>
 
-  <!-- Leaflet JS, i18n Dictionary & Modular Per-Country Hydrography Source Files -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <!-- EU GDPR & ePrivacy Cookie Consent Banner (First Layer — non-blocking, equal-prominence choices) -->
+  <aside id="cookie-banner" class="cookie-banner hidden" aria-labelledby="cookie-banner-title">
+    <div class="cookie-banner-body">
+      <strong id="cookie-banner-title" class="cookie-banner-title" data-i18n="cookieBannerTitle">
+        Adatvédelem és tárhely-beállítások (EU GDPR)
+      </strong>
+      <p class="cookie-banner-text" data-i18n="cookieBannerText">
+        A RiverRadar nem használ reklám-, követő- vagy harmadik féltől származó analitikai sütiket. Az Ön hozzájárulásával mentjük a kiválasztott nyelvet a böngészőben, és töltjük be a külső OpenTopoMap / OpenStreetMap domborzati térképcsempéket (amelyek IP-címet továbbítanak a csempeszerverek felé). Hozzájárulás nélkül a 100%-ban helyi vektoros víztérkép korlátozás nélkül használható.
+      </p>
+    </div>
+    <div class="cookie-banner-actions">
+      <button type="button" id="btn-cookie-reject" class="btn-consent-equal" data-i18n="cookieReject">
+        Csak a szükségesek
+      </button>
+      <button type="button" id="btn-cookie-accept" class="btn-consent-equal" data-i18n="cookieAcceptAll">
+        Összes elfogadása
+      </button>
+      <button type="button" id="btn-cookie-customize" class="btn-consent-link" data-i18n="cookieCustomize">
+        Beállítások
+      </button>
+    </div>
+  </aside>
+
+  <!-- EU GDPR & ePrivacy Consent Preferences Modal (Second Layer — native <dialog> without redundant ARIA) -->
+  <dialog id="cookie-settings-dialog" class="cookie-dialog" closedby="any" aria-labelledby="cookie-dialog-title">
+    <form method="dialog" class="cookie-dialog-form">
+      <div class="cookie-dialog-header">
+        <h1 id="cookie-dialog-title" class="cookie-dialog-title" data-i18n="cookieDialogTitle">
+          Adatvédelmi és süti beállítások
+        </h1>
+        <button type="submit" value="" class="cookie-dialog-close" aria-label="Bezárás" data-i18n-aria="cookieClose">
+          ✕
+        </button>
+      </div>
+
+      <p class="cookie-dialog-intro" data-i18n="cookieDialogIntro">
+        Válassza ki, mely opcionális funkciókhoz ad hozzájárulást. Döntését bármikor módosíthatja vagy visszavonhatja a fejléc „Adatvédelem” gombjával (GDPR 7. cikk (3)).
+      </p>
+
+      <div class="cookie-category-list">
+        <div class="cookie-category-item">
+          <div class="cookie-category-info">
+            <label for="consent-opt-necessary" class="cookie-category-name" data-i18n="cookieCatNecessaryTitle">
+              Feltétlenül szükséges (Mindig aktív)
+            </label>
+            <p class="cookie-category-desc" data-i18n="cookieCatNecessaryDesc">
+              Kizárólag az Ön adatvédelmi döntését tárolja 12 hónapig (localStorage: riverradar_consent_v1). Jogalap: ePrivacy 5. cikk (3) / GDPR 6. cikk (1) f).
+            </p>
+          </div>
+          <input id="consent-opt-necessary" type="checkbox" switch checked disabled>
+        </div>
+
+        <div class="cookie-category-item">
+          <div class="cookie-category-info">
+            <label for="consent-opt-preferences" class="cookie-category-name" data-i18n="cookieCatPrefsTitle">
+              Beállítások (Nyelv megjegyzése)
+            </label>
+            <p class="cookie-category-desc" data-i18n="cookieCatPrefsDesc">
+              Megjegyzi a választott felületi nyelvet a böngészőben (localStorage: riverradar_lang). Elutasítás esetén nem írunk preferenciát a böngészőbe. Jogalap: GDPR 6. cikk (1) a).
+            </p>
+          </div>
+          <input id="consent-opt-preferences" type="checkbox" switch>
+        </div>
+
+        <div class="cookie-category-item">
+          <div class="cookie-category-info">
+            <label for="consent-opt-basemaps" class="cookie-category-name" data-i18n="cookieCatMapsTitle">
+              Külső alaptérképek (OpenTopoMap / OpenStreetMap)
+            </label>
+            <p class="cookie-category-desc" data-i18n="cookieCatMapsDesc">
+              Külső domborzati és OSM térképcsempék betöltése (IP-cím és böngészőfejléc továbbításával a csempeszerverek felé). Kikapcsolva a 100%-ban helyi vektoros térkép jelenik meg. Jogalap: GDPR 6. cikk (1) a).
+            </p>
+          </div>
+          <input id="consent-opt-basemaps" type="checkbox" switch>
+        </div>
+      </div>
+
+      <details class="cookie-gdpr-details">
+        <summary data-i18n="cookieGdprSummary">Rövid adatkezelési tájékoztató (GDPR 13. cikk)</summary>
+        <p class="cookie-gdpr-text" data-i18n="cookieGdprBody">
+          A RiverRadar nem alkalmaz hirdetési, profilalkotási vagy harmadik féltől származó analitikai sütiket. A hidrológiai adatok (OVF, HND, HVZ, APPD, NIMH, DHMZ, RHMZ, ARSO, Open-Meteo, GloFAS) a szerveren kerülnek feldolgozásra, nem közvetlenül az Ön böngészőjéből. Hozzájárulás esetén kizárólag a választott térképcsempe-szolgáltatók (OpenStreetMap Foundation / OpenTopoMap / OSM France) kapják meg a csempekéréshez technikailag szükséges IP-címet. Ön jogosult hozzájárulását bármikor indoklás nélkül visszavonni, a helyi tároló adatait törölni, valamint az illetékes EU-s adatvédelmi hatósághoz (pl. NAIH) fordulni.
+        </p>
+      </details>
+
+      <div class="cookie-dialog-footer">
+        <button type="submit" value="reject-optional" class="btn-consent-equal" autofocus data-i18n="cookieReject">
+          Csak a szükségesek
+        </button>
+        <button type="submit" value="save" class="btn-consent-equal" data-i18n="cookieSave">
+          Beállítások mentése
+        </button>
+        <button type="submit" value="accept-all" class="btn-consent-equal" data-i18n="cookieAcceptAll">
+          Összes elfogadása
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Leaflet JS (self-hosted), i18n Dictionary, GDPR Consent Manager & Modular Per-Country Hydrography Source Files -->
+  <script src="/vendor/leaflet/leaflet.js"></script>
   <script src="/i18n.js"></script>
+  <script src="/consent.js"></script>
   <script src="/countries/hungary_geo.js"></script>
   <script src="/countries/romania_geo.js"></script>
   <script src="/countries/slovakia_geo.js"></script>

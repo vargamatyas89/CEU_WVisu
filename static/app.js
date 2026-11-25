@@ -6,8 +6,12 @@
 (() => {
   "use strict";
 
-  // Application State
+  // Application State (respecting EU GDPR / ePrivacy prior consent)
+  const consentAllows = (cat) =>
+    !window.RiverRadarConsent || window.RiverRadarConsent.allows(cat);
+
   const savedLang = (() => {
+    if (!consentAllows("preferences")) return "hu";
     try {
       const stored = localStorage.getItem("riverradar_lang");
       return stored && window.RIVERRADAR_I18N && window.RIVERRADAR_I18N[stored] ? stored : "hu";
@@ -15,6 +19,8 @@
       return "hu";
     }
   })();
+
+  const initialBasemapsAllowed = consentAllows("externalBasemaps");
 
   const state = {
     lang: savedLang,
@@ -31,8 +37,8 @@
     showMinorWaters: true,
     showStations: true,
     labelMode: "off", // 'off' (clean default) | 'smart' (zoom + alerts w/ collision avoidance) | 'all'
-    showBasemap: true,
-    basemapSource: "opentopomap", // 'opentopomap' | 'cyclosm' | 'osm_hot' | 'osm_standard' | 'none'
+    showBasemap: initialBasemapsAllowed,
+    basemapSource: initialBasemapsAllowed ? "opentopomap" : "none", // 'opentopomap' | 'cyclosm' | 'osm_hot' | 'osm_standard' | 'none'
     darkMode: window.matchMedia("(prefers-color-scheme: dark)").matches,
   };
 
@@ -339,7 +345,16 @@
       }
     }
 
-    if (state.showBasemap && state.basemapSource !== "none") {
+    const externalAllowed = consentAllows("externalBasemaps");
+    const basemapCheckbox = document.getElementById("toggle-basemap");
+    if (basemapCheckbox) {
+      basemapCheckbox.checked = Boolean(externalAllowed && state.showBasemap && state.basemapSource !== "none");
+    }
+    if (basemapSelect) {
+      basemapSelect.value = externalAllowed ? state.basemapSource : "none";
+    }
+
+    if (externalAllowed && state.showBasemap && state.basemapSource !== "none") {
       const activeTileLayer =
         openSourceTileLayers[state.basemapSource] || openSourceTileLayers.opentopomap;
       activeTileLayer.addTo(map);
@@ -1192,10 +1207,12 @@
       langCode = "hu";
     }
     state.lang = langCode;
-    try {
-      localStorage.setItem("riverradar_lang", langCode);
-    } catch {
-      // Ignore storage restrictions
+    if (consentAllows("preferences")) {
+      try {
+        localStorage.setItem("riverradar_lang", langCode);
+      } catch {
+        // Ignore storage restrictions
+      }
     }
 
     const dict = t();
@@ -1212,6 +1229,18 @@
         el.textContent = dict[key];
       }
     });
+
+    document.querySelectorAll("[data-i18n-aria]").forEach((el) => {
+      const key = el.getAttribute("data-i18n-aria");
+      if (key && typeof dict[key] === "string") {
+        el.setAttribute("aria-label", dict[key]);
+      }
+    });
+
+    const privacyBtn = document.getElementById("btn-cookie-settings");
+    if (privacyBtn && dict.btnPrivacyTitle) {
+      privacyBtn.title = dict.btnPrivacyTitle;
+    }
 
     const syncSelectOptions = (selectEl, optsMap) => {
       if (!selectEl || !optsMap) return;
@@ -1410,18 +1439,49 @@
     }
 
     document.getElementById("toggle-basemap").addEventListener("change", (e) => {
+      if (e.target.checked && !consentAllows("externalBasemaps")) {
+        e.target.checked = false;
+        if (window.RiverRadarConsent) window.RiverRadarConsent.openSettings();
+        return;
+      }
       state.showBasemap = e.target.checked;
+      if (state.showBasemap && state.basemapSource === "none") {
+        state.basemapSource = "opentopomap";
+      }
       updateBasemapTheme();
     });
 
     if (basemapSelect) {
       basemapSelect.addEventListener("change", () => {
+        if (basemapSelect.value !== "none" && !consentAllows("externalBasemaps")) {
+          basemapSelect.value = "none";
+          if (window.RiverRadarConsent) window.RiverRadarConsent.openSettings();
+          return;
+        }
         state.basemapSource = basemapSelect.value;
         state.showBasemap = state.basemapSource !== "none";
         document.getElementById("toggle-basemap").checked = state.showBasemap;
         updateBasemapTheme();
       });
     }
+
+    window.addEventListener("riverradar:consent-changed", (e) => {
+      const cats = (e.detail && e.detail.categories) || {};
+      if (cats.preferences) {
+        try {
+          localStorage.setItem("riverradar_lang", state.lang);
+        } catch {
+          // Ignore storage restrictions
+        }
+      }
+      if (cats.externalBasemaps) {
+        if (state.basemapSource === "none") state.basemapSource = "opentopomap";
+        state.showBasemap = true;
+      } else {
+        state.showBasemap = false;
+      }
+      updateBasemapTheme();
+    });
 
     const darkMql = window.matchMedia("(prefers-color-scheme: dark)");
     darkMql.addEventListener("change", (e) => {
