@@ -13,6 +13,7 @@ WORKDIR /app
 COPY --chown=riverradar server.py storage.py ./
 COPY --chown=riverradar countries ./countries
 COPY --chown=riverradar static ./static
+COPY --chown=riverradar certs ./certs
 
 USER riverradar
 VOLUME ["/data"]

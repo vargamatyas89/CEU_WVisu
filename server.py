@@ -21,6 +21,7 @@ import math
 import os
 import re
 import socketserver
+import ssl
 import threading
 import time
 import urllib.parse
@@ -34,6 +35,22 @@ PORT = int(os.environ.get("PORT", 8080))
 # Bind cím: lokálisan 127.0.0.1; konténerben HOST=0.0.0.0 (a reverse proxy éri el).
 HOST = os.environ.get("HOST", "127.0.0.1")
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+# A vizugy.hu rossz köztes tanúsítványt küld; a hiányzó láncelemeket a repóból adjuk a rendszer gyökértára mellé.
+VIZUGY_CA_BUNDLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "certs", "vizugy_intermediates.pem")
+_vizugy_ssl_ctx = None
+
+
+def _vizugy_ssl_context():
+    """Alapértelmezett (ellenőrző) SSL-kontextus + a vizugy.hu hiányzó Microsec köztes tanúsítványai."""
+    global _vizugy_ssl_ctx
+    if _vizugy_ssl_ctx is None:
+        ctx = ssl.create_default_context()
+        try:
+            ctx.load_verify_locations(cafile=VIZUGY_CA_BUNDLE)
+        except (OSError, ssl.SSLError) as exc:
+            print(f"[WARN] vizugy.hu CA bundle nem tölthető be ({VIZUGY_CA_BUNDLE}): {exc}")
+        _vizugy_ssl_ctx = ctx
+    return _vizugy_ssl_ctx
 
 # Cache & Hourly Background Refresh Configuration
 _CACHE = {
@@ -147,7 +164,7 @@ def fetch_vizugy_operative_observations():
     vizugy_by_id = {}
     try:
         req = urllib.request.Request("https://www.vizugy.hu/", headers={"User-Agent": "Mozilla/5.0 (RiverRadar HydroMap)"})
-        with urllib.request.urlopen(req, timeout=8) as resp:
+        with urllib.request.urlopen(req, timeout=8, context=_vizugy_ssl_context()) as resp:
             text = resp.read().decode("utf-8", errors="replace")
             arrays = dict(re.findall(r"([A-Za-z0-9_]+)\s*=\s*new\s+Array\((.*?)\);", text, re.S))
 
