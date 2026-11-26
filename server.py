@@ -31,6 +31,8 @@ from countries import CATCHMENTS, COUNTRIES_META, STATIONS_CATALOG
 import storage
 
 PORT = int(os.environ.get("PORT", 8080))
+# Bind cím: lokálisan 127.0.0.1; konténerben HOST=0.0.0.0 (a reverse proxy éri el).
+HOST = os.environ.get("HOST", "127.0.0.1")
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 
 # Cache & Hourly Background Refresh Configuration
@@ -41,6 +43,10 @@ _CACHE = {
 _CACHE_LOCK = threading.Lock()
 _REFRESH_LOCK = threading.Lock()
 REFRESH_INTERVAL_SECONDS = int(os.environ.get("REFRESH_INTERVAL_SECONDS", 3600))  # 1 hour default
+# /api/refresh védelme: ennél gyakrabban nem indít új upstream lekérést (közben a cache-t szolgálja ki).
+FORCE_REFRESH_COOLDOWN_SECONDS = int(os.environ.get("FORCE_REFRESH_COOLDOWN_SECONDS", 300))
+_force_refresh_lock = threading.Lock()
+_last_force_refresh_at = 0.0
 CACHE_TTL_SECONDS = REFRESH_INTERVAL_SECONDS
 
 
@@ -1035,6 +1041,14 @@ class HydroRequestHandler(http.server.SimpleHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         if parsed.path in ("/api/hydro-data", "/api/refresh"):
             force = parsed.path == "/api/refresh"
+            if force:
+                global _last_force_refresh_at
+                with _force_refresh_lock:
+                    now = time.monotonic()
+                    if _last_force_refresh_at and now - _last_force_refresh_at < FORCE_REFRESH_COOLDOWN_SECONDS:
+                        force = False  # cooldown: cache-elt adat
+                    else:
+                        _last_force_refresh_at = now
             try:
                 data = build_hydro_payload(force_refresh=force)
                 self._send_json(data, 200)
@@ -1107,8 +1121,8 @@ if __name__ == "__main__":
     print(f"[RiverRadar] Background refresh thread active (every {REFRESH_INTERVAL_SECONDS}s, next at {meta['next_refresh_at']}).")
     socketserver.TCPServer.allow_reuse_address = True
     try:
-        with socketserver.ThreadingTCPServer(("127.0.0.1", PORT), HydroRequestHandler) as httpd:
-            print(f"[RiverRadar] Server listening at http://localhost:{PORT}")
+        with socketserver.ThreadingTCPServer((HOST, PORT), HydroRequestHandler) as httpd:
+            print(f"[RiverRadar] Server listening at http://{HOST}:{PORT}")
             httpd.serve_forever()
     except KeyboardInterrupt:
         stop_event.set()

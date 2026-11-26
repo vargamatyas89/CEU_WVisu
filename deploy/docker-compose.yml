@@ -1,0 +1,33 @@
+# RiverRadar – önálló compose-projekt a VPS-en (/opt/riverradar/deploy).
+# A Tariff Watch stackje NEM része; a Caddy az "edge" hálózaton éri el.
+# Egyszeri előkészítés a szerveren:  docker network create edge
+name: riverradar
+
+services:
+  riverradar:
+    build:
+      context: ..
+    container_name: riverradar
+    restart: unless-stopped
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "8080"
+      RIVERRADAR_DB_PATH: /data/riverradar_history.sqlite
+      FORCE_REFRESH_COOLDOWN_SECONDS: "300"
+    volumes:
+      - riverradar_data:/data
+    networks:
+      - edge
+    mem_limit: 512m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  riverradar_data:
+
+networks:
+  edge:
+    external: true

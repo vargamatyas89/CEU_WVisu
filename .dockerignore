@@ -1,0 +1,11 @@
+.git
+.gitignore
+.claude
+CLAUDE.md
+__pycache__
+*.pyc
+data
+deploy
+*.md
+LICENSE
+.DS_Store

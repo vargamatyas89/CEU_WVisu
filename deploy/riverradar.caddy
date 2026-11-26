@@ -1,0 +1,21 @@
+# A VPS-en: /opt/caddy-sites/riverradar.caddy  (a Tariff Watch Caddy-je importálja)
+www.riverradar.eu {
+    redir https://riverradar.eu{uri} permanent
+}
+
+riverradar.eu {
+    encode zstd gzip
+
+    header {
+        Strict-Transport-Security "max-age=31536000"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+
+    reverse_proxy riverradar:8080 {
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}

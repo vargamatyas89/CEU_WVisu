@@ -1,0 +1,10 @@
+[Unit]
+Description=RiverRadar auto-deploy, naponta 03:30 (Europe/Budapest)
+
+[Timer]
+OnCalendar=*-*-* 03:30:00 Europe/Budapest
+Persistent=true
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target
