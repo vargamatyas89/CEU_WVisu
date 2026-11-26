@@ -163,50 +163,60 @@ def fetch_vizugy_operative_observations():
     """Fetches live hourly telemetry for 272 Hungarian stations (including smaller streams, creeks, canals, reservoirs) from vizugy.hu."""
     vizugy_by_id = {}
     try:
-        req = urllib.request.Request("https://www.vizugy.hu/", headers={"User-Agent": "Mozilla/5.0 (RiverRadar HydroMap)"})
-        with urllib.request.urlopen(req, timeout=8, context=_vizugy_ssl_context()) as resp:
-            text = resp.read().decode("utf-8", errors="replace")
-            arrays = dict(re.findall(r"([A-Za-z0-9_]+)\s*=\s*new\s+Array\((.*?)\);", text, re.S))
+        url = "https://www.vizugy.hu/"
+        for _hop in range(2):  # a főoldal jelenleg meta-refresh-sel a paks.vizugy.hu-ra irányít; egy ugrást követünk
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (RiverRadar HydroMap)"})
+            with urllib.request.urlopen(req, timeout=8, context=_vizugy_ssl_context()) as resp:
+                text = resp.read().decode("utf-8", errors="replace")
+            if re.search(r"new\s+Array\(", text):
+                break
+            # A kikommentelt (<!-- ... -->) meta tageket figyelmen kívül hagyjuk.
+            refresh = re.search(r'<meta\s+http-equiv="refresh"\s+content="\d+;\s*url=([^"]+)"', re.sub(r"<!--.*?-->", "", text, flags=re.S), re.I)
+            target = urllib.parse.urljoin(url, html.unescape(refresh.group(1).strip())) if refresh else ""
+            if not re.match(r"https://([a-z0-9-]+\.)*vizugy\.hu/", target, re.I):
+                break
+            url = target
+        arrays = dict(re.findall(r"([A-Za-z0-9_]+)\s*=\s*new\s+Array\((.*?)\);", text, re.S))
 
-            def get_arr(key):
-                raw_body = arrays.get(key, "")
-                return [x.strip() for x in re.findall(r"'([^']*)'", raw_body)]
+        def get_arr(key):
+            raw_body = arrays.get(key, "")
+            return [x.strip() for x in re.findall(r"'([^']*)'", raw_body)]
 
-            torzs = get_arr("VizmerceTorzsSzam")
-            names = get_arr("VizmerceNev")
-            rivers = get_arr("VizfolyasNev")
-            levels = get_arr("Vizallas")
-            discharges = get_arr("Vizhozam")
-            temps = get_arr("Vizho")
-            times = get_arr("UtolsoMeresIdopontja")
-            lkvs = get_arr("LKV")
-            lnvs = get_arr("LNV")
+        torzs = get_arr("VizmerceTorzsSzam")
+        names = get_arr("VizmerceNev")
+        rivers = get_arr("VizfolyasNev")
+        levels = get_arr("Vizallas")
+        discharges = get_arr("Vizhozam")
+        temps = get_arr("Vizho")
+        times = get_arr("UtolsoMeresIdopontja")
+        lkvs = get_arr("LKV")
+        lnvs = get_arr("LNV")
 
-            count = min(len(torzs), len(names), len(levels))
-            for i in range(count):
-                tid = torzs[i].strip()
-                lvl = _parse_int(levels[i])
-                if not tid or lvl is None:
-                    continue
-                q_val = _parse_float(discharges[i]) if i < len(discharges) else None
-                if q_val is not None and q_val <= 0.0:
-                    q_val = None
-                t_val = _parse_float(temps[i]) if i < len(temps) else None
-                if t_val is not None and t_val <= 0.0:
-                    t_val = None
+        count = min(len(torzs), len(names), len(levels))
+        for i in range(count):
+            tid = torzs[i].strip()
+            lvl = _parse_int(levels[i])
+            if not tid or lvl is None:
+                continue
+            q_val = _parse_float(discharges[i]) if i < len(discharges) else None
+            if q_val is not None and q_val <= 0.0:
+                q_val = None
+            t_val = _parse_float(temps[i]) if i < len(temps) else None
+            if t_val is not None and t_val <= 0.0:
+                t_val = None
 
-                vizugy_by_id[tid] = {
-                    "vizugy_id": tid,
-                    "name": names[i],
-                    "river": rivers[i] if i < len(rivers) else "",
-                    "current_level_cm": lvl,
-                    "discharge_m3s": q_val,
-                    "water_temp_c": t_val,
-                    "measured_at": times[i] if i < len(times) else "",
-                    "lkv_cm": _parse_int(lkvs[i]) if i < len(lkvs) else None,
-                    "lnv_cm": _parse_int(lnvs[i]) if i < len(lnvs) else None,
-                    "origin": "vizugy.hu",
-                }
+            vizugy_by_id[tid] = {
+                "vizugy_id": tid,
+                "name": names[i],
+                "river": rivers[i] if i < len(rivers) else "",
+                "current_level_cm": lvl,
+                "discharge_m3s": q_val,
+                "water_temp_c": t_val,
+                "measured_at": times[i] if i < len(times) else "",
+                "lkv_cm": _parse_int(lkvs[i]) if i < len(lkvs) else None,
+                "lnv_cm": _parse_int(lnvs[i]) if i < len(lnvs) else None,
+                "origin": "vizugy.hu",
+            }
     except Exception as exc:
         print(f"[WARN] Failed to fetch vizugy.hu operative telemetry: {exc}")
 
