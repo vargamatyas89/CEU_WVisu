@@ -15,6 +15,7 @@
   const OPTIONAL_STORAGE_KEYS = ["riverradar_lang", "riverradar_theme", "fluvio_lang", "wvis_lang"];
 
   let currentRecord = loadStoredConsent();
+  let previewExternalBasemaps = null;
 
   function loadStoredConsent() {
     try {
@@ -98,8 +99,8 @@
     if (!currentRecord) {
       return {
         necessary: true,
-        preferences: false,
-        externalBasemaps: false,
+        preferences: true,
+        externalBasemaps: true,
       };
     }
     return { ...currentRecord.categories };
@@ -107,6 +108,9 @@
 
   function allows(category) {
     if (category === "necessary") return true;
+    if (category === "externalBasemaps" && previewExternalBasemaps !== null) {
+      return previewExternalBasemaps;
+    }
     return Boolean(getCategories()[category]);
   }
 
@@ -116,8 +120,9 @@
 
   function updateBannerVisibility() {
     const banner = document.getElementById("cookie-banner");
+    const dialog = document.getElementById("cookie-settings-dialog");
     if (!banner) return;
-    banner.classList.toggle("hidden", hasDecision());
+    banner.classList.toggle("hidden", hasDecision() || Boolean(dialog && dialog.open));
   }
 
   function syncDialogInputs() {
@@ -131,6 +136,7 @@
   function openSettings() {
     const dialog = document.getElementById("cookie-settings-dialog");
     if (!dialog) return;
+    previewExternalBasemaps = null;
     syncDialogInputs();
     if (!dialog.open) {
       if (typeof dialog.showModal === "function") {
@@ -139,6 +145,7 @@
         dialog.setAttribute("open", "");
       }
     }
+    updateBannerVisibility();
   }
 
   function initConsentUI() {
@@ -175,11 +182,32 @@
       });
     }
 
+    // Live-switch background basemap as soon as the user toggles the map checkbox
+    const mapInput = document.getElementById("consent-opt-basemaps");
+    if (mapInput) {
+      mapInput.addEventListener("change", () => {
+        previewExternalBasemaps = mapInput.checked;
+        window.dispatchEvent(
+          new CustomEvent("riverradar:consent-changed", {
+            detail: {
+              decided: hasDecision(),
+              preview: true,
+              categories: {
+                ...getCategories(),
+                externalBasemaps: mapInput.checked,
+              },
+            },
+          })
+        );
+      });
+    }
+
     // Native <dialog> close handling (always reset returnValue to avoid stale state on Esc/light-dismiss)
     if (dialog) {
       dialog.addEventListener("close", () => {
         const action = dialog.returnValue;
         dialog.returnValue = "";
+        previewExternalBasemaps = null;
 
         if (action === "accept-all") {
           saveConsent({ preferences: true, externalBasemaps: true });
@@ -187,11 +215,22 @@
           saveConsent({ preferences: false, externalBasemaps: false });
         } else if (action === "save") {
           const prefInput = document.getElementById("consent-opt-preferences");
-          const mapInput = document.getElementById("consent-opt-basemaps");
           saveConsent({
             preferences: Boolean(prefInput && prefInput.checked),
             externalBasemaps: Boolean(mapInput && mapInput.checked),
           });
+        } else {
+          // Dismissed without saving — revert live map preview to stored/default state
+          window.dispatchEvent(
+            new CustomEvent("riverradar:consent-changed", {
+              detail: {
+                decided: hasDecision(),
+                preview: true,
+                categories: getCategories(),
+              },
+            })
+          );
+          updateBannerVisibility();
         }
       });
 
@@ -225,6 +264,11 @@
       document.querySelectorAll('input[type="checkbox"][switch]').forEach((el) => {
         el.setAttribute("role", "switch");
       });
+    }
+
+    // Immediately pop up the GDPR modal on first visit (with all options checked by default)
+    if (!hasDecision()) {
+      openSettings();
     }
   }
 

@@ -1207,7 +1207,7 @@
       langCode = "hu";
     }
     state.lang = langCode;
-    if (consentAllows("preferences")) {
+    if (consentAllows("preferences") && (!window.RiverRadarConsent || window.RiverRadarConsent.hasDecision())) {
       try {
         localStorage.setItem("riverradar_lang", langCode);
       } catch {
@@ -1240,6 +1240,11 @@
     const privacyBtn = document.getElementById("btn-cookie-settings");
     if (privacyBtn && dict.btnPrivacyTitle) {
       privacyBtn.title = dict.btnPrivacyTitle;
+    }
+
+    const aboutBtn = document.getElementById("btn-about");
+    if (aboutBtn && dict.btnAboutTitle) {
+      aboutBtn.title = dict.btnAboutTitle;
     }
 
     const syncSelectOptions = (selectEl, optsMap) => {
@@ -1466,8 +1471,9 @@
     }
 
     window.addEventListener("riverradar:consent-changed", (e) => {
-      const cats = (e.detail && e.detail.categories) || {};
-      if (cats.preferences) {
+      const detail = e.detail || {};
+      const cats = detail.categories || {};
+      if (!detail.preview && cats.preferences) {
         try {
           localStorage.setItem("riverradar_lang", state.lang);
         } catch {
@@ -1496,6 +1502,42 @@
       document.documentElement.setAttribute("data-theme", state.darkMode ? "dark" : "light");
       updateBasemapTheme();
     });
+
+    const aboutBtn = document.getElementById("btn-about");
+    const aboutDialog = document.getElementById("about-dialog");
+    if (aboutBtn && aboutDialog) {
+      aboutBtn.addEventListener("click", () => {
+        if (!aboutDialog.open) {
+          if (typeof aboutDialog.showModal === "function") {
+            aboutDialog.showModal();
+          } else {
+            aboutDialog.setAttribute("open", "");
+          }
+        }
+      });
+
+      if (!("closedBy" in HTMLDialogElement.prototype)) {
+        const isOutside = (e) => {
+          const r = aboutDialog.getBoundingClientRect();
+          return (
+            e.clientX < r.left ||
+            e.clientX > r.right ||
+            e.clientY < r.top ||
+            e.clientY > r.bottom
+          );
+        };
+        let pressedOutside = false;
+        aboutDialog.addEventListener("pointerdown", (e) => {
+          pressedOutside = isOutside(e);
+        });
+        aboutDialog.addEventListener("pointerup", (e) => {
+          if (pressedOutside && isOutside(e)) {
+            aboutDialog.close();
+          }
+          pressedOutside = false;
+        });
+      }
+    }
   }
 
   // Boot Application

@@ -1287,8 +1287,8 @@ dialog.cookie-dialog:modal {
 dialog.cookie-dialog::backdrop {
   overflow: hidden;
   overscroll-behavior: contain;
-  background: rgba(7, 14, 26, 0.62);
-  backdrop-filter: blur(3px);
+  background: rgba(7, 14, 26, 0.42);
+  backdrop-filter: blur(1.5px);
 }
 
 .cookie-dialog-form {
@@ -1432,4 +1432,67 @@ dialog.cookie-dialog::backdrop {
     bottom: 0.5rem;
     width: auto;
   }
+}
+
+/* About / Author Modal */
+dialog.about-dialog {
+  max-width: 460px;
+}
+
+.about-author-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-panel);
+}
+
+.about-author-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.about-author-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.about-author-name {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.about-linkedin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.48rem 0.82rem;
+  border-radius: 8px;
+  background: #0a66c2;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.about-linkedin-btn:hover {
+  filter: brightness(1.1);
+}
+
+.about-linkedin-btn:focus-visible {
+  outline: 3px solid var(--brand-color);
+  outline-offset: 2px;
+}
+
+.about-dialog-footer {
+  justify-content: flex-end;
 }
