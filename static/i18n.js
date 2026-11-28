@@ -165,6 +165,11 @@ window.RIVERRADAR_I18N = {
     cookieCatMapsDesc: "Külső domborzati és OSM térképcsempék betöltése (IP-cím és böngészőfejléc továbbításával a csempeszerverek felé). Kikapcsolva a 100%-ban helyi vektoros térkép jelenik meg. Jogalap: GDPR 6. cikk (1) a).",
     cookieGdprSummary: "Rövid adatkezelési tájékoztató (GDPR 13. cikk)",
     cookieGdprBody: "A RiverRadar nem alkalmaz hirdetési, profilalkotási vagy harmadik féltől származó analitikai sütiket. A hidrológiai adatok (OVF, HND, HVZ, APPD, NIMH, DHMZ, RHMZ, ARSO, Open-Meteo, GloFAS) a szerveren kerülnek feldolgozásra, nem közvetlenül az Ön böngészőjéből. Hozzájárulás esetén kizárólag a választott térképcsempe-szolgáltatók (OpenStreetMap Foundation / OpenTopoMap / OSM France) kapják meg a csempekéréshez technikailag szükséges IP-címet. Ön jogosult hozzájárulását bármikor indoklás nélkül visszavonni, a helyi tároló adatait törölni, valamint az illetékes EU-s adatvédelmi hatósághoz (pl. NAIH) fordulni.",
+    btnFilters: "Szűrők",
+    btnLegend: "Jelmagyarázat",
+    btnInspector: "Állomások",
+    mobileFiltersTitle: "Szűrők és beállítások",
+    mobileInspectorTitle: "Állomás adatok és lista",
   },
 
   en: {
@@ -327,6 +332,11 @@ window.RIVERRADAR_I18N = {
     cookieCatMapsDesc: "Loads external topographic and OSM map tiles (transmitting IP address and browser headers to tile servers). When off, the 100% local vector map is shown. Legal basis: GDPR Art. 6(1)(a).",
     cookieGdprSummary: "Concise Privacy Notice (GDPR Art. 13)",
     cookieGdprBody: "RiverRadar does not use advertising, profiling, or third-party analytics cookies. Hydrological feeds (OVF, HND, HVZ, APPD, NIMH, DHMZ, RHMZ, ARSO, Open-Meteo, GloFAS) are fetched server-side, never directly from your browser. Only if you consent to external basemaps do tile providers (OpenStreetMap Foundation / OpenTopoMap / OSM France) receive the IP address technically needed to serve map tiles. You may withdraw consent at any time without giving reasons, clear local storage, or lodge a complaint with your EU supervisory authority.",
+    btnFilters: "Filters",
+    btnLegend: "Legend",
+    btnInspector: "Stations",
+    mobileFiltersTitle: "Filters & Settings",
+    mobileInspectorTitle: "Station Details & List",
   },
 
   ro: {
@@ -489,6 +499,11 @@ window.RIVERRADAR_I18N = {
     cookieCatMapsDesc: "Încarcă dale topografice externe (cu transmiterea adresei IP către serverele de dale). Dezactivat, se afișează harta vectorială 100% locală. Temei legal: GDPR art. 6(1)(a).",
     cookieGdprSummary: "Notă de informare (GDPR art. 13)",
     cookieGdprBody: "RiverRadar nu utilizează cookie-uri de marketing, profilare sau analiză terță. Datele hidrologice sunt colectate pe server, nu din browserul dvs. Doar cu acordul dvs., furnizorii de hărți (OpenStreetMap Foundation / OpenTopoMap / OSM France) primesc adresa IP necesară tehnic. Aveți dreptul de a retrage acordul oricând și de a depune plângere la autoritatea de supraveghere UE (ex. ANSPDCP).",
+    btnFilters: "Filtre",
+    btnLegend: "Legendă",
+    btnInspector: "Stații",
+    mobileFiltersTitle: "Filtre și setări",
+    mobileInspectorTitle: "Detalii și listă stații",
   },
 
   sk: {
@@ -651,6 +666,11 @@ window.RIVERRADAR_I18N = {
     cookieCatMapsDesc: "Načítava externé topografické dlaždice (prenos IP adresy na servery poskytovateľa). Vypnuté = 100 % lokálna vektorová mapa. Právny základ: GDPR čl. 6(1)(a).",
     cookieGdprSummary: "Stručné informácie o ochrane údajov (GDPR čl. 13)",
     cookieGdprBody: "RiverRadar nepoužíva reklamné ani analytické cookies tretích strán. Hydrologické dáta sa sťahujú na serveri, nie z vášho prehliadača. Iba pri súhlase s externými mapami získajú poskytovatelia (OpenStreetMap Foundation / OpenTopoMap / OSM France) IP adresu technicky potrebnú na doručenie mapových dlaždíc. Súhlas môžete kedykoľvek odvolať a máte právo podať sťažnosť dozornému orgánu EÚ (ÚOOÚ SR).",
+    btnFilters: "Filtre",
+    btnLegend: "Legenda",
+    btnInspector: "Stanice",
+    mobileFiltersTitle: "Filtre a nastavenia",
+    mobileInspectorTitle: "Údaje a zoznam staníc",
   },
 
   de: {
@@ -813,6 +833,11 @@ window.RIVERRADAR_I18N = {
     cookieCatMapsDesc: "Lädt externe topografische Kartenkacheln (Übermittlung von IP-Adresse und Browser-Headern an Kartenserver). Deaktiviert = 100 % lokale Vektorkarte. Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO.",
     cookieGdprSummary: "Kompakte Datenschutzhinweise (Art. 13 DSGVO)",
     cookieGdprBody: "RiverRadar setzt keine Werbe-, Profiling- oder Drittanbieter-Analyse-Cookies ein. Alle Pegel- und Wetterdaten werden serverseitig abgerufen, nicht direkt über Ihren Browser. Nur bei Zustimmung zu externen Grundkarten erhalten die Kachelanbieter (OpenStreetMap Foundation / OpenTopoMap / OSM France) die technisch erforderliche IP-Adresse. Sie können Ihre Einwilligung jederzeit ohne Angabe von Gründen widerrufen, den lokalen Speicher löschen und sich bei einer EU-Datenschutzaufsichtsbehörde beschweren.",
+    btnFilters: "Filter",
+    btnLegend: "Legende",
+    btnInspector: "Pegel",
+    mobileFiltersTitle: "Filter & Einstellungen",
+    mobileInspectorTitle: "Pegeldetails & Liste",
   },
 
   hr: {
@@ -975,6 +1000,11 @@ window.RIVERRADAR_I18N = {
     cookieCatMapsDesc: "Učitava vanjske topografske kartografske pločice (slanje IP adrese poslužiteljima karata). Isključeno = 100 % lokalna vektorska karta. Pravna osnova: GDPR čl. 6(1)(a).",
     cookieGdprSummary: "Sažeta obavijest o privatnosti (GDPR čl. 13.)",
     cookieGdprBody: "RiverRadar ne koristi oglašivačke, profilne ni analitičke kolačiće trećih strana. Hidrološki podaci prikupljaju se na poslužitelju. Samo uz vašu privolu za vanjske karte pružatelji (OpenStreetMap Foundation / OpenTopoMap / OSM France) primaju IP adresu tehnički potrebnu za prikaz karte. Privolu možete povući u bilo kojem trenutku te podnijeti pritužbu nadležnom EU tijelu (AZOP).",
+    btnFilters: "Filtri",
+    btnLegend: "Legenda",
+    btnInspector: "Postaje",
+    mobileFiltersTitle: "Filtri i postavke",
+    mobileInspectorTitle: "Podaci i popis postaja",
   },
 
   sr: {
@@ -1137,6 +1167,11 @@ window.RIVERRADAR_I18N = {
     cookieCatMapsDesc: "Učitava spoljne topografske mape (prosleđivanje IP adrese serverima mapa). Isključeno = 100 % lokalna vektorska mapa. Pravni osnov: GDPR čl. 6(1)(a).",
     cookieGdprSummary: "Kratko obaveštenje o privatnosti (GDPR čl. 13)",
     cookieGdprBody: "RiverRadar ne koristi reklamne, profilne ni analitičke kolačiće trećih strana. Hidrološki podaci se preuzimaju na serveru. Samo uz vašu saglasnost za spoljne mape provajderi (OpenStreetMap Foundation / OpenTopoMap / OSM France) dobijaju IP adresu tehnički potrebnu za prikaz mape. Saglasnost možete povući u svakom trenutku i obratiti se nadležnom organu za zaštitu podataka.",
+    btnFilters: "Filteri",
+    btnLegend: "Legenda",
+    btnInspector: "Stanice",
+    mobileFiltersTitle: "Filteri i podešavanja",
+    mobileInspectorTitle: "Detalji i lista stanica",
   },
 
   sl: {
@@ -1299,6 +1334,11 @@ window.RIVERRADAR_I18N = {
     cookieCatMapsDesc: "Nalaga zunanje topografske ploščice (posredovanje IP-naslova strežnikom kart). Izklopljeno = 100 % lokalni vektorski zemljevid. Pravna podlaga: GDPR čl. 6(1)(a).",
     cookieGdprSummary: "Kratko obvestilo o zasebnosti (GDPR čl. 13)",
     cookieGdprBody: "RiverRadar ne uporablja oglaševalskih, profilnih ali analitičnih piškotkov tretjih oseb. Hidrološki podatki se zbirajo na strežniku. Samo z vašim soglasjem za zunanje karte ponudniki (OpenStreetMap Foundation / OpenTopoMap / OSM France) prejmejo IP-naslov, tehnično potreben za prikaz kart. Soglasje lahko kadar koli prekličete in vložite pritožbo pri nadzornem organu EU (Informacijski pooblaščenec).",
+    btnFilters: "Filtri",
+    btnLegend: "Legenda",
+    btnInspector: "Postaje",
+    mobileFiltersTitle: "Filtri in nastavitve",
+    mobileInspectorTitle: "Podatki in seznam postaj",
   },
 
   uk: {
@@ -1461,6 +1501,11 @@ window.RIVERRADAR_I18N = {
     cookieCatMapsDesc: "Завантаження зовнішніх топографічних тайлів (передача IP-адреси серверам карт). Вимкнено = 100 % локальна векторна карта. Правова підстава: GDPR ст. 6(1)(a).",
     cookieGdprSummary: "Коротка інформація про конфіденційність (ст. 13 GDPR)",
     cookieGdprBody: "RiverRadar не використовує рекламних, профілювальних або сторонніх аналітичних cookie. Гідрологічні дані завантажуються на сервері, а не напряму з вашого браузера. Лише за вашої згоди постачальники карт (OpenStreetMap Foundation / OpenTopoMap / OSM France) отримують IP-адресу, технічно необхідну для завантаження тайлів. Ви можете будь-коли відкликати згоду, очистити локальне сховище або звернутися до наглядового органу ЄС із захисту даних.",
+    btnFilters: "Фільтри",
+    btnLegend: "Легенда",
+    btnInspector: "Станції",
+    mobileFiltersTitle: "Фільтри та налаштування",
+    mobileInspectorTitle: "Дані та список станцій",
   },
   bg: {
     locale: "bg-BG",
@@ -1622,5 +1667,10 @@ window.RIVERRADAR_I18N = {
     cookieCatMapsDesc: "Зарежда външни топографски плочки (предаване на IP адрес към картографските сървъри). Изключено = 100 % локална векторна карта. Правно основание: GDPR чл. 6(1)(a).",
     cookieGdprSummary: "Кратко уведомление за поверителност (чл. 13 от GDPR)",
     cookieGdprBody: "RiverRadar не използва рекламни, профилиращи или аналитични бисквитки на трети страни. Хидрологичните данни се обработват на сървъра, а не директно от браузъра ви. Само при съгласие за външни карти доставчиците (OpenStreetMap Foundation / OpenTopoMap / OSM France) получават IP адреса, технически необходим за зареждане на картата. Имате право да оттеглите съгласието си по всяко време и да подадете жалба до надзорен орган в ЕС (КЗЛД).",
+    btnFilters: "Филтри",
+    btnLegend: "Легенда",
+    btnInspector: "Станции",
+    mobileFiltersTitle: "Филтри и настройки",
+    mobileInspectorTitle: "Данни и списък станции",
   },
 };

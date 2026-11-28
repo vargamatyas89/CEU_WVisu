@@ -481,10 +481,11 @@
           interactive: false,
         }).addTo(map);
 
+        const isCoarsePointer = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
         const hitLine = L.polyline(multiLatLngs, {
           pane: "riverPane",
           color: "#ffffff",
-          weight: 16,
+          weight: isCoarsePointer ? 26 : 16,
           opacity: 0.0,
           lineCap: "round",
           lineJoin: "round",
@@ -514,19 +515,36 @@
     }).addTo(map);
   }
 
+  // Pointer & Mobile Layout Detection Helpers
+  function supportsFineHover() {
+    return window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  }
+
+  function isCompactMobileLayout() {
+    if (!window.matchMedia) return false;
+    const isDualScreenFoldable = window.matchMedia(
+      "(horizontal-viewport-segments: 2), (vertical-viewport-segments: 2)"
+    ).matches;
+    if (isDualScreenFoldable) return false;
+    return window.matchMedia("(max-width: 1024px)").matches;
+  }
+
   // Bind Hover & Click Events to a River Reach, Lake, or Station Marker
   function bindHydroHoverAndClick(layer, stationCode) {
     layer.on("mouseover", (e) => {
+      if (!supportsFineHover()) return;
       state.hoveredCode = stationCode;
       highlightStationOnMap(stationCode, true);
       showHoverCard(stationCode, e.originalEvent);
     });
 
     layer.on("mousemove", (e) => {
+      if (!supportsFineHover()) return;
       positionHoverCard(e.originalEvent);
     });
 
     layer.on("mouseout", () => {
+      if (!supportsFineHover()) return;
       if (state.hoveredCode === stationCode) {
         state.hoveredCode = null;
       }
@@ -535,7 +553,7 @@
     });
 
     layer.on("click", () => {
-      pinStation(stationCode, true);
+      pinStation(stationCode, true, true);
     });
   }
 
@@ -986,8 +1004,8 @@
     hoverCardEl.classList.add("hidden");
   }
 
-  // Pin Station to Right Inspector Panel
-  function pinStation(stationCode, panMap = false) {
+  // Pin Station to Right Inspector Panel (and open mobile sheet when tapped on compact screens)
+  function pinStation(stationCode, panMap = false, openMobileSheet = false) {
     const st = state.stationsByCode.get(stationCode);
     if (!st) return;
     state.pinnedCode = stationCode;
@@ -999,6 +1017,10 @@
     updateMapHydrographyStyles();
     renderStationMarkers();
     highlightSelectedStationRow();
+
+    if (openMobileSheet && window.RiverRadarUI && typeof window.RiverRadarUI.openInspector === "function") {
+      window.RiverRadarUI.openInspector();
+    }
   }
 
   // Filter Check (Country, Basin / Water Category, Search Query)
@@ -1065,12 +1087,19 @@
 
     stationListEl.querySelectorAll(".station-row").forEach((row) => {
       const code = row.getAttribute("data-code");
-      row.addEventListener("click", () => pinStation(code, true));
+      row.addEventListener("click", () => {
+        pinStation(code, true, false);
+        if (isCompactMobileLayout() && pinnedPanelEl) {
+          pinnedPanelEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+      });
       row.addEventListener("mouseenter", () => {
+        if (!supportsFineHover()) return;
         state.hoveredCode = code;
         highlightStationOnMap(code, true);
       });
       row.addEventListener("mouseleave", () => {
+        if (!supportsFineHover()) return;
         state.hoveredCode = null;
         highlightStationOnMap(code, false);
       });
@@ -1401,6 +1430,9 @@
         map.flyToBounds(bounds, { padding: [24, 24], duration: 0.65 });
       }
       setActiveDay(state.activeDay);
+      if (isCompactMobileLayout() && window.RiverRadarUI) {
+        window.RiverRadarUI.closePanels(false);
+      }
     });
 
     basinSelect.addEventListener("change", () => {
@@ -1500,6 +1532,10 @@
     themeBtn.addEventListener("click", () => {
       state.darkMode = !state.darkMode;
       document.documentElement.setAttribute("data-theme", state.darkMode ? "dark" : "light");
+      const themeColor = state.darkMode ? "#070e1a" : "#f1f5f9";
+      document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => {
+        meta.setAttribute("content", themeColor);
+      });
       updateBasemapTheme();
     });
 
@@ -1540,9 +1576,179 @@
     }
   }
 
+  // Mobile, Tablet & Foldable UI Controller (Drawers, Bottom Sheet, Swipe-to-Dismiss & Map Resize)
+  function initMobileUI() {
+    const backdrop = document.getElementById("mobile-backdrop");
+    const panels = {
+      filters: {
+        el: document.getElementById("header-controls"),
+        btn: document.getElementById("btn-mobile-filters"),
+        closeBtn: document.getElementById("btn-close-filters"),
+      },
+      legend: {
+        el: document.getElementById("legend-drawer"),
+        btn: document.getElementById("btn-mobile-legend"),
+        closeBtn: document.getElementById("btn-close-legend"),
+      },
+      inspector: {
+        el: document.getElementById("inspector-sidebar"),
+        btn: document.getElementById("btn-mobile-inspector"),
+        closeBtn: document.getElementById("btn-close-inspector"),
+      },
+    };
+
+    let activePanel = null;
+
+    function closePanels(restoreFocus = false) {
+      const prev = activePanel;
+      activePanel = null;
+      for (const cfg of Object.values(panels)) {
+        if (cfg.el) {
+          cfg.el.classList.remove("mobile-open");
+          cfg.el.style.transform = "";
+        }
+        if (cfg.btn) {
+          cfg.btn.setAttribute("aria-expanded", "false");
+        }
+      }
+      if (backdrop) {
+        backdrop.classList.remove("visible");
+      }
+      if (restoreFocus && prev && panels[prev] && panels[prev].btn) {
+        panels[prev].btn.focus();
+      }
+    }
+
+    function openPanel(name) {
+      const target = panels[name];
+      if (!target || !target.el) return;
+      if (!isCompactMobileLayout()) return;
+
+      if (activePanel === name) {
+        closePanels(true);
+        return;
+      }
+
+      closePanels(false);
+      activePanel = name;
+      target.el.classList.add("mobile-open");
+      if (target.btn) {
+        target.btn.setAttribute("aria-expanded", "true");
+      }
+      if (backdrop) {
+        backdrop.classList.add("visible");
+      }
+      if (target.closeBtn) {
+        target.closeBtn.focus({ preventScroll: true });
+      }
+    }
+
+    for (const [name, cfg] of Object.entries(panels)) {
+      if (cfg.btn) {
+        cfg.btn.addEventListener("click", () => openPanel(name));
+      }
+      if (cfg.closeBtn) {
+        cfg.closeBtn.addEventListener("click", () => closePanels(true));
+      }
+    }
+
+    if (backdrop) {
+      backdrop.addEventListener("click", () => closePanels(true));
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && activePanel && !document.querySelector("dialog[open]")) {
+        e.preventDefault();
+        closePanels(true);
+      }
+    });
+
+    // Touch swipe-down-to-close on mobile portrait bottom sheet handle
+    const sheetHandle = document.getElementById("inspector-sheet-handle");
+    const inspectorEl = panels.inspector.el;
+    if (sheetHandle && inspectorEl) {
+      let startY = null;
+      let deltaY = 0;
+
+      sheetHandle.addEventListener(
+        "touchstart",
+        (e) => {
+          if (activePanel !== "inspector" || !window.matchMedia("(max-width: 640px)").matches) return;
+          startY = e.touches[0].clientY;
+          deltaY = 0;
+          inspectorEl.style.transition = "none";
+        },
+        { passive: true }
+      );
+
+      sheetHandle.addEventListener(
+        "touchmove",
+        (e) => {
+          if (startY === null) return;
+          deltaY = Math.max(0, e.touches[0].clientY - startY);
+          inspectorEl.style.transform = `translateY(${deltaY}px)`;
+        },
+        { passive: true }
+      );
+
+      const finishSwipe = () => {
+        if (startY === null) return;
+        inspectorEl.style.transition = "";
+        if (deltaY > 80) {
+          closePanels(false);
+        } else {
+          inspectorEl.style.transform = "";
+        }
+        startY = null;
+        deltaY = 0;
+      };
+
+      sheetHandle.addEventListener("touchend", finishSwipe, { passive: true });
+      sheetHandle.addEventListener("touchcancel", finishSwipe, { passive: true });
+    }
+
+    // Keep Leaflet map crisp across rotation, foldable fold/unfold, and dynamic address bars
+    let resizeRaf = null;
+    function scheduleMapResize() {
+      if (!isCompactMobileLayout() && activePanel) {
+        closePanels(false);
+      }
+      if (resizeRaf) cancelAnimationFrame(resizeRaf);
+      resizeRaf = requestAnimationFrame(() => {
+        if (map) {
+          map.invalidateSize({ animate: false });
+        }
+      });
+    }
+
+    const mapSectionEl = document.querySelector(".map-section");
+    if (mapSectionEl && typeof ResizeObserver === "function") {
+      const ro = new ResizeObserver(scheduleMapResize);
+      ro.observe(mapSectionEl);
+    }
+    window.addEventListener("resize", scheduleMapResize, { passive: true });
+    window.addEventListener("orientationchange", () => {
+      setTimeout(scheduleMapResize, 120);
+    });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", scheduleMapResize, { passive: true });
+    }
+
+    window.RiverRadarUI = {
+      openInspector: () => {
+        if (isCompactMobileLayout()) {
+          openPanel("inspector");
+        }
+      },
+      closePanels,
+      supportsFineHover,
+    };
+  }
+
   // Boot Application
   initMap();
   initControls();
+  initMobileUI();
   applyLanguage(state.lang);
   loadHydroData(false);
 })();

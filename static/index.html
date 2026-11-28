@@ -2,9 +2,14 @@
 <html lang="hu">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- MANDATORY: Declare support for both light and dark themes early to prevent FOUC -->
   <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f1f5f9" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#070e1a" media="(prefers-color-scheme: dark)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>RiverRadar — Central Europe & Danube Basin (DE • AT • SK • HU • SI • HR • RS • RO • BG • UA-ZK) Interactive Water Level Map & 1–7 Day Forecast</title>
 
   <!-- Leaflet CSS (self-hosted locally — zero third-party CDN requests) -->
@@ -32,8 +37,52 @@
         </div>
       </div>
 
-      <!-- Filter, Language & Scenario Controls -->
-      <div class="header-controls">
+      <!-- Mobile / Tablet Compact Toolbar Actions (visible on <= 1024px) -->
+      <div class="mobile-header-actions" role="toolbar" aria-label="Gyorsvezérlők">
+        <button
+          type="button"
+          id="btn-mobile-filters"
+          class="mobile-toggle-btn"
+          aria-expanded="false"
+          aria-controls="header-controls"
+          aria-label="Szűrők és beállítások"
+          data-i18n-aria="mobileFiltersTitle"
+        >
+          <span class="mobile-toggle-icon" aria-hidden="true">☰</span>
+          <span class="mobile-toggle-text" data-i18n="btnFilters">Szűrők</span>
+        </button>
+        <button
+          type="button"
+          id="btn-mobile-legend"
+          class="mobile-toggle-btn"
+          aria-expanded="false"
+          aria-controls="legend-drawer"
+          aria-label="Jelmagyarázat"
+          data-i18n-aria="btnLegend"
+        >
+          <span class="mobile-toggle-icon" aria-hidden="true">🗺️</span>
+          <span class="mobile-toggle-text" data-i18n="btnLegend">Jelmagyarázat</span>
+        </button>
+        <button
+          type="button"
+          id="btn-mobile-inspector"
+          class="mobile-toggle-btn mobile-toggle-btn--primary"
+          aria-expanded="false"
+          aria-controls="inspector-sidebar"
+          aria-label="Állomások"
+          data-i18n-aria="mobileInspectorTitle"
+        >
+          <span class="mobile-toggle-icon" aria-hidden="true">📋</span>
+          <span class="mobile-toggle-text" data-i18n="btnInspector">Állomások</span>
+        </button>
+      </div>
+
+      <!-- Filter, Language & Scenario Controls (inline on desktop, slide-over drawer on mobile/tablet) -->
+      <div id="header-controls" class="header-controls">
+        <div class="mobile-sheet-header">
+          <strong class="mobile-sheet-title" data-i18n="mobileFiltersTitle">Szűrők és beállítások</strong>
+          <button type="button" id="btn-close-filters" class="mobile-sheet-close" aria-label="Bezárás" data-i18n-aria="cookieClose">✕</button>
+        </div>
         <div class="control-group">
           <label for="language-select" class="control-label" data-i18n="lblLanguage">Language</label>
           <select id="language-select" name="language" class="select-control brand-select lang-select">
@@ -147,10 +196,11 @@
         </div>
 
         <!-- Top-Right Map Layer & Legend Controls -->
-        <div class="map-overlay-top-right">
+        <div id="legend-drawer" class="map-overlay-top-right">
           <div class="legend-panel">
             <div class="legend-header">
               <span class="legend-title" data-i18n="legendTitle">Water Level & Flood Alert Legend</span>
+              <button type="button" id="btn-close-legend" class="mobile-sheet-close legend-close-btn" aria-label="Bezárás" data-i18n-aria="cookieClose">✕</button>
             </div>
             <ul class="legend-list">
               <li><span class="swatch swatch-low"></span> <span data-i18n="legendLow">Low water / Drought stage</span></li>
@@ -260,8 +310,15 @@
         </div>
       </section>
 
-      <!-- Right Sidebar: Detailed Station Inspector & All Stations List -->
-      <aside class="inspector-sidebar" aria-label="Részletes vízügyi adatlap és állomáslista">
+      <!-- Right Sidebar: Detailed Station Inspector & All Stations List (bottom sheet / drawer on mobile & tablet) -->
+      <aside id="inspector-sidebar" class="inspector-sidebar" aria-label="Részletes vízügyi adatlap és állomáslista">
+        <div class="mobile-sheet-handle" id="inspector-sheet-handle" aria-hidden="true">
+          <span class="mobile-sheet-pill"></span>
+        </div>
+        <div class="mobile-sheet-header">
+          <strong class="mobile-sheet-title" data-i18n="mobileInspectorTitle">Állomás adatok és lista</strong>
+          <button type="button" id="btn-close-inspector" class="mobile-sheet-close" aria-label="Bezárás" data-i18n-aria="cookieClose">✕</button>
+        </div>
         <!-- Pinned / Selected Station Detailed Card -->
         <div class="inspector-card" id="pinned-station-panel">
           <div class="inspector-empty">
@@ -283,6 +340,9 @@
         </div>
       </aside>
     </main>
+
+    <!-- Shared Backdrop for Mobile / Tablet Slide-Over Drawers & Sheets -->
+    <div id="mobile-backdrop" class="mobile-backdrop" aria-hidden="true"></div>
   </div>
 
   <!-- EU GDPR & ePrivacy Cookie Consent Banner (First Layer — non-blocking, equal-prominence choices) -->

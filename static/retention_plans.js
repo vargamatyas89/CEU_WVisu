@@ -616,7 +616,7 @@
           <span id="${canvasIdPrefix}-phase" style="font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${plan.phases[0]}</span>
           <span id="${canvasIdPrefix}-timer" style="font-family:monospace; color:#cbd5e1; margin-left:6px;">0.0s / 5.0s</span>
         </div>
-        <canvas id="${canvasIdPrefix}-canvas" width="340" height="145" style="width:100%; height:145px; display:block;"></canvas>
+        <canvas id="${canvasIdPrefix}-canvas" width="340" height="145" style="width:100%; aspect-ratio:340/145; height:auto; display:block;"></canvas>
         <div style="height:3px; background:#1e293b; width:100%;">
           <div id="${canvasIdPrefix}-bar" style="height:100%; width:0%; background:linear-gradient(90deg,#38bdf8,#34d399,#fbbf24);"></div>
         </div>
@@ -720,8 +720,11 @@
         icon,
       }).addTo(layerGroup);
 
+      const canHover = () =>
+        window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
       function onEnter(e) {
-        if (!hoverCardEl) return;
+        if (!hoverCardEl || !canHover()) return;
         hoverCardEl.innerHTML = buildRetentionCardHTML(plan, "ret-hover");
         hoverCardEl.classList.remove("hidden");
         positionCard(e);
@@ -730,6 +733,7 @@
       }
 
       function onMove(e) {
+        if (!canHover()) return;
         positionCard(e);
       }
 
@@ -742,6 +746,9 @@
         if (pinnedPanelEl) {
           pinnedPanelEl.innerHTML = buildRetentionCardHTML(plan, "ret-pinned");
           startCardAnimation(plan, "ret-pinned");
+        }
+        if (window.RiverRadarUI && typeof window.RiverRadarUI.openInspector === "function") {
+          window.RiverRadarUI.openInspector();
         }
       }
 
